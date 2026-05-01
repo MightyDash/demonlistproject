@@ -16,7 +16,7 @@ function normalizeDemon(row, index) {
     tier: Number(row.tier ?? row.Tier ?? 0),
     tierChange: Number(row.tierChange ?? row["Tier +/-"] ?? row.tier_change ?? 0),
     status: row.status ?? row["Done/Progress?"] ?? "COMPLETED",
-    thumbnail: row.thumbnail || row.thumbnailUrl || (row.id || row.ID ? `/thumbnails/${row.id ?? row.ID}.jpg` : ""),
+    thumbnail: row.thumbnail || row.thumbnailUrl || (row.id || row.ID ? `/thumbnails/${row.id ?? row.ID}.JPG` : ""),
     notes: row.notes ?? ""
   };
 }
