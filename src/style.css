@@ -463,6 +463,18 @@ h1 {
     font-weight: 900;
     cursor: pointer;
   }
+.login-panel {
+  width: min(500px, 100%);
+  padding: 32px;
+  border-radius: 24px;
+  border: 1px solid var(--line);
+  background: var(--panel-strong);
+  box-shadow: var(--shadow);
+}
+.login-form {
+  display: grid;
+  gap: 12px;
+}
   .close-button {
     flex: 1;
     padding: 10px;
