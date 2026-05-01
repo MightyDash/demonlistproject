@@ -178,10 +178,10 @@ export default function App() {
     <div className="app">
       <header className="hero">
         <div>
-          <p className="eyebrow">Moik's Geometry Dash archive</p>
+          <p className="eyebrow">Moik's Geometry Dash Demon Archive</p>
           <h1>Demon List</h1>
           <p className="subtitle">
-            A clean, searchable demon list powered by your Google Spreadsheet.
+            A clean, searchable demon list powered by my Google Spreadsheet.
           </p>
         </div>
 
@@ -197,12 +197,12 @@ export default function App() {
           {isAdmin && (
   <>
     <button
-      className="admin-button panel-button"
-      onClick={() => alert("Admin panel coming next")}
-      type="button"
-    >
-      Go to panel
-    </button>
+  className="admin-button panel-button"
+  onClick={() => setAdminView(true)}
+  type="button"
+>
+  Go to panel
+</button>
 
     <button
       className="admin-button logout-button"
