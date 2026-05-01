@@ -533,15 +533,44 @@ function Detail({ label, value }) {
 
 function AdminPanel({ onBack, onDataChanged }) {
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showRemoveForm, setShowRemoveForm] = useState(false);
+
   const [addForm, setAddForm] = useState({
     levelId: "",
     attempts: "",
     year: new Date().getFullYear(),
     status: "COMPLETED"
   });
+
+  const [removeLevelId, setRemoveLevelId] = useState("");
+  const [removeConfirm, setRemoveConfirm] = useState(false);
+
   const [adminMessage, setAdminMessage] = useState("");
   const [adminError, setAdminError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  async function sendAdminRequest(payload) {
+    const adminUrl = import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL;
+    const token = localStorage.getItem("admin_token");
+
+    if (!adminUrl) {
+      throw new Error("VITE_APPS_SCRIPT_ADMIN_URL ontbreekt in Render.");
+    }
+
+    if (!token) {
+      throw new Error("Je bent niet ingelogd.");
+    }
+
+    const response = await fetch(adminUrl, {
+      method: "POST",
+      body: JSON.stringify({
+        ...payload,
+        token
+      })
+    });
+
+    return response.json();
+  }
 
   async function handleAddDemon() {
     setAdminMessage("");
@@ -567,35 +596,16 @@ function AdminPanel({ onBack, onDataChanged }) {
       return;
     }
 
-    const adminUrl = import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL;
-    const token = localStorage.getItem("admin_token");
-
-    if (!adminUrl) {
-      setAdminError("VITE_APPS_SCRIPT_ADMIN_URL ontbreekt in Render.");
-      return;
-    }
-
-    if (!token) {
-      setAdminError("Je bent niet ingelogd.");
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(adminUrl, {
-        method: "POST",
-        body: JSON.stringify({
-          action: "addDemon",
-          token,
-          levelId,
-          attempts,
-          year,
-          status
-        })
+      const data = await sendAdminRequest({
+        action: "addDemon",
+        levelId,
+        attempts,
+        year,
+        status
       });
-
-      const data = await response.json();
 
       if (!data.success) {
         setAdminError(data.message || "Demon toevoegen mislukt.");
@@ -611,11 +621,46 @@ function AdminPanel({ onBack, onDataChanged }) {
       });
       setShowAddForm(false);
 
-      if (onDataChanged) {
-        onDataChanged();
-      }
+      if (onDataChanged) onDataChanged();
     } catch (error) {
-      setAdminError("Kon geen verbinding maken met Apps Script.");
+      setAdminError(error.message || "Kon geen verbinding maken met Apps Script.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleRemoveDemon() {
+    setAdminMessage("");
+    setAdminError("");
+
+    const levelId = String(removeLevelId || "").trim();
+
+    if (!levelId) {
+      setAdminError("Level ID is verplicht.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const data = await sendAdminRequest({
+        action: "removeDemon",
+        levelId
+      });
+
+      if (!data.success) {
+        setAdminError(data.message || "Demon verwijderen mislukt.");
+        return;
+      }
+
+      setAdminMessage(data.message || "Demon verwijderd.");
+      setRemoveLevelId("");
+      setRemoveConfirm(false);
+      setShowRemoveForm(false);
+
+      if (onDataChanged) onDataChanged();
+    } catch (error) {
+      setAdminError(error.message || "Kon geen verbinding maken met Apps Script.");
     } finally {
       setIsSubmitting(false);
     }
@@ -642,22 +687,34 @@ function AdminPanel({ onBack, onDataChanged }) {
         <button
           className="admin-action-card"
           type="button"
-          onClick={() => setShowAddForm(open => !open)}
+          onClick={() => {
+            setShowAddForm(open => !open);
+            setShowRemoveForm(false);
+            setRemoveConfirm(false);
+            setAdminMessage("");
+            setAdminError("");
+          }}
         >
           <strong>Add Demon</strong>
           <span>Nieuwe demon toevoegen aan je sheet.</span>
         </button>
 
-        <button className="admin-action-card" type="button">
-          <strong>Edit Demon</strong>
-          <span>Bestaande demon aanpassen.</span>
-        </button>
-
         <button
           className="admin-action-card"
           type="button"
-          onClick={onDataChanged}
+          onClick={() => {
+            setShowRemoveForm(open => !open);
+            setShowAddForm(false);
+            setRemoveConfirm(false);
+            setAdminMessage("");
+            setAdminError("");
+          }}
         >
+          <strong>Remove Demon</strong>
+          <span>Demon verwijderen via Level ID.</span>
+        </button>
+
+        <button className="admin-action-card" type="button" onClick={onDataChanged}>
           <strong>Refresh Data</strong>
           <span>Sheet data opnieuw laden.</span>
         </button>
@@ -718,14 +775,86 @@ function AdminPanel({ onBack, onDataChanged }) {
               {isSubmitting ? "Adding..." : "Add Demon"}
             </button>
 
-            <button
-              className="close-button"
-              onClick={() => setShowAddForm(false)}
-              type="button"
-            >
+            <button className="close-button" onClick={() => setShowAddForm(false)} type="button">
               Cancel
             </button>
           </div>
+        </div>
+      )}
+
+      {showRemoveForm && (
+        <div className="admin-form danger-form">
+          <h3>Remove Demon</h3>
+
+          <label>
+            Level ID
+            <input
+              value={removeLevelId}
+              onChange={e => {
+                setRemoveLevelId(e.target.value);
+                setRemoveConfirm(false);
+              }}
+              placeholder="Bijv. 10565740"
+            />
+          </label>
+
+          {!removeConfirm ? (
+            <div className="admin-form-actions">
+              <button
+                className="logout-confirm-button"
+                onClick={() => {
+                  if (!String(removeLevelId || "").trim()) {
+                    setAdminError("Level ID is verplicht.");
+                    return;
+                  }
+
+                  setAdminError("");
+                  setRemoveConfirm(true);
+                }}
+                type="button"
+              >
+                Prepare Remove
+              </button>
+
+              <button
+                className="close-button"
+                onClick={() => {
+                  setShowRemoveForm(false);
+                  setRemoveConfirm(false);
+                  setRemoveLevelId("");
+                }}
+                type="button"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <div className="remove-confirm-box">
+              <p>
+                Weet je zeker dat je demon met Level ID{" "}
+                <strong>{removeLevelId}</strong> wilt verwijderen?
+              </p>
+
+              <div className="admin-form-actions">
+                <button
+                  className="logout-confirm-button"
+                  onClick={handleRemoveDemon}
+                  disabled={isSubmitting}
+                  type="button"
+                >
+                  {isSubmitting ? "Removing..." : "Yes, remove"}
+                </button>
+
+                <button
+                  className="close-button"
+                  onClick={() => setRemoveConfirm(false)}
+                  type="button"
+                >
+                  No, go back
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </section>
