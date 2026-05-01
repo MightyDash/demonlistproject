@@ -314,4 +314,3 @@ function Detail({ label, value }) {
     </div>
   );
 }
-}
