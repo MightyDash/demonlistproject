@@ -683,7 +683,30 @@ h1 {
   background: rgba(94, 161, 255, 0.12);
   border-color: rgba(94, 161, 255, 0.5);
 }
+.skillsets {
+  margin-top: 20px;
+}
 
+.skillsets h3 {
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+
+.skillset-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.skillset-tag {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(94, 161, 255, 0.12);
+  border: 1px solid rgba(94, 161, 255, 0.35);
+  color: var(--blue);
+  font-weight: 800;
+  font-size: 12px;
+}
 @media (max-width: 980px) {
   .admin-panel-grid {
     grid-template-columns: 1fr;
