@@ -180,31 +180,30 @@ export default function App() {
   }, [demons]);
 
   const hardestBySkillset = useMemo(() => {
-    const result = {};
+  const result = {};
 
-    demons.forEach(demon => {
-      const status = String(demon.status || "COMPLETED").toUpperCase().trim();
-      if (status !== "COMPLETED") return;
-      if (!demon.skillsets || demon.skillsets.length === 0) return;
+  demons.forEach(demon => {
+    const status = String(demon.status || "COMPLETED").toUpperCase().trim();
+    if (status !== "COMPLETED") return;
+    if (!demon.skillsets || demon.skillsets.length === 0) return;
 
-      const demonPlacement = placementNumber(demon.placement);
+    const primarySkill = demon.skillsets[0];
+    const demonPlacement = placementNumber(demon.placement);
 
-      demon.skillsets.forEach(skill => {
-        if (!result[skill]) {
-          result[skill] = demon;
-          return;
-        }
+    if (!result[primarySkill]) {
+      result[primarySkill] = demon;
+      return;
+    }
 
-        const currentPlacement = placementNumber(result[skill].placement);
+    const currentPlacement = placementNumber(result[primarySkill].placement);
 
-        if (demonPlacement < currentPlacement) {
-          result[skill] = demon;
-        }
-      });
-    });
+    if (demonPlacement < currentPlacement) {
+      result[primarySkill] = demon;
+    }
+  });
 
-    return result;
-  }, [demons]);
+  return result;
+}, [demons]);
 
   return (
     <div className="app">
