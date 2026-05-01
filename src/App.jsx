@@ -71,6 +71,7 @@ export default function App() {
   const [loginData, setLoginData] = useState({ username: "", password: "" });
   const [loginError, setLoginError] = useState("");
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [adminView, setAdminView] = useState(false);
 
   useEffect(() => {
   const savedToken = localStorage.getItem("admin_token");
@@ -499,5 +500,39 @@ function Detail({ label, value }) {
       <span>{label}</span>
       <strong>{value}</strong>
     </div>
+  );
+}
+function AdminPanel({ onBack }) {
+  return (
+    <section className="panel admin-panel">
+      <div className="admin-panel-header">
+        <div>
+          <p className="eyebrow">Admin Area</p>
+          <h2>Admin Panel</h2>
+          <p>Beheer hier later je demon list acties.</p>
+        </div>
+
+        <button className="admin-button" onClick={onBack} type="button">
+          Back to list
+        </button>
+      </div>
+
+      <div className="admin-panel-grid">
+        <button className="admin-action-card" type="button">
+          <strong>Add Demon</strong>
+          <span>Nieuwe demon toevoegen aan je sheet.</span>
+        </button>
+
+        <button className="admin-action-card" type="button">
+          <strong>Edit Demon</strong>
+          <span>Bestaande demon aanpassen.</span>
+        </button>
+
+        <button className="admin-action-card" type="button">
+          <strong>Refresh Data</strong>
+          <span>Sheet data opnieuw laden.</span>
+        </button>
+      </div>
+    </section>
   );
 }
