@@ -61,6 +61,7 @@ export default function App() {
   const [difficulty, setDifficulty] = useState("all");
   const [segment, setSegment] = useState("all");
   const [selected, setSelected] = useState(null);
+  const [apiLatestDemon, setApiLatestDemon] = useState("");
 
   useEffect(() => {
     async function loadData() {
@@ -76,6 +77,7 @@ export default function App() {
         const json = await response.json();
 
         const rows = Array.isArray(json) ? json : json.demons || json.data || [];
+        setApiLatestDemon(json.latestDemon || "");
         setDemons(rows.map(normalizeDemon));
         setSource("live");
       } catch (error) {
@@ -192,7 +194,7 @@ export default function App() {
       <main className="panel table-panel">
         <div className="table-header">
           <span>{filtered.length} demons shown</span>
-          <span>{stats.latest?.name ? `Latest: ${stats.latest.name}` : ""}</span>
+          <span>{apiLatestDemon ? `Latest: ${apiLatestDemon}` : ""}</span>
         </div>
 
         <div className="demon-table">
