@@ -4,11 +4,13 @@ import { SHEET_API_URL } from "./config.js";
 import { mockDemons } from "./mockData.js";
 
 function normalizeDemon(row, index) {
+  const id = String(row.id ?? row.ID ?? "");
+
   return {
     placement: row.placement ?? row.Placement ?? row["#"] ?? `#${index + 1}`,
     name: row.name ?? row.demon ?? row.Demon ?? "",
     creator: row.creator ?? row.creators ?? row["Creator(s)"] ?? "",
-    id: String(row.id ?? row.ID ?? ""),
+    id,
     difficulty: row.difficulty ?? row.Difficulty ?? "",
     attempts: Number(row.attempts ?? row.Attempts ?? 0),
     year: Number(row.year ?? row.Year ?? 0),
@@ -16,7 +18,7 @@ function normalizeDemon(row, index) {
     tier: Number(row.tier ?? row.Tier ?? 0),
     tierChange: Number(row.tierChange ?? row["Tier +/-"] ?? row.tier_change ?? 0),
     status: row.status ?? row["Done/Progress?"] ?? "COMPLETED",
-    thumbnail: row.thumbnail || row.thumbnailUrl || (row.id || row.ID ? `/thumbnails/${row.id ?? row.ID}.JPG` : ""),
+    thumbnail: row.thumbnail || row.thumbnailUrl || (id ? `/thumbnails/${id}.JPG` : ""),
     notes: row.notes ?? ""
   };
 }
@@ -63,6 +65,11 @@ export default function App() {
   const [selected, setSelected] = useState(null);
   const [apiLatestDemon, setApiLatestDemon] = useState("");
 
+  const [showLogin, setShowLogin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loginData, setLoginData] = useState({ username: "", password: "" });
+  const [loginError, setLoginError] = useState("");
+
   useEffect(() => {
     async function loadData() {
       if (!SHEET_API_URL) {
@@ -74,9 +81,10 @@ export default function App() {
       try {
         const response = await fetch(SHEET_API_URL);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const json = await response.json();
 
+        const json = await response.json();
         const rows = Array.isArray(json) ? json : json.demons || json.data || [];
+
         setApiLatestDemon(json.latestDemon || "");
         setDemons(rows.map(normalizeDemon));
         setSource("live");
@@ -89,6 +97,29 @@ export default function App() {
 
     loadData();
   }, []);
+
+  async function handleLogin() {
+    setLoginError("");
+
+    try {
+      const res = await fetch("/.netlify/functions/admin-login", {
+        method: "POST",
+        body: JSON.stringify(loginData)
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setIsAdmin(true);
+        setShowLogin(false);
+        localStorage.setItem("admin_token", data.token);
+      } else {
+        setLoginError("Wrong login");
+      }
+    } catch (e) {
+      setLoginError("Error connecting to server");
+    }
+  }
 
   const difficulties = useMemo(() => {
     const unique = new Set(demons.map(d => d.difficulty).filter(Boolean));
@@ -121,14 +152,12 @@ export default function App() {
     const completed = demons.filter(d => String(d.status).toUpperCase() === "COMPLETED");
     const totalAttempts = completed.reduce((sum, d) => sum + Number(d.attempts || 0), 0);
     const hardest = completed.slice().sort((a, b) => Number(b.tier) - Number(a.tier))[0];
-    const latest = completed.slice().sort((a, b) => placementNumber(b.placement) - placementNumber(a.placement))[0];
 
     return {
       total: completed.length,
       attempts: totalAttempts,
       avgAttempts: completed.length ? Math.round(totalAttempts / completed.length) : 0,
-      hardest,
-      latest
+      hardest
     };
   }, [demons]);
 
@@ -143,8 +172,23 @@ export default function App() {
           </p>
         </div>
 
-        <div className={`source-pill ${source}`}>
-          {source === "live" ? "Live Sheet Data" : source === "mock" ? "Mock Data" : "Loading"}
+        <div>
+          <div className={`source-pill ${source}`}>
+            {source === "live" ? "Live Sheet Data" : source === "mock" ? "Mock Data" : "Loading"}
+          </div>
+
+          <button style={{ marginTop: "10px" }} onClick={() => setShowLogin(true)}>
+            Admin Login
+          </button>
+
+          {isAdmin && (
+            <button
+              style={{ marginTop: "10px", marginLeft: "8px" }}
+              onClick={() => alert("Admin panel coming next")}
+            >
+              Go to panel
+            </button>
+          )}
         </div>
       </header>
 
@@ -236,6 +280,35 @@ export default function App() {
       {selected && (
         <DemonModal demon={selected} onClose={() => setSelected(null)} />
       )}
+
+      {showLogin && (
+        <div className="modal-backdrop">
+          <div className="modal" style={{ maxWidth: "400px" }}>
+            <div className="modal-content">
+              <h2>Admin Login</h2>
+
+              <input
+                placeholder="Username"
+                value={loginData.username}
+                onChange={e => setLoginData({ ...loginData, username: e.target.value })}
+              />
+
+              <input
+                type="password"
+                placeholder="Password"
+                value={loginData.password}
+                onChange={e => setLoginData({ ...loginData, password: e.target.value })}
+              />
+
+              <button onClick={handleLogin}>Login</button>
+
+              {loginError && <p style={{ color: "red" }}>{loginError}</p>}
+
+              <button onClick={() => setShowLogin(false)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -263,12 +336,12 @@ function DemonModal({ demon, onClose }) {
         <div className="modal-cover">
           {demon.thumbnail ? (
             <img
-            src={demon.thumbnail}
-            alt={demon.name}
-            onError={(e) => {
-            e.currentTarget.style.display = "none";
-          }}
-      />
+              src={demon.thumbnail}
+              alt={demon.name}
+              onError={e => {
+                e.currentTarget.style.display = "none";
+              }}
+            />
           ) : (
             <div className="thumbnail-placeholder">
               {demon.name.slice(0, 2).toUpperCase()}
@@ -280,7 +353,7 @@ function DemonModal({ demon, onClose }) {
           <p className="placement-large">{demon.placement}</p>
           <h2>{demon.name}</h2>
           <p className="creator">by {demon.creator || "Unknown creator"}</p>
-          
+
           <div className="detail-grid">
             <Detail label="Level ID" value={demon.id} />
             <Detail label="Tier" value={formatTier(demon.tier)} />
