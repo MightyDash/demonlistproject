@@ -76,6 +76,7 @@ export default function App() {
   const [loginError, setLoginError] = useState("");
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [adminView, setAdminView] = useState(false);
+  const [skillsetOpen, setSkillsetOpen] = useState(false);
 
   useEffect(() => {
     const savedToken = localStorage.getItem("admin_token");
@@ -299,29 +300,38 @@ export default function App() {
           </section>
 
           {Object.keys(hardestBySkillset).length > 0 && (
-            <section className="panel skillset-overview">
-              <div className="table-header">
-                <span>Hardest demon by skillset</span>
-              </div>
+  <section className="panel skillset-overview">
+    <button
+      className="skillset-header"
+      onClick={() => setSkillsetOpen(open => !open)}
+      type="button"
+    >
+      <span>Hardest demon by skillset</span>
+      <span className={`skillset-arrow ${skillsetOpen ? "open" : ""}`}>
+        ⌄
+      </span>
+    </button>
 
-              <div className="skillset-overview-grid">
-                {Object.entries(hardestBySkillset)
-                  .sort(([a], [b]) => a.localeCompare(b))
-                  .map(([skill, demon]) => (
-                    <button
-                      key={skill}
-                      className="skillset-overview-card"
-                      type="button"
-                      onClick={() => setSelected(demon)}
-                    >
-                      <span>{skill}</span>
-                      <strong>{demon.name}</strong>
-                      <small>{demon.placement} • Tier {formatTier(demon.tier)}</small>
-                    </button>
-                  ))}
-              </div>
-            </section>
-          )}
+    <div className={`skillset-content ${skillsetOpen ? "open" : ""}`}>
+      <div className="skillset-overview-grid">
+        {Object.entries(hardestBySkillset)
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([skill, demon]) => (
+            <button
+              key={skill}
+              className="skillset-overview-card"
+              type="button"
+              onClick={() => setSelected(demon)}
+            >
+              <span>{skill}</span>
+              <strong>{demon.name}</strong>
+              <small>{demon.placement} • Tier {formatTier(demon.tier)}</small>
+            </button>
+          ))}
+      </div>
+    </div>
+  </section>
+)}
 
           <section className="panel controls">
             <div className="searchbox">
