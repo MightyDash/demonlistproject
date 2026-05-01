@@ -99,27 +99,23 @@ export default function App() {
   }, []);
 
   async function handleLogin() {
-    setLoginError("");
+  setLoginError("");
 
-    try {
-      const res = await fetch("/.netlify/functions/admin-login", {
-        method: "POST",
-        body: JSON.stringify(loginData)
-      });
+  const adminUsername = import.meta.env.VITE_ADMIN_USERNAME;
+  const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD;
+  const adminToken = import.meta.env.VITE_ADMIN_TOKEN;
 
-      const data = await res.json();
-
-      if (data.success) {
-        setIsAdmin(true);
-        setShowLogin(false);
-        localStorage.setItem("admin_token", data.token);
-      } else {
-        setLoginError("Wrong login");
-      }
-    } catch (e) {
-      setLoginError("Error connecting to server");
-    }
+  if (
+    loginData.username === adminUsername &&
+    loginData.password === adminPassword
+  ) {
+    setIsAdmin(true);
+    setShowLogin(false);
+    localStorage.setItem("admin_token", adminToken || "local-admin");
+  } else {
+    setLoginError("Wrong login");
   }
+}
 
   const difficulties = useMemo(() => {
     const unique = new Set(demons.map(d => d.difficulty).filter(Boolean));
