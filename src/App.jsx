@@ -12,6 +12,7 @@ function normalizeDemon(row, index) {
     creator: row.creator ?? row.creators ?? row["Creator(s)"] ?? "",
     id,
     difficulty: row.difficulty ?? row.Difficulty ?? "",
+    skillsets: String(row.skillsets ?? row.Skillsets ?? "").split(",").map(s => s.trim()).filter(Boolean),
     attempts: Number(row.attempts ?? row.Attempts ?? 0),
     year: Number(row.year ?? row.Year ?? 0),
     video: row.video ?? row["Done for Video"] ?? "",
@@ -498,6 +499,20 @@ function DemonModal({ demon, onClose }) {
             <Detail label="Attempts" value={formatNumber(demon.attempts)} />
             <Detail label="Year" value={demon.year || "Unknown"} />
           </div>
+
+          {demon.skillsets?.length > 0 && (
+  <div className="skillsets">
+    <h3>Skillsets</h3>
+
+    <div className="skillset-list">
+      {demon.skillsets.map(skill => (
+        <span key={skill} className="skillset-tag">
+          {skill}
+        </span>
+      ))}
+    </div>
+  </div>
+)}
 
           {demon.notes && <p className="notes">{demon.notes}</p>}
 
