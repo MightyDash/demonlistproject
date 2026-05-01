@@ -61,6 +61,7 @@ export default function App() {
   const [source, setSource] = useState("loading");
   const [query, setQuery] = useState("");
   const [difficulty, setDifficulty] = useState("all");
+  const [difficultyOpen, setDifficultyOpen] = useState(false);
   const [segment, setSegment] = useState("all");
   const [selected, setSelected] = useState(null);
   const [apiLatestDemon, setApiLatestDemon] = useState("");
@@ -205,13 +206,34 @@ export default function App() {
           />
         </div>
 
-        <select value={difficulty} onChange={e => setDifficulty(e.target.value)}>
-          {difficulties.map(d => (
-            <option key={d} value={d}>
-              {d === "all" ? "All difficulties" : d}
-            </option>
-          ))}
-        </select>
+        <div className="custom-select">
+  <button
+    className="custom-select-button"
+    onClick={() => setDifficultyOpen(open => !open)}
+    type="button"
+  >
+    <span>{difficulty === "all" ? "All difficulties" : difficulty}</span>
+    <span className="custom-select-arrow">⌄</span>
+  </button>
+
+  {difficultyOpen && (
+    <div className="custom-select-menu">
+      {difficulties.map(d => (
+        <button
+          key={d}
+          type="button"
+          className={`custom-select-option ${difficulty === d ? "active" : ""}`}
+          onClick={() => {
+            setDifficulty(d);
+            setDifficultyOpen(false);
+          }}
+        >
+          {d === "all" ? "All difficulties" : d}
+        </button>
+      ))}
+    </div>
+  )}
+</div>
 
         <div className="tabs">
           {[
