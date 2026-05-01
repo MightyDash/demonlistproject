@@ -277,9 +277,7 @@ function DemonModal({ demon, onClose }) {
             <Detail label="Tier" value={formatTier(demon.tier)} />
             <Detail label="Difficulty" value={demon.difficulty} />
             <Detail label="Attempts" value={formatNumber(demon.attempts)} />
-            <Detail label="Year" value={demon.year || "Unknown"} />
             <Detail label="Video" value={demon.video || "None"} />
-            <Detail label="Status" value={demon.status} />
           </div>
 
           {demon.notes && <p className="notes">{demon.notes}</p>}
