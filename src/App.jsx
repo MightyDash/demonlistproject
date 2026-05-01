@@ -70,6 +70,15 @@ export default function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loginData, setLoginData] = useState({ username: "", password: "" });
   const [loginError, setLoginError] = useState("");
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  useEffect(() => {
+  const savedToken = localStorage.getItem("admin_token");
+
+  if (savedToken) {
+    setIsAdmin(true);
+  }
+}, []);
 
   useEffect(() => {
     async function loadData() {
@@ -116,6 +125,12 @@ export default function App() {
   } else {
     setLoginError("Wrong login");
   }
+}
+
+  function handleLogout() {
+  localStorage.removeItem("admin_token");
+  setIsAdmin(false);
+  setShowLogoutConfirm(false);
 }
 
   const difficulties = useMemo(() => {
@@ -179,16 +194,48 @@ export default function App() {
           </button>
 
           {isAdmin && (
-            <button
-              className="admin-button panel-button"
-              onClick={() => alert("Admin panel coming next")}
-            >
-              Go to panel
-            </button>
-          )}
+  <>
+    <button
+      className="admin-button panel-button"
+      onClick={() => alert("Admin panel coming next")}
+      type="button"
+    >
+      Go to panel
+    </button>
+
+    <button
+      className="admin-button logout-button"
+      onClick={() => setShowLogoutConfirm(true)}
+      type="button"
+    >
+      Logout
+    </button>
+  </>
+)}
         </div>
       </header>
+{showLogoutConfirm && (
+  <div className="modal-backdrop">
+    <div className="confirm-panel">
+      <h2>Logout?</h2>
+      <p>Weet je zeker dat je wilt uitloggen?</p>
 
+      <div className="confirm-actions">
+        <button className="logout-confirm-button" onClick={handleLogout} type="button">
+          Ja, log uit
+        </button>
+
+        <button
+          className="close-button"
+          onClick={() => setShowLogoutConfirm(false)}
+          type="button"
+        >
+          Annuleren
+        </button>
+      </div>
+    </div>
+  </div>
+)}
       <section className="stats-grid">
         <StatCard icon={<Trophy />} label="Total Demons" value={formatNumber(stats.total)} />
         <StatCard icon={<Target />} label="Total Attempts" value={formatNumber(stats.attempts)} />
