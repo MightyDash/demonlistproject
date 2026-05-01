@@ -786,3 +786,66 @@ h1 {
     margin-top: 14px;
   }
   
+.admin-success {
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(67, 209, 122, 0.35);
+  background: rgba(67, 209, 122, 0.12);
+  color: var(--green);
+  font-weight: 800;
+}
+
+.admin-error {
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 91, 91, 0.35);
+  background: rgba(255, 91, 91, 0.12);
+  color: var(--red);
+  font-weight: 800;
+}
+
+.admin-form {
+  margin-top: 18px;
+  padding: 20px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.admin-form h3 {
+  margin: 0 0 16px;
+  font-size: 26px;
+}
+
+.admin-form label {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.admin-form input,
+.admin-form select {
+  min-height: 46px;
+  padding: 0 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  outline: none;
+}
+
+.admin-form input:focus,
+.admin-form select:focus {
+  border-color: rgba(94, 161, 255, 0.65);
+}
+
+.admin-form-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
