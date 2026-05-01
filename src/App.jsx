@@ -255,7 +255,10 @@ export default function App() {
       )}
 
       {adminView ? (
-        <AdminPanel onBack={() => setAdminView(false)} />
+        <AdminPanel
+  onBack={() => setAdminView(false)}
+  onDataChanged={() => window.location.reload()}
+/>
       ) : (
         <>
           <section className="stats-grid">
@@ -528,14 +531,103 @@ function Detail({ label, value }) {
   );
 }
 
-function AdminPanel({ onBack }) {
+function AdminPanel({ onBack, onDataChanged }) {
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [addForm, setAddForm] = useState({
+    levelId: "",
+    attempts: "",
+    year: new Date().getFullYear(),
+    status: "COMPLETED"
+  });
+  const [adminMessage, setAdminMessage] = useState("");
+  const [adminError, setAdminError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  async function handleAddDemon() {
+    setAdminMessage("");
+    setAdminError("");
+
+    const levelId = String(addForm.levelId || "").trim();
+    const attempts = Number(addForm.attempts);
+    const year = Number(addForm.year);
+    const status = String(addForm.status || "COMPLETED").trim().toUpperCase();
+
+    if (!levelId) {
+      setAdminError("Level ID is verplicht.");
+      return;
+    }
+
+    if (!Number.isInteger(attempts) || attempts < 0) {
+      setAdminError("Attempts moet een geldig getal zijn.");
+      return;
+    }
+
+    if (!Number.isInteger(year) || String(year).length !== 4) {
+      setAdminError("Year moet een geldig 4-cijferig jaartal zijn.");
+      return;
+    }
+
+    const adminUrl = import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL;
+    const token = localStorage.getItem("admin_token");
+
+    if (!adminUrl) {
+      setAdminError("VITE_APPS_SCRIPT_ADMIN_URL ontbreekt in Render.");
+      return;
+    }
+
+    if (!token) {
+      setAdminError("Je bent niet ingelogd.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch(adminUrl, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "addDemon",
+          token,
+          levelId,
+          attempts,
+          year,
+          status
+        })
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        setAdminError(data.message || "Demon toevoegen mislukt.");
+        return;
+      }
+
+      setAdminMessage(data.message || "Demon toegevoegd.");
+      setAddForm({
+        levelId: "",
+        attempts: "",
+        year: new Date().getFullYear(),
+        status: "COMPLETED"
+      });
+      setShowAddForm(false);
+
+      if (onDataChanged) {
+        onDataChanged();
+      }
+    } catch (error) {
+      setAdminError("Kon geen verbinding maken met Apps Script.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <section className="panel admin-panel">
       <div className="admin-panel-header">
         <div>
           <p className="eyebrow">Admin Area</p>
           <h2>Admin Panel</h2>
-          <p>Beheer hier later je demon list acties.</p>
+          <p>Beheer hier je demon list acties.</p>
         </div>
 
         <button className="admin-button" onClick={onBack} type="button">
@@ -543,8 +635,15 @@ function AdminPanel({ onBack }) {
         </button>
       </div>
 
+      {adminMessage && <p className="admin-success">{adminMessage}</p>}
+      {adminError && <p className="admin-error">{adminError}</p>}
+
       <div className="admin-panel-grid">
-        <button className="admin-action-card" type="button">
+        <button
+          className="admin-action-card"
+          type="button"
+          onClick={() => setShowAddForm(open => !open)}
+        >
           <strong>Add Demon</strong>
           <span>Nieuwe demon toevoegen aan je sheet.</span>
         </button>
@@ -554,11 +653,81 @@ function AdminPanel({ onBack }) {
           <span>Bestaande demon aanpassen.</span>
         </button>
 
-        <button className="admin-action-card" type="button">
+        <button
+          className="admin-action-card"
+          type="button"
+          onClick={onDataChanged}
+        >
           <strong>Refresh Data</strong>
           <span>Sheet data opnieuw laden.</span>
         </button>
       </div>
+
+      {showAddForm && (
+        <div className="admin-form">
+          <h3>Add Demon</h3>
+
+          <label>
+            Level ID
+            <input
+              value={addForm.levelId}
+              onChange={e => setAddForm({ ...addForm, levelId: e.target.value })}
+              placeholder="Bijv. 10565740"
+            />
+          </label>
+
+          <label>
+            Attempts
+            <input
+              type="number"
+              min="0"
+              value={addForm.attempts}
+              onChange={e => setAddForm({ ...addForm, attempts: e.target.value })}
+              placeholder="Bijv. 20226"
+            />
+          </label>
+
+          <label>
+            Year
+            <input
+              type="number"
+              value={addForm.year}
+              onChange={e => setAddForm({ ...addForm, year: e.target.value })}
+              placeholder="Bijv. 2026"
+            />
+          </label>
+
+          <label>
+            Status
+            <select
+              value={addForm.status}
+              onChange={e => setAddForm({ ...addForm, status: e.target.value })}
+            >
+              <option value="COMPLETED">COMPLETED</option>
+              <option value="IN PROGRESS">IN PROGRESS</option>
+            </select>
+          </label>
+
+          <div className="admin-form-actions">
+            <button
+              className="login-button"
+              onClick={handleAddDemon}
+              disabled={isSubmitting}
+              type="button"
+            >
+              {isSubmitting ? "Adding..." : "Add Demon"}
+            </button>
+
+            <button
+              className="close-button"
+              onClick={() => setShowAddForm(false)}
+              type="button"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
