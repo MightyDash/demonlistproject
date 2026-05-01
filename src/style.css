@@ -739,7 +739,26 @@ h1 {
     min-height: 220px;
   }
 }
+.danger-form {
+  border-color: rgba(255, 91, 91, 0.35);
+}
 
+.remove-confirm-box {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 91, 91, 0.35);
+  background: rgba(255, 91, 91, 0.10);
+}
+
+.remove-confirm-box p {
+  margin: 0 0 14px;
+  color: var(--text);
+}
+
+.remove-confirm-box strong {
+  color: #ffb0b0;
+}
 @media (max-width: 640px) {
   .app {
     width: min(100% - 20px, 1380px);
