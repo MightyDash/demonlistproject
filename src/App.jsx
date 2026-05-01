@@ -7,21 +7,24 @@ function normalizeDemon(row, index) {
   const id = String(row.id ?? row.ID ?? "");
 
   return {
-    placement: row.placement ?? row.Placement ?? row["#"] ?? `#${index + 1}`,
-    name: row.name ?? row.demon ?? row.Demon ?? "",
-    creator: row.creator ?? row.creators ?? row["Creator(s)"] ?? "",
-    id,
-    difficulty: row.difficulty ?? row.Difficulty ?? "",
-    skillsets: String(row.skillsets ?? row.Skillsets ?? "").split(",").map(s => s.trim()).filter(Boolean),
-    attempts: Number(row.attempts ?? row.Attempts ?? 0),
-    year: Number(row.year ?? row.Year ?? 0),
-    video: row.video ?? row["Done for Video"] ?? "",
-    tier: Number(row.tier ?? row.Tier ?? 0),
-    tierChange: Number(row.tierChange ?? row["Tier +/-"] ?? row.tier_change ?? 0),
-    status: row.status ?? row["Done/Progress?"] ?? "COMPLETED",
-    thumbnail: row.thumbnail || row.thumbnailUrl || (id ? `/thumbnails/${id}.JPG` : ""),
-    notes: row.notes ?? ""
-  };
+  placement: row.placement ?? row.Placement ?? row["#"] ?? `#${index + 1}`,
+  name: row.name ?? row.demon ?? row.Demon ?? "",
+  creator: row.creator ?? row.creators ?? row["Creator(s)"] ?? "",
+  id,
+  difficulty: row.difficulty ?? row.Difficulty ?? "",
+  attempts: Number(row.attempts ?? row.Attempts ?? 0),
+  year: Number(row.year ?? row.Year ?? 0),
+  video: row.video ?? row["Done for Video"] ?? "",
+  tier: Number(row.tier ?? row.Tier ?? 0),
+  tierChange: Number(row.tierChange ?? row["Tier +/-"] ?? row.tier_change ?? 0),
+  skillsets: String(row.skillsets ?? row.Skillsets ?? "")
+    .split(",")
+    .map(s => s.trim())
+    .filter(Boolean),
+  status: row.status ?? row["Done/Progress?"] ?? "COMPLETED",
+  thumbnail: row.thumbnail || row.thumbnailUrl || (id ? `/thumbnails/${id}.JPG` : ""),
+  notes: row.notes ?? ""
+};
 }
 
 function placementNumber(placement) {
