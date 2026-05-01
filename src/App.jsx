@@ -177,13 +177,13 @@ export default function App() {
             {source === "live" ? "Live Sheet Data" : source === "mock" ? "Mock Data" : "Loading"}
           </div>
 
-          <button style={{ marginTop: "10px" }} onClick={() => setShowLogin(true)}>
+          <button className="admin-button" onClick={() => setShowLogin(true)}>
             Admin Login
           </button>
 
           {isAdmin && (
             <button
-              style={{ marginTop: "10px", marginLeft: "8px" }}
+              className="admin-button panel-button"
               onClick={() => alert("Admin panel coming next")}
             >
               Go to panel
@@ -283,28 +283,36 @@ export default function App() {
 
       {showLogin && (
         <div className="modal-backdrop">
-          <div className="modal" style={{ maxWidth: "400px" }}>
+          <div className="modal login-modal">
             <div className="modal-content">
               <h2>Admin Login</h2>
 
               <input
+                className="login-input"
                 placeholder="Username"
                 value={loginData.username}
                 onChange={e => setLoginData({ ...loginData, username: e.target.value })}
               />
 
               <input
+                className="login-input"
                 type="password"
                 placeholder="Password"
                 value={loginData.password}
                 onChange={e => setLoginData({ ...loginData, password: e.target.value })}
               />
 
-              <button onClick={handleLogin}>Login</button>
+              <div className="login-actions">
+                <button className="login-button" onClick={handleLogin}>
+                  Login
+                </button>
 
-              {loginError && <p style={{ color: "red" }}>{loginError}</p>}
+                <button className="close-button" onClick={() => setShowLogin(false)}>
+                  Close
+                </button>
+              </div>
 
-              <button onClick={() => setShowLogin(false)}>Close</button>
+              {loginError && <p className="login-error">{loginError}</p>}
             </div>
           </div>
         </div>
