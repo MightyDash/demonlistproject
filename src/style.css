@@ -276,7 +276,7 @@ h1 {
   font-weight: 900;
 }
 
-.difficulty, {
+.difficulty {
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
