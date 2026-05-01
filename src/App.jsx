@@ -7,24 +7,24 @@ function normalizeDemon(row, index) {
   const id = String(row.id ?? row.ID ?? "");
 
   return {
-  placement: row.placement ?? row.Placement ?? row["#"] ?? `#${index + 1}`,
-  name: row.name ?? row.demon ?? row.Demon ?? "",
-  creator: row.creator ?? row.creators ?? row["Creator(s)"] ?? "",
-  id,
-  difficulty: row.difficulty ?? row.Difficulty ?? "",
-  attempts: Number(row.attempts ?? row.Attempts ?? 0),
-  year: Number(row.year ?? row.Year ?? 0),
-  video: row.video ?? row["Done for Video"] ?? "",
-  tier: Number(row.tier ?? row.Tier ?? 0),
-  tierChange: Number(row.tierChange ?? row["Tier +/-"] ?? row.tier_change ?? 0),
-  skillsets: String(row.skillsets ?? row.Skillsets ?? "")
-    .split(",")
-    .map(s => s.trim())
-    .filter(Boolean),
-  status: row.status ?? row["Done/Progress?"] ?? "COMPLETED",
-  thumbnail: row.thumbnail || row.thumbnailUrl || (id ? `/thumbnails/${id}.JPG` : ""),
-  notes: row.notes ?? ""
-};
+    placement: row.placement ?? row.Placement ?? row["#"] ?? `#${index + 1}`,
+    name: row.name ?? row.demon ?? row.Demon ?? "",
+    creator: row.creator ?? row.creators ?? row["Creator(s)"] ?? "",
+    id,
+    difficulty: row.difficulty ?? row.Difficulty ?? "",
+    attempts: Number(row.attempts ?? row.Attempts ?? 0),
+    year: Number(row.year ?? row.Year ?? 0),
+    video: row.video ?? row["Done for Video"] ?? "",
+    tier: Number(row.tier ?? row.Tier ?? 0),
+    tierChange: Number(row.tierChange ?? row["Tier +/-"] ?? row.tier_change ?? 0),
+    skillsets: String(row.skillsets ?? row.Skillsets ?? "")
+      .split(",")
+      .map(s => s.trim())
+      .filter(Boolean),
+    status: row.status ?? row["Done/Progress?"] ?? "COMPLETED",
+    thumbnail: row.thumbnail || row.thumbnailUrl || (id ? `/thumbnails/${id}.JPG` : ""),
+    notes: row.notes ?? ""
+  };
 }
 
 function placementNumber(placement) {
@@ -179,6 +179,33 @@ export default function App() {
     };
   }, [demons]);
 
+  const hardestBySkillset = useMemo(() => {
+    const result = {};
+
+    demons.forEach(demon => {
+      const status = String(demon.status || "COMPLETED").toUpperCase().trim();
+      if (status !== "COMPLETED") return;
+      if (!demon.skillsets || demon.skillsets.length === 0) return;
+
+      const demonPlacement = placementNumber(demon.placement);
+
+      demon.skillsets.forEach(skill => {
+        if (!result[skill]) {
+          result[skill] = demon;
+          return;
+        }
+
+        const currentPlacement = placementNumber(result[skill].placement);
+
+        if (demonPlacement < currentPlacement) {
+          result[skill] = demon;
+        }
+      });
+    });
+
+    return result;
+  }, [demons]);
+
   return (
     <div className="app">
       <header className="hero">
@@ -260,9 +287,9 @@ export default function App() {
 
       {adminView ? (
         <AdminPanel
-  onBack={() => setAdminView(false)}
-  onDataChanged={() => window.location.reload()}
-/>
+          onBack={() => setAdminView(false)}
+          onDataChanged={() => window.location.reload()}
+        />
       ) : (
         <>
           <section className="stats-grid">
@@ -271,6 +298,31 @@ export default function App() {
             <StatCard icon={<BarChart3 />} label="Avg Attempts" value={formatNumber(stats.avgAttempts)} />
             <StatCard icon={<Film />} label="Hardest Demon" value={stats.hardest?.name || "Unknown"} highlight />
           </section>
+
+          {Object.keys(hardestBySkillset).length > 0 && (
+            <section className="panel skillset-overview">
+              <div className="table-header">
+                <span>Hardest demon by skillset</span>
+              </div>
+
+              <div className="skillset-overview-grid">
+                {Object.entries(hardestBySkillset)
+                  .sort(([a], [b]) => a.localeCompare(b))
+                  .map(([skill, demon]) => (
+                    <button
+                      key={skill}
+                      className="skillset-overview-card"
+                      type="button"
+                      onClick={() => setSelected(demon)}
+                    >
+                      <span>{skill}</span>
+                      <strong>{demon.name}</strong>
+                      <small>{demon.placement} • Tier {formatTier(demon.tier)}</small>
+                    </button>
+                  ))}
+              </div>
+            </section>
+          )}
 
           <section className="panel controls">
             <div className="searchbox">
@@ -504,18 +556,18 @@ function DemonModal({ demon, onClose }) {
           </div>
 
           {demon.skillsets?.length > 0 && (
-  <div className="skillsets">
-    <h3>Skillsets</h3>
+            <div className="skillsets">
+              <h3>Skillsets</h3>
 
-    <div className="skillset-list">
-      {demon.skillsets.map(skill => (
-        <span key={skill} className="skillset-tag">
-          {skill}
-        </span>
-      ))}
-    </div>
-  </div>
-)}
+              <div className="skillset-list">
+                {demon.skillsets.map(skill => (
+                  <span key={skill} className="skillset-tag">
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
           {demon.notes && <p className="notes">{demon.notes}</p>}
 
