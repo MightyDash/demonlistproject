@@ -74,12 +74,12 @@ export default function App() {
   const [adminView, setAdminView] = useState(false);
 
   useEffect(() => {
-  const savedToken = localStorage.getItem("admin_token");
+    const savedToken = localStorage.getItem("admin_token");
 
-  if (savedToken) {
-    setIsAdmin(true);
-  }
-}, []);
+    if (savedToken) {
+      setIsAdmin(true);
+    }
+  }, []);
 
   useEffect(() => {
     async function loadData() {
@@ -110,29 +110,30 @@ export default function App() {
   }, []);
 
   async function handleLogin() {
-  setLoginError("");
+    setLoginError("");
 
-  const adminUsername = import.meta.env.VITE_ADMIN_USERNAME;
-  const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD;
-  const adminToken = import.meta.env.VITE_ADMIN_TOKEN;
+    const adminUsername = import.meta.env.VITE_ADMIN_USERNAME;
+    const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD;
+    const adminToken = import.meta.env.VITE_ADMIN_TOKEN;
 
-  if (
-    loginData.username === adminUsername &&
-    loginData.password === adminPassword
-  ) {
-    setIsAdmin(true);
-    setShowLogin(false);
-    localStorage.setItem("admin_token", adminToken || "local-admin");
-  } else {
-    setLoginError("Wrong login");
+    if (
+      loginData.username === adminUsername &&
+      loginData.password === adminPassword
+    ) {
+      setIsAdmin(true);
+      setShowLogin(false);
+      localStorage.setItem("admin_token", adminToken || "local-admin");
+    } else {
+      setLoginError("Wrong login");
+    }
   }
-}
 
   function handleLogout() {
-  localStorage.removeItem("admin_token");
-  setIsAdmin(false);
-  setShowLogoutConfirm(false);
-}
+    localStorage.removeItem("admin_token");
+    setIsAdmin(false);
+    setAdminView(false);
+    setShowLogoutConfirm(false);
+  }
 
   const difficulties = useMemo(() => {
     const unique = new Set(demons.map(d => d.difficulty).filter(Boolean));
@@ -179,9 +180,11 @@ export default function App() {
       <header className="hero">
         <div>
           <p className="eyebrow">Moik's Geometry Dash Demon Archive</p>
-          <h1>Demon List</h1>
+          <h1>{adminView ? "Admin Panel" : "Demon List"}</h1>
           <p className="subtitle">
-            A clean, searchable demon list powered by my Google Spreadsheet.
+            {adminView
+              ? "Manage your demon list tools and admin actions."
+              : "A clean, searchable demon list powered by my Google Spreadsheet."}
           </p>
         </div>
 
@@ -190,234 +193,256 @@ export default function App() {
             {source === "live" ? "Live Sheet Data" : source === "mock" ? "Mock Data" : "Loading"}
           </div>
 
-          <button className="admin-button" onClick={() => setShowLogin(true)}>
-            Admin Login
-          </button>
+          {!isAdmin && (
+            <button className="admin-button" onClick={() => setShowLogin(true)} type="button">
+              Admin Login
+            </button>
+          )}
+
+          {isAdmin && !adminView && (
+            <button
+              className="admin-button panel-button"
+              onClick={() => setAdminView(true)}
+              type="button"
+            >
+              Go to panel
+            </button>
+          )}
+
+          {isAdmin && adminView && (
+            <button
+              className="admin-button panel-button"
+              onClick={() => setAdminView(false)}
+              type="button"
+            >
+              Back to list
+            </button>
+          )}
 
           {isAdmin && (
-  <>
-    <button
-  className="admin-button panel-button"
-  onClick={() => setAdminView(true)}
-  type="button"
->
-  Go to panel
-</button>
-
-    <button
-      className="admin-button logout-button"
-      onClick={() => setShowLogoutConfirm(true)}
-      type="button"
-    >
-      Logout
-    </button>
-  </>
-)}
+            <button
+              className="admin-button logout-button"
+              onClick={() => setShowLogoutConfirm(true)}
+              type="button"
+            >
+              Logout
+            </button>
+          )}
         </div>
       </header>
-{showLogoutConfirm && (
-  <div className="modal-backdrop">
-    <div className="confirm-panel">
-      <h2>Logout?</h2>
-      <p>Weet je zeker dat je wilt uitloggen?</p>
 
-      <div className="confirm-actions">
-        <button className="logout-confirm-button" onClick={handleLogout} type="button">
-          Ja, log uit
-        </button>
+      {showLogoutConfirm && (
+        <div className="modal-backdrop">
+          <div className="confirm-panel">
+            <h2>Logout?</h2>
+            <p>Weet je zeker dat je wilt uitloggen?</p>
 
-        <button
-          className="close-button"
-          onClick={() => setShowLogoutConfirm(false)}
-          type="button"
-        >
-          Annuleren
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-      <section className="stats-grid">
-        <StatCard icon={<Trophy />} label="Total Demons" value={formatNumber(stats.total)} />
-        <StatCard icon={<Target />} label="Total Attempts" value={formatNumber(stats.attempts)} />
-        <StatCard icon={<BarChart3 />} label="Avg Attempts" value={formatNumber(stats.avgAttempts)} />
-        <StatCard icon={<Film />} label="Hardest Demon" value={stats.hardest?.name || "Unknown"} highlight />
-      </section>
+            <div className="confirm-actions">
+              <button className="logout-confirm-button" onClick={handleLogout} type="button">
+                Ja, log uit
+              </button>
 
-      <section className="panel controls">
-        <div className="searchbox">
-          <Search size={18} />
-          <input
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            placeholder="Search demon, creator or ID..."
-          />
-        </div>
-
-        <div className="custom-select">
-  <button
-    className="custom-select-button"
-    onClick={() => setDifficultyOpen(open => !open)}
-    type="button"
-  >
-    <span>{difficulty === "all" ? "All difficulties" : difficulty}</span>
-    <span className="custom-select-arrow">⌄</span>
-  </button>
-
-  {difficultyOpen && (
-    <div className="custom-select-menu">
-      {difficulties.map(d => (
-        <button
-          key={d}
-          type="button"
-          className={`custom-select-option ${difficulty === d ? "active" : ""}`}
-          onClick={() => {
-            setDifficulty(d);
-            setDifficultyOpen(false);
-          }}
-        >
-          {d === "all" ? "All difficulties" : d}
-        </button>
-      ))}
-    </div>
-  )}
-</div>
-
-        <div className="tabs">
-          {[
-            ["all", "All"],
-            ["main", "Main"],
-            ["extended", "Extended"],
-            ["legacy", "Legacy"]
-          ].map(([value, label]) => (
-            <button
-              key={value}
-              className={segment === value ? "active" : ""}
-              onClick={() => setSegment(value)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </section>
-
-      <main className="panel table-panel">
-        <div className="table-header">
-          <span>{filtered.length} demons shown</span>
-          <span>{apiLatestDemon ? `Latest: ${apiLatestDemon}` : ""}</span>
-        </div>
-
-        <div className="demon-table">
-          <div className="row heading">
-            <div>#</div>
-            <div>Demon</div>
-            <div>Creator</div>
-            <div>Tier</div>
-            <div>Difficulty</div>
-            <div>Attempts</div>
-            <div>Year</div>
+              <button
+                className="close-button"
+                onClick={() => setShowLogoutConfirm(false)}
+                type="button"
+              >
+                Annuleren
+              </button>
+            </div>
           </div>
-
-          {filtered.map(demon => (
-            <button
-              className="row demon-row"
-              key={`${demon.id}-${demon.name}`}
-              onClick={() => setSelected(demon)}
-            >
-              <div className="placement">{demon.placement}</div>
-              <div className="name-cell">
-                <span className="demon-name">{demon.name}</span>
-                <span className="mobile-meta">{demon.creator}</span>
-              </div>
-              <div>{demon.creator}</div>
-              <div className="tier">{formatTier(demon.tier)}</div>
-              <div>
-                <span className={`difficulty ${difficultyClass(demon.difficulty)}`}>
-                  {demon.difficulty}
-                </span>
-              </div>
-              <div>{formatNumber(demon.attempts)}</div>
-              <div>{demon.year || ""}</div>
-            </button>
-          ))}
         </div>
-      </main>
+      )}
+
+      {adminView ? (
+        <AdminPanel onBack={() => setAdminView(false)} />
+      ) : (
+        <>
+          <section className="stats-grid">
+            <StatCard icon={<Trophy />} label="Total Demons" value={formatNumber(stats.total)} />
+            <StatCard icon={<Target />} label="Total Attempts" value={formatNumber(stats.attempts)} />
+            <StatCard icon={<BarChart3 />} label="Avg Attempts" value={formatNumber(stats.avgAttempts)} />
+            <StatCard icon={<Film />} label="Hardest Demon" value={stats.hardest?.name || "Unknown"} highlight />
+          </section>
+
+          <section className="panel controls">
+            <div className="searchbox">
+              <Search size={18} />
+              <input
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                placeholder="Search demon, creator or ID..."
+              />
+            </div>
+
+            <div className="custom-select">
+              <button
+                className="custom-select-button"
+                onClick={() => setDifficultyOpen(open => !open)}
+                type="button"
+              >
+                <span>{difficulty === "all" ? "All difficulties" : difficulty}</span>
+                <span className="custom-select-arrow">⌄</span>
+              </button>
+
+              {difficultyOpen && (
+                <div className="custom-select-menu">
+                  {difficulties.map(d => (
+                    <button
+                      key={d}
+                      type="button"
+                      className={`custom-select-option ${difficulty === d ? "active" : ""}`}
+                      onClick={() => {
+                        setDifficulty(d);
+                        setDifficultyOpen(false);
+                      }}
+                    >
+                      {d === "all" ? "All difficulties" : d}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="tabs">
+              {[
+                ["all", "All"],
+                ["main", "Main"],
+                ["extended", "Extended"],
+                ["legacy", "Legacy"]
+              ].map(([value, label]) => (
+                <button
+                  key={value}
+                  className={segment === value ? "active" : ""}
+                  onClick={() => setSegment(value)}
+                  type="button"
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <main className="panel table-panel">
+            <div className="table-header">
+              <span>{filtered.length} demons shown</span>
+              <span>{apiLatestDemon ? `Latest: ${apiLatestDemon}` : ""}</span>
+            </div>
+
+            <div className="demon-table">
+              <div className="row heading">
+                <div>#</div>
+                <div>Demon</div>
+                <div>Creator</div>
+                <div>Tier</div>
+                <div>Difficulty</div>
+                <div>Attempts</div>
+                <div>Year</div>
+              </div>
+
+              {filtered.map(demon => (
+                <button
+                  className="row demon-row"
+                  key={`${demon.id}-${demon.name}`}
+                  onClick={() => setSelected(demon)}
+                  type="button"
+                >
+                  <div className="placement">{demon.placement}</div>
+                  <div className="name-cell">
+                    <span className="demon-name">{demon.name}</span>
+                    <span className="mobile-meta">{demon.creator}</span>
+                  </div>
+                  <div>{demon.creator}</div>
+                  <div className="tier">{formatTier(demon.tier)}</div>
+                  <div>
+                    <span className={`difficulty ${difficultyClass(demon.difficulty)}`}>
+                      {demon.difficulty}
+                    </span>
+                  </div>
+                  <div>{formatNumber(demon.attempts)}</div>
+                  <div>{demon.year || ""}</div>
+                </button>
+              ))}
+            </div>
+          </main>
+        </>
+      )}
 
       {selected && (
         <DemonModal demon={selected} onClose={() => setSelected(null)} />
       )}
 
       {showLogin && (
-  <div className="modal-backdrop">
-    <div className="login-panel">
-      <button
-        className="login-close-x"
-        onClick={() => {
-          setShowLogin(false);
-          setLoginError("");
-        }}
-        type="button"
-      >
-        <X size={20} />
-      </button>
+        <div className="modal-backdrop">
+          <div className="login-panel">
+            <button
+              className="login-close-x"
+              onClick={() => {
+                setShowLogin(false);
+                setLoginError("");
+              }}
+              type="button"
+            >
+              <X size={20} />
+            </button>
 
-      <div className="login-header">
-        <p className="login-eyebrow">Admin Area</p>
-        <h2>Admin Login</h2>
-        <p>Login om toegang te krijgen tot het admin panel.</p>
-      </div>
+            <div className="login-header">
+              <p className="login-eyebrow">Admin Area</p>
+              <h2>Admin Login</h2>
+              <p>Login om toegang te krijgen tot het admin panel.</p>
+            </div>
 
-      <div className="login-form">
-        <label>
-          Username
-          <input
-            className="login-input"
-            placeholder="Enter username"
-            value={loginData.username}
-            onChange={e =>
-              setLoginData({ ...loginData, username: e.target.value })
-            }
-          />
-        </label>
+            <div className="login-form">
+              <label>
+                Username
+                <input
+                  className="login-input"
+                  placeholder="Enter username"
+                  value={loginData.username}
+                  onChange={e =>
+                    setLoginData({ ...loginData, username: e.target.value })
+                  }
+                />
+              </label>
 
-        <label>
-          Password
-          <input
-            className="login-input"
-            type="password"
-            placeholder="Enter password"
-            value={loginData.password}
-            onChange={e =>
-              setLoginData({ ...loginData, password: e.target.value })
-            }
-            onKeyDown={e => {
-              if (e.key === "Enter") handleLogin();
-            }}
-          />
-        </label>
+              <label>
+                Password
+                <input
+                  className="login-input"
+                  type="password"
+                  placeholder="Enter password"
+                  value={loginData.password}
+                  onChange={e =>
+                    setLoginData({ ...loginData, password: e.target.value })
+                  }
+                  onKeyDown={e => {
+                    if (e.key === "Enter") handleLogin();
+                  }}
+                />
+              </label>
 
-        {loginError && <p className="login-error">{loginError}</p>}
+              {loginError && <p className="login-error">{loginError}</p>}
 
-        <div className="login-actions">
-          <button className="login-button" onClick={handleLogin} type="button">
-            Login
-          </button>
+              <div className="login-actions">
+                <button className="login-button" onClick={handleLogin} type="button">
+                  Login
+                </button>
 
-          <button
-            className="close-button"
-            onClick={() => {
-              setShowLogin(false);
-              setLoginError("");
-            }}
-            type="button"
-          >
-            Cancel
-          </button>
+                <button
+                  className="close-button"
+                  onClick={() => {
+                    setShowLogin(false);
+                    setLoginError("");
+                  }}
+                  type="button"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  </div>
-)}
+      )}
     </div>
   );
 }
@@ -438,7 +463,7 @@ function DemonModal({ demon, onClose }) {
   return (
     <div className="modal-backdrop" onMouseDown={onClose}>
       <article className="modal" onMouseDown={e => e.stopPropagation()}>
-        <button className="close" onClick={onClose}>
+        <button className="close" onClick={onClose} type="button">
           <X size={20} />
         </button>
 
@@ -502,6 +527,7 @@ function Detail({ label, value }) {
     </div>
   );
 }
+
 function AdminPanel({ onBack }) {
   return (
     <section className="panel admin-panel">
