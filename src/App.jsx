@@ -16,7 +16,7 @@ function normalizeDemon(row, index) {
     tier: Number(row.tier ?? row.Tier ?? 0),
     tierChange: Number(row.tierChange ?? row["Tier +/-"] ?? row.tier_change ?? 0),
     status: row.status ?? row["Done/Progress?"] ?? "COMPLETED",
-    thumbnail: row.thumbnail ?? "",
+    thumbnail: row.thumbnail || row.thumbnailUrl || (row.id || row.ID ? `/thumbnails/${row.id ?? row.ID}.jpg` : ""),
     notes: row.notes ?? ""
   };
 }
@@ -262,7 +262,13 @@ function DemonModal({ demon, onClose }) {
 
         <div className="modal-cover">
           {demon.thumbnail ? (
-            <img src={demon.thumbnail} alt={demon.name} />
+            <img
+            src={demon.thumbnail}
+            alt={demon.name}
+            onError={(e) => {
+            e.currentTarget.style.display = "none";
+          }}
+      />
           ) : (
             <div className="thumbnail-placeholder">
               {demon.name.slice(0, 2).toUpperCase()}
