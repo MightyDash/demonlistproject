@@ -204,7 +204,6 @@ export default function App() {
             <div>Difficulty</div>
             <div>Attempts</div>
             <div>Year</div>
-            <div>Video</div>
           </div>
 
           {filtered.map(demon => (
@@ -227,11 +226,6 @@ export default function App() {
               </div>
               <div>{formatNumber(demon.attempts)}</div>
               <div>{demon.year || ""}</div>
-              <div>
-                <span className={demon.video ? "video recorded" : "video none"}>
-                  {demon.video || "None"}
-                </span>
-              </div>
             </button>
           ))}
         </div>
