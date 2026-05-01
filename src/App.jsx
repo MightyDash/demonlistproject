@@ -274,12 +274,13 @@ function DemonModal({ demon, onClose }) {
           <p className="placement-large">{demon.placement}</p>
           <h2>{demon.name}</h2>
           <p className="creator">by {demon.creator || "Unknown creator"}</p>
-
+          
           <div className="detail-grid">
+            <Detail label="Level ID" value={demon.id} />
             <Detail label="Tier" value={formatTier(demon.tier)} />
             <Detail label="Difficulty" value={demon.difficulty} />
             <Detail label="Attempts" value={formatNumber(demon.attempts)} />
-            <Detail label="Video" value={demon.video || "None"} />
+            <Detail label="Year" value={demon.year || "Unknown"} />
           </div>
 
           {demon.notes && <p className="notes">{demon.notes}</p>}
@@ -301,10 +302,16 @@ function DemonModal({ demon, onClose }) {
 }
 
 function Detail({ label, value }) {
+  function copy() {
+    if (!value) return;
+    navigator.clipboard.writeText(String(value));
+  }
+
   return (
-    <div className="detail">
+    <div className="detail" onClick={copy} style={{ cursor: value ? "pointer" : "default" }}>
       <span>{label}</span>
       <strong>{value}</strong>
     </div>
   );
+}
 }
