@@ -5,10 +5,12 @@ import { mockDemons } from "./mockData.js";
 
 function normalizeDemon(row, index) {
   const id = String(row.id ?? row.ID ?? "");
+  const name = row.name ?? row.demon ?? row.Demon ?? "";
 
   return {
     placement: row.placement ?? row.Placement ?? row["#"] ?? `#${index + 1}`,
-    name: row.name ?? row.demon ?? row.Demon ?? "",
+    name,
+    formerTop1Year: FORMER_TOP_1[name] || null,
     creator: row.creator ?? row.creators ?? row["Creator(s)"] ?? "",
     id,
     difficulty: row.difficulty ?? row.Difficulty ?? "",
@@ -17,6 +19,7 @@ function normalizeDemon(row, index) {
     video: row.video ?? row["Done for Video"] ?? "",
     tier: Number(row.tier ?? row.Tier ?? 0),
     tierChange: Number(row.tierChange ?? row["Tier +/-"] ?? row.tier_change ?? 0),
+    formerTop1Year: FORMER_TOP_1[row.name ?? row.demon ?? row.Demon ?? ""] || null,
     skillsets: String(row.skillsets ?? row.Skillsets ?? "")
       .split(",")
       .map(s => s.trim())
@@ -59,6 +62,15 @@ function formatTier(value) {
     maximumFractionDigits: 2
   });
 }
+
+const FORMER_TOP_1 = {
+  "Deadlocked": 2019,
+  "The Behemoth": 2020,
+  "Nine Circles": 2021,
+  "Rupture": 2022,
+  "Acu": 2023,
+  "Make It Drop": 2025
+};
 
 export default function App() {
   const [demons, setDemons] = useState([]);
@@ -657,6 +669,11 @@ function DemonModal({ demon, onClose, onPrev, onNext, hasPrev, hasNext }) {
           <p className="placement-large">{demon.placement}</p>
           <h2>{demon.name}</h2>
           <p className="creator">by {demon.creator || "Unknown creator"}</p>
+          {demon.formerTop1Year && (
+  <div className="former-top1-badge">
+    🏅 Former Top 1 ({demon.formerTop1Year})
+  </div>
+)}
 
           <div className="detail-grid">
             <Detail label="Level ID" value={demon.id} />
