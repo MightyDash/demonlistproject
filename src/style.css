@@ -378,6 +378,43 @@ h1 {
   padding: 42px;
 }
 
+.modal-nav {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.nav-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+  color: var(--text);
+  font-size: 26px;
+  font-weight: 900;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: 0.2s;
+}
+
+.nav-button.left {
+  left: 12px;
+}
+
+.nav-button.right {
+  right: 12px;
+}
+
+.nav-button:hover {
+  background: rgba(94,161,255,0.25);
+  border-color: rgba(94,161,255,0.6);
+  transform: translateY(-50%) scale(1.05);
+}
 .placement-large {
   margin: 0 0 8px;
   color: var(--blue);
