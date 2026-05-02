@@ -91,7 +91,16 @@ export default function App() {
       setIsAdmin(true);
     }
   }, []);
+  
+useEffect(() => {
+  function handleKey(e) {
+    if (e.key === "ArrowLeft") goToPrev();
+    if (e.key === "ArrowRight") goToNext();
+  }
 
+  window.addEventListener("keydown", handleKey);
+  return () => window.removeEventListener("keydown", handleKey);
+}, [currentIndex, filtered]);
   useEffect(() => {
     async function loadData() {
       if (!SHEET_API_URL) {
