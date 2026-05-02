@@ -324,9 +324,10 @@ h1 {
 .modal {
   position: relative;
   display: grid;
-  grid-template-columns: 330px 1fr;
+  grid-template-columns: 1fr;
   width: min(860px, 100%);
-  overflow: hidden;
+  max-height: calc(100vh - 32px);
+  overflow: auto;
   border-radius: 28px;
   border: 1px solid var(--line);
   background: var(--panel-strong);
@@ -349,7 +350,8 @@ h1 {
 }
 
 .modal-cover {
-  min-height: 430px;
+  min-height: 300px;
+  max-height: 380px;
   background:
     radial-gradient(circle at 35% 35%, rgba(94, 161, 255, 0.35), transparent 35%),
     linear-gradient(135deg, rgba(255, 91, 91, 0.25), rgba(9, 15, 28, 1));
