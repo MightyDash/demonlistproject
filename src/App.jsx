@@ -171,26 +171,46 @@ function goToNext() {
   }, [demons]);
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+  const q = query.trim().toLowerCase();
 
-    return demons
-      .filter(demon => {
-        const matchesQuery =
-          !q ||
-          demon.name.toLowerCase().includes(q) ||
-          demon.creator.toLowerCase().includes(q) ||
-          demon.id.toLowerCase().includes(q);
+  return demons
+    .filter(demon => {
+      const matchesQuery =
+        !q ||
+        demon.name.toLowerCase().includes(q) ||
+        demon.creator.toLowerCase().includes(q) ||
+        demon.id.toLowerCase().includes(q);
 
-        const matchesDifficulty =
-          difficulty === "all" || demon.difficulty === difficulty;
+      const matchesDifficulty =
+        difficulty === "all" || demon.difficulty === difficulty;
 
-        const matchesSegment =
-          segment === "all" || segmentForPlacement(demon.placement) === segment;
+      const matchesSegment =
+        segment === "all" || segmentForPlacement(demon.placement) === segment;
 
-        return matchesQuery && matchesDifficulty && matchesSegment;
-      })
-      .sort((a, b) => placementNumber(a.placement) - placementNumber(b.placement));
-  }, [demons, query, difficulty, segment]);
+      return matchesQuery && matchesDifficulty && matchesSegment;
+    })
+    .sort((a, b) => placementNumber(a.placement) - placementNumber(b.placement));
+}, [demons, query, difficulty, segment]);
+
+const currentIndex = useMemo(() => {
+  if (!selected) return -1;
+
+  return filtered.findIndex(
+    d => d.id === selected.id && d.name === selected.name
+  );
+}, [selected, filtered]);
+
+function goToPrev() {
+  if (currentIndex > 0) {
+    setSelected(filtered[currentIndex - 1]);
+  }
+}
+
+function goToNext() {
+  if (currentIndex < filtered.length - 1) {
+    setSelected(filtered[currentIndex + 1]);
+  }
+}
 
   const stats = useMemo(() => {
     const completed = demons.filter(d => String(d.status).toUpperCase() === "COMPLETED");
