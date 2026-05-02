@@ -85,16 +85,7 @@ export default function App() {
       setIsAdmin(true);
     }
   }, []);
-  
-useEffect(() => {
-  function handleKey(e) {
-    if (e.key === "ArrowLeft") goToPrev();
-    if (e.key === "ArrowRight") goToNext();
-  }
 
-  window.addEventListener("keydown", handleKey);
-  return () => window.removeEventListener("keydown", handleKey);
-}, [currentIndex, filtered]);
   useEffect(() => {
     async function loadData() {
       if (!SHEET_API_URL) {
@@ -195,7 +186,16 @@ function goToNext() {
     setSelected(filtered[currentIndex + 1]);
   }
 }
+  
+useEffect(() => {
+  function handleKey(e) {
+    if (e.key === "ArrowLeft") goToPrev();
+    if (e.key === "ArrowRight") goToNext();
+  }
 
+  window.addEventListener("keydown", handleKey);
+  return () => window.removeEventListener("keydown", handleKey);
+}, [currentIndex, filtered]);
 const stats = useMemo(() => {
     const completed = demons.filter(d => String(d.status).toUpperCase() === "COMPLETED");
     const totalAttempts = completed.reduce((sum, d) => sum + Number(d.attempts || 0), 0);
