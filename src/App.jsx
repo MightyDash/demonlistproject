@@ -79,6 +79,19 @@ export default function App() {
   const [skillsetOpen, setSkillsetOpen] = useState(false);
 
   useEffect(() => {
+  if (currentIndex < 0) return;
+
+  const preload = src => {
+    if (!src) return;
+    const img = new Image();
+    img.src = src;
+  };
+
+  preload(filtered[currentIndex - 1]?.thumbnail);
+  preload(filtered[currentIndex + 1]?.thumbnail);
+}, [currentIndex, filtered]);
+
+  useEffect(() => {
     const savedToken = localStorage.getItem("admin_token");
 
     if (savedToken) {
@@ -186,6 +199,19 @@ function goToNext() {
     setSelected(filtered[currentIndex + 1]);
   }
 }
+
+  useEffect(() => {
+  if (currentIndex < 0) return;
+
+  const preload = src => {
+    if (!src) return;
+    const img = new Image();
+    img.src = src;
+  };
+
+  preload(filtered[currentIndex - 1]?.thumbnail);
+  preload(filtered[currentIndex + 1]?.thumbnail);
+}, [currentIndex, filtered]);
   
 useEffect(() => {
   function handleKey(e) {
