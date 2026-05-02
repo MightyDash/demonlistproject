@@ -487,7 +487,7 @@ const stats = useMemo(() => {
             </div>
             <div className="tabs year-tabs">
   {[
-    ["all", "All years"],
+    ["all", "2026"],
     ["2025", "2025"],
     ["2024", "2024"],
     ["2023", "2023"],
