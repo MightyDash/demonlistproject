@@ -212,6 +212,23 @@ useEffect(() => {
   window.addEventListener("keydown", handleKey);
   return () => window.removeEventListener("keydown", handleKey);
 }, [selected, currentIndex, filtered]);
+  function getThumbnailSrc(demon) {
+  if (!demon) return "";
+  return demon.thumbnail || (demon.id ? `/thumbnails/${demon.id}.jpg` : "");
+}
+
+useEffect(() => {
+  if (currentIndex < 0) return;
+
+  [-2, -1, 1, 2].forEach(offset => {
+    const src = getThumbnailSrc(filtered[currentIndex + offset]);
+    if (!src) return;
+
+    const img = new Image();
+    img.src = src;
+  });
+}, [currentIndex, filtered]);
+  
 const stats = useMemo(() => {
     const completed = demons.filter(d => String(d.status).toUpperCase() === "COMPLETED");
     const totalAttempts = completed.reduce((sum, d) => sum + Number(d.attempts || 0), 0);
