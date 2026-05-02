@@ -141,23 +141,7 @@ useEffect(() => {
       setLoginError("Wrong login");
     }
   }
-function goToPrev() {
-  if (currentIndex > 0) {
-    setSelected(filtered[currentIndex - 1]);
-  }
-}
-const currentIndex = useMemo(() => {
-  if (!selected) return -1;
-  return filtered.findIndex(
-    d => d.id === selected.id && d.name === selected.name
-  );
-}, [selected, filtered]);
-  
-function goToNext() {
-  if (currentIndex < filtered.length - 1) {
-    setSelected(filtered[currentIndex + 1]);
-  }
-}
+
   function handleLogout() {
     localStorage.removeItem("admin_token");
     setIsAdmin(false);
