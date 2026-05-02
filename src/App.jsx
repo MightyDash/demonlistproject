@@ -187,6 +187,23 @@ function goToNext() {
   }
 }
 
+  function getThumbnailSrc(demon) {
+  if (!demon) return "";
+  return demon.thumbnail || (demon.id ? `/thumbnails/${demon.id}.jpg` : "");
+}
+
+  useEffect(() => {
+  if (currentIndex < 0) return;
+
+  [-2, -1, 1, 2].forEach(offset => {
+    const src = getThumbnailSrc(filtered[currentIndex + offset]);
+    if (!src) return;
+
+    const img = new Image();
+    img.src = src;
+  });
+}, [currentIndex, filtered]);
+
   useEffect(() => {
   if (currentIndex < 0) return;
 
@@ -597,6 +614,8 @@ function StatCard({ icon, label, value, highlight }) {
 }
 
 function DemonModal({ demon, onClose, onPrev, onNext, hasPrev, hasNext }) {
+  const thumbnailSrc =
+  demon.thumbnail || (demon.id ? `/thumbnails/${demon.id}.jpg` : "");
   return (
     <div className="modal-backdrop" onMouseDown={onClose}>
       <article className="modal" onMouseDown={e => e.stopPropagation()}>
@@ -621,7 +640,7 @@ function DemonModal({ demon, onClose, onPrev, onNext, hasPrev, hasNext }) {
         <div className="modal-cover">
           {demon.thumbnail ? (
             <img
-              src={demon.thumbnail}
+              src={thumbnailSrc}
               alt={demon.name}
               onError={e => {
                 e.currentTarget.style.display = "none";
