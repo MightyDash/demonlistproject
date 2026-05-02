@@ -558,6 +558,20 @@ function DemonModal({ demon, onClose, onPrev, onNext, hasPrev, hasNext }) {
           <X size={20} />
         </button>
 
+        <div className="modal-nav">
+    {hasPrev && (
+      <button className="nav-button left" onClick={onPrev}>
+        ‹
+      </button>
+    )}
+
+    {hasNext && (
+      <button className="nav-button right" onClick={onNext}>
+        ›
+      </button>
+    )}
+  </div>
+
         <div className="modal-cover">
           {demon.thumbnail ? (
             <img
