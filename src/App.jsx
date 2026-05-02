@@ -191,12 +191,12 @@ function goToPrev() {
 }
 
 function goToNext() {
-  if (currentIndex < filtered.length - 1) {
+  if (currentIndex >= 0 && currentIndex < filtered.length - 1) {
     setSelected(filtered[currentIndex + 1]);
   }
 }
 
-  const stats = useMemo(() => {
+const stats = useMemo(() => {
     const completed = demons.filter(d => String(d.status).toUpperCase() === "COMPLETED");
     const totalAttempts = completed.reduce((sum, d) => sum + Number(d.attempts || 0), 0);
     const hardest = completed.slice().sort((a, b) => Number(b.tier) - Number(a.tier))[0];
