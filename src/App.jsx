@@ -69,12 +69,6 @@ export default function App() {
   const [segment, setSegment] = useState("all");
   const [selected, setSelected] = useState(null);
   const [apiLatestDemon, setApiLatestDemon] = useState("");
-  const currentIndex = useMemo(() => {
-  if (!selected) return -1;
-  return filtered.findIndex(
-    d => d.id === selected.id && d.name === selected.name
-  );
-}, [selected, filtered]);
 
   const [showLogin, setShowLogin] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -152,7 +146,13 @@ function goToPrev() {
     setSelected(filtered[currentIndex - 1]);
   }
 }
-
+const currentIndex = useMemo(() => {
+  if (!selected) return -1;
+  return filtered.findIndex(
+    d => d.id === selected.id && d.name === selected.name
+  );
+}, [selected, filtered]);
+  
 function goToNext() {
   if (currentIndex < filtered.length - 1) {
     setSelected(filtered[currentIndex + 1]);
