@@ -69,6 +69,12 @@ export default function App() {
   const [segment, setSegment] = useState("all");
   const [selected, setSelected] = useState(null);
   const [apiLatestDemon, setApiLatestDemon] = useState("");
+  const currentIndex = useMemo(() => {
+  if (!selected) return -1;
+  return filtered.findIndex(
+    d => d.id === selected.id && d.name === selected.name
+  );
+}, [selected, filtered]);
 
   const [showLogin, setShowLogin] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -132,7 +138,17 @@ export default function App() {
       setLoginError("Wrong login");
     }
   }
+function goToPrev() {
+  if (currentIndex > 0) {
+    setSelected(filtered[currentIndex - 1]);
+  }
+}
 
+function goToNext() {
+  if (currentIndex < filtered.length - 1) {
+    setSelected(filtered[currentIndex + 1]);
+  }
+}
   function handleLogout() {
     localStorage.removeItem("admin_token");
     setIsAdmin(false);
@@ -437,7 +453,14 @@ export default function App() {
       )}
 
       {selected && (
-        <DemonModal demon={selected} onClose={() => setSelected(null)} />
+        <DemonModal
+  demon={selected}
+  onClose={() => setSelected(null)}
+  onPrev={goToPrev}
+  onNext={goToNext}
+  hasPrev={currentIndex > 0}
+  hasNext={currentIndex < filtered.length - 1}
+/>
       )}
 
       {showLogin && (
@@ -527,7 +550,7 @@ function StatCard({ icon, label, value, highlight }) {
   );
 }
 
-function DemonModal({ demon, onClose }) {
+function DemonModal({ demon, onClose, onPrev, onNext, hasPrev, hasNext }) {
   return (
     <div className="modal-backdrop" onMouseDown={onClose}>
       <article className="modal" onMouseDown={e => e.stopPropagation()}>
