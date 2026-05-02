@@ -79,19 +79,6 @@ export default function App() {
   const [skillsetOpen, setSkillsetOpen] = useState(false);
 
   useEffect(() => {
-  if (currentIndex < 0) return;
-
-  const preload = src => {
-    if (!src) return;
-    const img = new Image();
-    img.src = src;
-  };
-
-  preload(filtered[currentIndex - 1]?.thumbnail);
-  preload(filtered[currentIndex + 1]?.thumbnail);
-}, [currentIndex, filtered]);
-
-  useEffect(() => {
     const savedToken = localStorage.getItem("admin_token");
 
     if (savedToken) {
@@ -215,13 +202,16 @@ function goToNext() {
   
 useEffect(() => {
   function handleKey(e) {
+    if (!selected) return;
+
     if (e.key === "ArrowLeft") goToPrev();
     if (e.key === "ArrowRight") goToNext();
+    if (e.key === "Escape") setSelected(null);
   }
 
   window.addEventListener("keydown", handleKey);
   return () => window.removeEventListener("keydown", handleKey);
-}, [currentIndex, filtered]);
+}, [selected, currentIndex, filtered]);
 const stats = useMemo(() => {
     const completed = demons.filter(d => String(d.status).toUpperCase() === "COMPLETED");
     const totalAttempts = completed.reduce((sum, d) => sum + Number(d.attempts || 0), 0);
