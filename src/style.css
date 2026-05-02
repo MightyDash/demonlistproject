@@ -154,8 +154,8 @@ h1 {
 
 .controls {
   display: grid;
-  grid-template-columns: 1fr 240px auto auto;
-  gap: 12px;
+  grid-template-columns: 1fr 240px auto;
+  gap: 14px;
   padding: 14px;
   margin-bottom: 14px;
 }
@@ -170,7 +170,8 @@ h1 {
   padding: 0 14px;
 }
 .year-tabs {
-  flex-wrap: wrap;
+  grid-column: 1 / -1; /* pakt hele breedte */
+  margin-top: 10px;
 }
 .searchbox input,
 .controls select {
