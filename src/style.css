@@ -155,7 +155,7 @@ h1 {
 .controls {
   display: grid;
   grid-template-columns: 1fr 240px auto;
-  gap: 14px;
+  gap: 12px;
   padding: 14px;
   margin-bottom: 14px;
 }
