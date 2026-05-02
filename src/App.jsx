@@ -80,6 +80,7 @@ export default function App() {
   const [difficultyOpen, setDifficultyOpen] = useState(false);
   const [segment, setSegment] = useState("all");
   const [selected, setSelected] = useState(null);
+  const [yearView, setYearView] = useState("all");
   const [apiLatestDemon, setApiLatestDemon] = useState("");
 
   const [showLogin, setShowLogin] = useState(false);
@@ -172,12 +173,15 @@ export default function App() {
         difficulty === "all" || demon.difficulty === difficulty;
 
       const matchesSegment =
-        segment === "all" || segmentForPlacement(demon.placement) === segment;
+  segment === "all" || segmentForPlacement(demon.placement) === segment;
 
-      return matchesQuery && matchesDifficulty && matchesSegment;
+const matchesYearView =
+  yearView === "all" || Number(demon.year || 0) <= Number(yearView);
+
+return matchesQuery && matchesDifficulty && matchesSegment && matchesYearView;
     })
     .sort((a, b) => placementNumber(a.placement) - placementNumber(b.placement));
-}, [demons, query, difficulty, segment]);
+}, [demons, query, difficulty, segment, yearView]);
 
 const currentIndex = useMemo(() => {
   if (!selected) return -1;
@@ -476,10 +480,32 @@ const stats = useMemo(() => {
                   onClick={() => setSegment(value)}
                   type="button"
                 >
+                  
                   {label}
                 </button>
               ))}
             </div>
+            <div className="tabs year-tabs">
+  {[
+    ["all", "All years"],
+    ["2025", "2019–2025"],
+    ["2024", "2019–2024"],
+    ["2023", "2019–2023"],
+    ["2022", "2019–2022"],
+    ["2021", "2019–2021"],
+    ["2020", "2019–2020"],
+    ["2019", "2019"]
+  ].map(([value, label]) => (
+    <button
+      key={value}
+      className={yearView === value ? "active" : ""}
+      onClick={() => setYearView(value)}
+      type="button"
+    >
+      {label}
+    </button>
+  ))}
+</div>
           </section>
 
           <main className="panel table-panel">
