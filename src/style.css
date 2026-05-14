@@ -158,6 +158,9 @@ h1 {
   gap: 12px;
   padding: 14px;
   margin-bottom: 14px;
+  position: relative;
+  z-index: 50;
+  overflow: visible;
 }
 
 .searchbox {
@@ -169,10 +172,12 @@ h1 {
   border-radius: 16px;
   padding: 0 14px;
 }
+
 .year-tabs {
-  grid-column: 1 / -1; /* pakt hele breedte */
+  grid-column: 1 / -1;
   margin-top: 10px;
 }
+
 .searchbox input,
 .controls select {
   width: 100%;
@@ -215,6 +220,8 @@ h1 {
 
 .table-panel {
   overflow: hidden;
+  position: relative;
+  z-index: 1;
 }
 
 .table-header {
@@ -483,31 +490,33 @@ h1 {
 }
 
 .admin-button {
-    margin-top: 10px;
-    padding: 10px 16px;
-    border-radius: 12px;
-    border: 1px solid var(--line);
-    background: rgba(255, 255, 255, 0.06);
-    color: var(--text);
-    font-weight: 800;
-    cursor: pointer;
-    transition: 0.2s;
-  }
-  
-  .admin-button:hover {
-    background: rgba(94, 161, 255, 0.2);
-    border-color: rgba(94, 161, 255, 0.5);
-  }
+  margin-top: 10px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  font-weight: 800;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.admin-button:hover {
+  background: rgba(94, 161, 255, 0.2);
+  border-color: rgba(94, 161, 255, 0.5);
+}
+
 .login-button {
-    flex: 1;
-    padding: 10px;
-    border-radius: 10px;
-    border: none;
-    background: linear-gradient(135deg, #2563eb, #5ea1ff);
-    color: white;
-    font-weight: 900;
-    cursor: pointer;
-  }
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #2563eb, #5ea1ff);
+  color: white;
+  font-weight: 900;
+  cursor: pointer;
+}
+
 .login-panel {
   width: min(500px, 100%);
   padding: 32px;
@@ -516,19 +525,21 @@ h1 {
   background: var(--panel-strong);
   box-shadow: var(--shadow);
 }
+
 .login-form {
   display: grid;
   gap: 12px;
 }
-  .close-button {
-    flex: 1;
-    padding: 10px;
-    border-radius: 10px;
-    border: 1px solid var(--line);
-    background: rgba(255,255,255,0.05);
-    color: var(--muted);
-    cursor: pointer;
-  }
+
+.close-button {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--muted);
+  cursor: pointer;
+}
 
 .login-input {
   width: 100%;
@@ -536,10 +547,20 @@ h1 {
   padding: 12px 14px;
   border-radius: 12px;
   border: 1px solid var(--line);
-  background: rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.05);
   color: var(--text);
   outline: none;
-  }
+}
+
+.login-input:focus {
+  border-color: var(--blue);
+}
+
+.login-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
 
 .custom-select {
   position: relative;
@@ -613,17 +634,6 @@ h1 {
   color: white;
 }
 
-.controls {
-  position: relative;
-  z-index: 50;
-  overflow: visible;
-}
-
-.table-panel {
-  position: relative;
-  z-index: 1;
-}
-
 .logout-button {
   border-color: rgba(255, 91, 91, 0.35);
   color: #ff9a9a;
@@ -675,6 +685,7 @@ h1 {
 .logout-confirm-button:hover {
   background: rgba(255, 91, 91, 0.24);
 }
+
 .admin-panel {
   padding: 24px;
 }
@@ -728,6 +739,7 @@ h1 {
   background: rgba(94, 161, 255, 0.12);
   border-color: rgba(94, 161, 255, 0.5);
 }
+
 .skillset-overview {
   margin-bottom: 14px;
   overflow: hidden;
@@ -820,6 +832,7 @@ h1 {
   color: var(--muted);
   font-size: 13px;
 }
+
 .former-top1-badge {
   display: inline-flex;
   align-items: center;
@@ -832,6 +845,94 @@ h1 {
   color: var(--yellow);
   font-weight: 900;
   font-size: 13px;
+}
+
+/* ── Admin forms ── */
+.admin-success {
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(67, 209, 122, 0.35);
+  background: rgba(67, 209, 122, 0.12);
+  color: var(--green);
+  font-weight: 800;
+}
+
+.admin-error {
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 91, 91, 0.35);
+  background: rgba(255, 91, 91, 0.12);
+  color: var(--red);
+  font-weight: 800;
+}
+
+.admin-form {
+  margin-top: 18px;
+  padding: 20px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.admin-form h3 {
+  margin: 0 0 16px;
+  font-size: 26px;
+}
+
+/* ✅ flex + column zodat label boven input staat, niet naast */
+.admin-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.admin-form input,
+.admin-form select {
+  min-height: 46px;
+  padding: 0 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  outline: none;
+}
+
+.admin-form input:focus,
+.admin-form select:focus {
+  border-color: rgba(94, 161, 255, 0.65);
+}
+
+.admin-form-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.danger-form {
+  border-color: rgba(255, 91, 91, 0.35);
+}
+
+.remove-confirm-box {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 91, 91, 0.35);
+  background: rgba(255, 91, 91, 0.10);
+}
+
+.remove-confirm-box p {
+  margin: 0 0 14px;
+  color: var(--text);
+}
+
+.remove-confirm-box strong {
+  color: #ffb0b0;
 }
 
 /* ── Edit Demon form ── */
@@ -859,10 +960,20 @@ h1 {
 
 .edit-search-btn {
   min-height: 46px;
-  padding: 0 22px;
+  padding: 0 28px;
   border-radius: 14px;
   white-space: nowrap;
   flex-shrink: 0;
+  font-weight: 900;
+  border: none;
+  background: linear-gradient(135deg, #2563eb, #5ea1ff);
+  color: white;
+  cursor: pointer;
+}
+
+.edit-search-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .edit-search-hint {
@@ -876,7 +987,7 @@ h1 {
   align-items: center;
   gap: 10px;
   margin: 18px 0 20px;
-  padding: 12px 16px;
+  padding: 13px 16px;
   border-radius: 14px;
   border: 1px solid rgba(67, 209, 122, 0.35);
   background: rgba(67, 209, 122, 0.08);
@@ -892,6 +1003,7 @@ h1 {
 
 .edit-found-badge strong {
   color: var(--text);
+  font-size: 15px;
 }
 
 .edit-found-id {
@@ -900,27 +1012,25 @@ h1 {
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.04em;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
 }
 
+/* ✅ 2-koloms grid voor de edit velden */
 .edit-fields-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0 18px;
+  column-gap: 18px;
 }
 
+/* Skillsets pakt de volle breedte */
 .edit-field-full {
   grid-column: 1 / -1;
 }
 
-@media (max-width: 640px) {
-  .edit-fields-grid {
-    grid-template-columns: 1fr;
-  }
-  .edit-field-full {
-    grid-column: 1;
-  }
-}
-
+/* ── Responsive ── */
 @media (max-width: 980px) {
   .admin-panel-grid {
     grid-template-columns: 1fr;
@@ -933,8 +1043,7 @@ h1 {
   .admin-panel-header .admin-button {
     margin-top: 16px;
   }
-}
-@media (max-width: 980px) {
+
   .stats-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -976,26 +1085,7 @@ h1 {
     min-height: 220px;
   }
 }
-.danger-form {
-  border-color: rgba(255, 91, 91, 0.35);
-}
 
-.remove-confirm-box {
-  margin-top: 14px;
-  padding: 14px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 91, 91, 0.35);
-  background: rgba(255, 91, 91, 0.10);
-}
-
-.remove-confirm-box p {
-  margin: 0 0 14px;
-  color: var(--text);
-}
-
-.remove-confirm-box strong {
-  color: #ffb0b0;
-}
 @media (max-width: 640px) {
   .app {
     width: min(100% - 20px, 1380px);
@@ -1031,77 +1121,12 @@ h1 {
   .detail-grid {
     grid-template-columns: 1fr;
   }
-  
-  .login-input:focus {
-    border-color: var(--blue);
+
+  .edit-fields-grid {
+    grid-template-columns: 1fr;
   }
-  
-  .login-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 14px;
+
+  .edit-field-full {
+    grid-column: 1;
   }
-  
-.admin-success {
-  padding: 12px 14px;
-  border-radius: 14px;
-  border: 1px solid rgba(67, 209, 122, 0.35);
-  background: rgba(67, 209, 122, 0.12);
-  color: var(--green);
-  font-weight: 800;
-}
-
-.admin-error {
-  padding: 12px 14px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 91, 91, 0.35);
-  background: rgba(255, 91, 91, 0.12);
-  color: var(--red);
-  font-weight: 800;
-}
-
-.admin-form {
-  margin-top: 18px;
-  padding: 20px;
-  border-radius: 18px;
-  border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.admin-form h3 {
-  margin: 0 0 16px;
-  font-size: 26px;
-}
-
-.admin-form label {
-  display: grid;
-  gap: 8px;
-  margin-bottom: 14px;
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.admin-form input,
-.admin-form select {
-  min-height: 46px;
-  padding: 0 14px;
-  border-radius: 14px;
-  border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text);
-  outline: none;
-}
-
-.admin-form input:focus,
-.admin-form select:focus {
-  border-color: rgba(94, 161, 255, 0.65);
-}
-
-.admin-form-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
 }
