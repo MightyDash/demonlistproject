@@ -10,7 +10,6 @@ function normalizeDemon(row, index) {
   return {
     placement: row.placement ?? row.Placement ?? row["#"] ?? `#${index + 1}`,
     name,
-    formerTop1Year: FORMER_TOP_1[name] || null,
     creator: row.creator ?? row.creators ?? row["Creator(s)"] ?? "",
     id,
     difficulty: row.difficulty ?? row.Difficulty ?? "",
@@ -19,7 +18,7 @@ function normalizeDemon(row, index) {
     video: row.video ?? row["Done for Video"] ?? "",
     tier: Number(row.tier ?? row.Tier ?? 0),
     tierChange: Number(row.tierChange ?? row["Tier +/-"] ?? row.tier_change ?? 0),
-    formerTop1Year: FORMER_TOP_1[row.name ?? row.demon ?? row.Demon ?? ""] || null,
+    formerTop1Year: FORMER_TOP_1[name] || null,
     skillsets: String(row.skillsets ?? row.Skillsets ?? "")
       .split(",")
       .map(s => s.trim())
@@ -91,12 +90,27 @@ export default function App() {
   const [adminView, setAdminView] = useState(false);
   const [skillsetOpen, setSkillsetOpen] = useState(false);
 
+  // ✅ FIXED: Verify token with server on load instead of blindly trusting localStorage
   useEffect(() => {
     const savedToken = localStorage.getItem("admin_token");
+    if (!savedToken) return;
 
-    if (savedToken) {
-      setIsAdmin(true);
-    }
+    const adminUrl = import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL;
+    if (!adminUrl) return;
+
+    fetch(adminUrl, {
+      method: "POST",
+      body: JSON.stringify({ action: "verifyToken", token: savedToken }),
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          setIsAdmin(true);
+        } else {
+          localStorage.removeItem("admin_token");
+        }
+      })
+      .catch(() => localStorage.removeItem("admin_token"));
   }, []);
 
   useEffect(() => {
@@ -127,22 +141,37 @@ export default function App() {
     loadData();
   }, []);
 
+  // ✅ FIXED: Login now sends credentials to the server for validation
+  // Credentials are never stored in the frontend bundle
   async function handleLogin() {
     setLoginError("");
+    const adminUrl = import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL;
 
-    const adminUsername = import.meta.env.VITE_ADMIN_USERNAME;
-    const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD;
-    const adminToken = import.meta.env.VITE_ADMIN_TOKEN;
+    if (!adminUrl) {
+      setLoginError("Admin URL not configured.");
+      return;
+    }
 
-    if (
-      loginData.username === adminUsername &&
-      loginData.password === adminPassword
-    ) {
-      setIsAdmin(true);
-      setShowLogin(false);
-      localStorage.setItem("admin_token", adminToken || "local-admin");
-    } else {
-      setLoginError("Wrong login");
+    try {
+      const response = await fetch(adminUrl, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "login",
+          username: loginData.username,
+          password: loginData.password,
+        }),
+      });
+      const data = await response.json();
+
+      if (data.success && data.token) {
+        setIsAdmin(true);
+        setShowLogin(false);
+        localStorage.setItem("admin_token", data.token);
+      } else {
+        setLoginError("Wrong login");
+      }
+    } catch {
+      setLoginError("Could not reach server.");
     }
   }
 
@@ -159,110 +188,91 @@ export default function App() {
   }, [demons]);
 
   const filtered = useMemo(() => {
-  const q = query.trim().toLowerCase();
+    const q = query.trim().toLowerCase();
 
-  return demons
-    .filter(demon => {
-      const matchesQuery =
-        !q ||
-        demon.name.toLowerCase().includes(q) ||
-        demon.creator.toLowerCase().includes(q) ||
-        demon.id.toLowerCase().includes(q);
+    return demons
+      .filter(demon => {
+        const matchesQuery =
+          !q ||
+          demon.name.toLowerCase().includes(q) ||
+          demon.creator.toLowerCase().includes(q) ||
+          demon.id.toLowerCase().includes(q);
 
-      const matchesDifficulty =
-        difficulty === "all" || demon.difficulty === difficulty;
+        const matchesDifficulty =
+          difficulty === "all" || demon.difficulty === difficulty;
 
-      const matchesSegment =
-  segment === "all" || segmentForPlacement(demon.placement) === segment;
+        const matchesSegment =
+          segment === "all" || segmentForPlacement(demon.placement) === segment;
 
-const matchesYearView =
-  yearView === "all" || Number(demon.year || 0) <= Number(yearView);
+        const matchesYearView =
+          yearView === "all" || Number(demon.year || 0) <= Number(yearView);
 
-return matchesQuery && matchesDifficulty && matchesSegment && matchesYearView;
-    })
-    .sort((a, b) => placementNumber(a.placement) - placementNumber(b.placement));
-}, [demons, query, difficulty, segment, yearView]);
+        return matchesQuery && matchesDifficulty && matchesSegment && matchesYearView;
+      })
+      .sort((a, b) => placementNumber(a.placement) - placementNumber(b.placement));
+  }, [demons, query, difficulty, segment, yearView]);
 
-const currentIndex = useMemo(() => {
-  if (!selected) return -1;
+  const currentIndex = useMemo(() => {
+    if (!selected) return -1;
+    return filtered.findIndex(
+      d => d.id === selected.id && d.name === selected.name
+    );
+  }, [selected, filtered]);
 
-  return filtered.findIndex(
-    d => d.id === selected.id && d.name === selected.name
-  );
-}, [selected, filtered]);
-
-function goToPrev() {
-  if (currentIndex > 0) {
-    setSelected(filtered[currentIndex - 1]);
+  function goToPrev() {
+    if (currentIndex > 0) {
+      setSelected(filtered[currentIndex - 1]);
+    }
   }
-}
 
-function goToNext() {
-  if (currentIndex >= 0 && currentIndex < filtered.length - 1) {
-    setSelected(filtered[currentIndex + 1]);
+  function goToNext() {
+    if (currentIndex >= 0 && currentIndex < filtered.length - 1) {
+      setSelected(filtered[currentIndex + 1]);
+    }
   }
-}
 
   function getThumbnailSrc(demon) {
-  if (!demon) return "";
-  return demon.thumbnail || (demon.id ? `/thumbnails/${demon.id}.jpg` : "");
-}
-
-  useEffect(() => {
-  if (currentIndex < 0) return;
-
-  [-2, -1, 1, 2].forEach(offset => {
-    const src = getThumbnailSrc(filtered[currentIndex + offset]);
-    if (!src) return;
-
-    const img = new Image();
-    img.src = src;
-  });
-}, [currentIndex, filtered]);
-
-  useEffect(() => {
-  if (currentIndex < 0) return;
-
-  const preload = src => {
-    if (!src) return;
-    const img = new Image();
-    img.src = src;
-  };
-
-  preload(filtered[currentIndex - 1]?.thumbnail);
-  preload(filtered[currentIndex + 1]?.thumbnail);
-}, [currentIndex, filtered]);
-  
-useEffect(() => {
-  function handleKey(e) {
-    if (!selected) return;
-
-    if (e.key === "ArrowLeft") goToPrev();
-    if (e.key === "ArrowRight") goToNext();
-    if (e.key === "Escape") setSelected(null);
+    if (!demon) return "";
+    return demon.thumbnail || (demon.id ? `/thumbnails/${demon.id}.jpg` : "");
   }
 
-  window.addEventListener("keydown", handleKey);
-  return () => window.removeEventListener("keydown", handleKey);
-}, [selected, currentIndex, filtered]);
-  function getThumbnailSrc(demon) {
-  if (!demon) return "";
-  return demon.thumbnail || (demon.id ? `/thumbnails/${demon.id}.jpg` : "");
-}
+  useEffect(() => {
+    if (currentIndex < 0) return;
 
-useEffect(() => {
-  if (currentIndex < 0) return;
+    [-2, -1, 1, 2].forEach(offset => {
+      const src = getThumbnailSrc(filtered[currentIndex + offset]);
+      if (!src) return;
+      const img = new Image();
+      img.src = src;
+    });
+  }, [currentIndex, filtered]);
 
-  [-2, -1, 1, 2].forEach(offset => {
-    const src = getThumbnailSrc(filtered[currentIndex + offset]);
-    if (!src) return;
+  useEffect(() => {
+    if (currentIndex < 0) return;
 
-    const img = new Image();
-    img.src = src;
-  });
-}, [currentIndex, filtered]);
-  
-const stats = useMemo(() => {
+    const preload = src => {
+      if (!src) return;
+      const img = new Image();
+      img.src = src;
+    };
+
+    preload(filtered[currentIndex - 1]?.thumbnail);
+    preload(filtered[currentIndex + 1]?.thumbnail);
+  }, [currentIndex, filtered]);
+
+  useEffect(() => {
+    function handleKey(e) {
+      if (!selected) return;
+      if (e.key === "ArrowLeft") goToPrev();
+      if (e.key === "ArrowRight") goToNext();
+      if (e.key === "Escape") setSelected(null);
+    }
+
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [selected, currentIndex, filtered]);
+
+  const stats = useMemo(() => {
     const completed = demons.filter(d => String(d.status).toUpperCase() === "COMPLETED");
     const totalAttempts = completed.reduce((sum, d) => sum + Number(d.attempts || 0), 0);
     const hardest = completed.slice().sort((a, b) => Number(b.tier) - Number(a.tier))[0];
@@ -276,30 +286,29 @@ const stats = useMemo(() => {
   }, [demons]);
 
   const hardestBySkillset = useMemo(() => {
-  const result = {};
+    const result = {};
 
-  demons.forEach(demon => {
-    const status = String(demon.status || "COMPLETED").toUpperCase().trim();
-    if (status !== "COMPLETED") return;
-    if (!demon.skillsets || demon.skillsets.length === 0) return;
+    demons.forEach(demon => {
+      const status = String(demon.status || "COMPLETED").toUpperCase().trim();
+      if (status !== "COMPLETED") return;
+      if (!demon.skillsets || demon.skillsets.length === 0) return;
 
-    const primarySkill = demon.skillsets[0];
-    const demonPlacement = placementNumber(demon.placement);
+      const primarySkill = demon.skillsets[0];
+      const demonPlacement = placementNumber(demon.placement);
 
-    if (!result[primarySkill]) {
-      result[primarySkill] = demon;
-      return;
-    }
+      if (!result[primarySkill]) {
+        result[primarySkill] = demon;
+        return;
+      }
 
-    const currentPlacement = placementNumber(result[primarySkill].placement);
+      const currentPlacement = placementNumber(result[primarySkill].placement);
+      if (demonPlacement < currentPlacement) {
+        result[primarySkill] = demon;
+      }
+    });
 
-    if (demonPlacement < currentPlacement) {
-      result[primarySkill] = demon;
-    }
-  });
-
-  return result;
-}, [demons]);
+    return result;
+  }, [demons]);
 
   return (
     <div className="app">
@@ -395,38 +404,38 @@ const stats = useMemo(() => {
           </section>
 
           {Object.keys(hardestBySkillset).length > 0 && (
-  <section className="panel skillset-overview">
-    <button
-      className="skillset-header"
-      onClick={() => setSkillsetOpen(open => !open)}
-      type="button"
-    >
-      <span>Hardest demon by skillset</span>
-      <span className={`skillset-arrow ${skillsetOpen ? "open" : ""}`}>
-        ⌄
-      </span>
-    </button>
+            <section className="panel skillset-overview">
+              <button
+                className="skillset-header"
+                onClick={() => setSkillsetOpen(open => !open)}
+                type="button"
+              >
+                <span>Hardest demon by skillset</span>
+                <span className={`skillset-arrow ${skillsetOpen ? "open" : ""}`}>
+                  ⌄
+                </span>
+              </button>
 
-    <div className={`skillset-content ${skillsetOpen ? "open" : ""}`}>
-      <div className="skillset-overview-grid">
-        {Object.entries(hardestBySkillset)
-          .sort(([a], [b]) => a.localeCompare(b))
-          .map(([skill, demon]) => (
-            <button
-              key={skill}
-              className="skillset-overview-card"
-              type="button"
-              onClick={() => setSelected(demon)}
-            >
-              <span>{skill}</span>
-              <strong>{demon.name}</strong>
-              <small>{demon.placement} • Tier {formatTier(demon.tier)}</small>
-            </button>
-          ))}
-      </div>
-    </div>
-  </section>
-)}
+              <div className={`skillset-content ${skillsetOpen ? "open" : ""}`}>
+                <div className="skillset-overview-grid">
+                  {Object.entries(hardestBySkillset)
+                    .sort(([a], [b]) => a.localeCompare(b))
+                    .map(([skill, demon]) => (
+                      <button
+                        key={skill}
+                        className="skillset-overview-card"
+                        type="button"
+                        onClick={() => setSelected(demon)}
+                      >
+                        <span>{skill}</span>
+                        <strong>{demon.name}</strong>
+                        <small>{demon.placement} • Tier {formatTier(demon.tier)}</small>
+                      </button>
+                    ))}
+                </div>
+              </div>
+            </section>
+          )}
 
           <section className="panel controls">
             <div className="searchbox">
@@ -480,32 +489,32 @@ const stats = useMemo(() => {
                   onClick={() => setSegment(value)}
                   type="button"
                 >
-                  
                   {label}
                 </button>
               ))}
             </div>
+
             <div className="tabs year-tabs">
-  {[
-    ["all", "2026"],
-    ["2025", "2025"],
-    ["2024", "2024"],
-    ["2023", "2023"],
-    ["2022", "2022"],
-    ["2021", "2021"],
-    ["2020", "2020"],
-    ["2019", "2019"]
-  ].map(([value, label]) => (
-    <button
-      key={value}
-      className={yearView === value ? "active" : ""}
-      onClick={() => setYearView(value)}
-      type="button"
-    >
-      {label}
-    </button>
-  ))}
-</div>
+              {[
+                ["all", "2026"],
+                ["2025", "2025"],
+                ["2024", "2024"],
+                ["2023", "2023"],
+                ["2022", "2022"],
+                ["2021", "2021"],
+                ["2020", "2020"],
+                ["2019", "2019"]
+              ].map(([value, label]) => (
+                <button
+                  key={value}
+                  className={yearView === value ? "active" : ""}
+                  onClick={() => setYearView(value)}
+                  type="button"
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </section>
 
           <main className="panel table-panel">
@@ -555,13 +564,13 @@ const stats = useMemo(() => {
 
       {selected && (
         <DemonModal
-  demon={selected}
-  onClose={() => setSelected(null)}
-  onPrev={goToPrev}
-  onNext={goToNext}
-  hasPrev={currentIndex > 0}
-  hasNext={currentIndex < filtered.length - 1}
-/>
+          demon={selected}
+          onClose={() => setSelected(null)}
+          onPrev={goToPrev}
+          onNext={goToNext}
+          hasPrev={currentIndex > 0}
+          hasNext={currentIndex < filtered.length - 1}
+        />
       )}
 
       {showLogin && (
@@ -653,7 +662,8 @@ function StatCard({ icon, label, value, highlight }) {
 
 function DemonModal({ demon, onClose, onPrev, onNext, hasPrev, hasNext }) {
   const thumbnailSrc =
-  demon.thumbnail || (demon.id ? `/thumbnails/${demon.id}.jpg` : "");
+    demon.thumbnail || (demon.id ? `/thumbnails/${demon.id}.jpg` : "");
+
   return (
     <div className="modal-backdrop" onMouseDown={onClose}>
       <article className="modal" onMouseDown={e => e.stopPropagation()}>
@@ -662,18 +672,17 @@ function DemonModal({ demon, onClose, onPrev, onNext, hasPrev, hasNext }) {
         </button>
 
         <div className="modal-nav">
-    {hasPrev && (
-      <button className="nav-button left" onClick={onPrev}>
-        ‹
-      </button>
-    )}
-
-    {hasNext && (
-      <button className="nav-button right" onClick={onNext}>
-        ›
-      </button>
-    )}
-  </div>
+          {hasPrev && (
+            <button className="nav-button left" onClick={onPrev}>
+              ‹
+            </button>
+          )}
+          {hasNext && (
+            <button className="nav-button right" onClick={onNext}>
+              ›
+            </button>
+          )}
+        </div>
 
         <div className="modal-cover">
           {demon.thumbnail ? (
@@ -695,11 +704,12 @@ function DemonModal({ demon, onClose, onPrev, onNext, hasPrev, hasNext }) {
           <p className="placement-large">{demon.placement}</p>
           <h2>{demon.name}</h2>
           <p className="creator">by {demon.creator || "Unknown creator"}</p>
+
           {demon.formerTop1Year && (
-  <div className="former-top1-badge">
-    🏅 Former Top 1 ({demon.formerTop1Year})
-  </div>
-)}
+            <div className="former-top1-badge">
+              🏅 Former Top 1 ({demon.formerTop1Year})
+            </div>
+          )}
 
           <div className="detail-grid">
             <Detail label="Level ID" value={demon.id} />
@@ -712,7 +722,6 @@ function DemonModal({ demon, onClose, onPrev, onNext, hasPrev, hasNext }) {
           {demon.skillsets?.length > 0 && (
             <div className="skillsets">
               <h3>Skillsets</h3>
-
               <div className="skillset-list">
                 {demon.skillsets.map(skill => (
                   <span key={skill} className="skillset-tag">
@@ -1031,7 +1040,6 @@ function AdminPanel({ onBack, onDataChanged }) {
                     setAdminError("Level ID is verplicht.");
                     return;
                   }
-
                   setAdminError("");
                   setRemoveConfirm(true);
                 }}
