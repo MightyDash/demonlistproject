@@ -1229,10 +1229,11 @@ function AdminPanel({ onBack, onDataChanged }) {
                 setEditNotFound(false);
                 setEditConfirm(false);
               }}
-              placeholder="Zoek op Level ID of naam..."
+              onKeyDown={e => { if (e.key === "Enter") handleSearchEdit(); }}
+              placeholder="Exacte naam of Level ID..."
             />
             <button
-              className="login-button"
+              className="login-button edit-search-btn"
               onClick={handleSearchEdit}
               disabled={isSubmitting}
               type="button"
@@ -1241,73 +1242,84 @@ function AdminPanel({ onBack, onDataChanged }) {
             </button>
           </div>
 
+          <p className="edit-search-hint">
+            Typ de exacte naam (hoofdletterongevoelig) of het exacte Level ID.
+          </p>
+
           {editNotFound && (
-            <p className="admin-error">Geen demon gevonden met die naam of Level ID.</p>
+            <p className="admin-error" style={{ marginTop: "12px" }}>
+              Geen demon gevonden. Controleer de naam of het Level ID.
+            </p>
           )}
 
           {editFound && !editConfirm && (
             <>
-              <p className="edit-found-label">
-                Gevonden: <strong>{editFound.name}</strong> (ID: {editFound.id})
-              </p>
+              <div className="edit-found-badge">
+                <span className="edit-found-dot" />
+                <span>Gevonden: <strong>{editFound.name}</strong></span>
+                <span className="edit-found-id">ID: {editFound.id}</span>
+              </div>
 
-              <label>
-                Naam
-                <input
-                  value={editForm.name}
-                  onChange={e => setEditForm({ ...editForm, name: e.target.value })}
-                />
-              </label>
+              <div className="edit-fields-grid">
+                <label>
+                  Naam
+                  <input
+                    value={editForm.name}
+                    onChange={e => setEditForm({ ...editForm, name: e.target.value })}
+                    placeholder="Naam van de demon"
+                  />
+                </label>
 
-              <label>
-                Difficulty
-                <input
-                  value={editForm.difficulty}
-                  onChange={e => setEditForm({ ...editForm, difficulty: e.target.value })}
-                  placeholder="Bijv. Extreme Demon"
-                />
-              </label>
+                <label>
+                  Difficulty
+                  <input
+                    value={editForm.difficulty}
+                    onChange={e => setEditForm({ ...editForm, difficulty: e.target.value })}
+                    placeholder="Bijv. Extreme Demon"
+                  />
+                </label>
 
-              <label>
-                Maker(s)
-                <input
-                  value={editForm.creator}
-                  onChange={e => setEditForm({ ...editForm, creator: e.target.value })}
-                  placeholder="Bijv. Riot & more"
-                />
-              </label>
+                <label>
+                  Maker(s)
+                  <input
+                    value={editForm.creator}
+                    onChange={e => setEditForm({ ...editForm, creator: e.target.value })}
+                    placeholder="Bijv. Riot & more"
+                  />
+                </label>
 
-              <label>
-                Jaar
-                <input
-                  type="number"
-                  value={editForm.year}
-                  onChange={e => setEditForm({ ...editForm, year: e.target.value })}
-                  placeholder="Bijv. 2024"
-                />
-              </label>
+                <label>
+                  Jaar
+                  <input
+                    type="number"
+                    value={editForm.year}
+                    onChange={e => setEditForm({ ...editForm, year: e.target.value })}
+                    placeholder="Bijv. 2024"
+                  />
+                </label>
 
-              <label>
-                Attempts
-                <input
-                  type="number"
-                  min="0"
-                  value={editForm.attempts}
-                  onChange={e => setEditForm({ ...editForm, attempts: e.target.value })}
-                  placeholder="Bijv. 5000"
-                />
-              </label>
+                <label>
+                  Attempts
+                  <input
+                    type="number"
+                    min="0"
+                    value={editForm.attempts}
+                    onChange={e => setEditForm({ ...editForm, attempts: e.target.value })}
+                    placeholder="Bijv. 5000"
+                  />
+                </label>
 
-              <label>
-                Skillsets
-                <input
-                  value={editForm.skillsets}
-                  onChange={e => setEditForm({ ...editForm, skillsets: e.target.value })}
-                  placeholder="Bijv. Timing, Straight fly (komma gescheiden)"
-                />
-              </label>
+                <label className="edit-field-full">
+                  Skillsets
+                  <input
+                    value={editForm.skillsets}
+                    onChange={e => setEditForm({ ...editForm, skillsets: e.target.value })}
+                    placeholder="Bijv. Timing, Straight fly (komma gescheiden)"
+                  />
+                </label>
+              </div>
 
-              <div className="admin-form-actions">
+              <div className="admin-form-actions" style={{ marginTop: "8px" }}>
                 <button
                   className="login-button"
                   onClick={() => setEditConfirm(true)}
@@ -1331,10 +1343,9 @@ function AdminPanel({ onBack, onDataChanged }) {
           )}
 
           {editFound && editConfirm && (
-            <div className="remove-confirm-box">
-              <p>
-                Weet je zeker dat je <strong>{editFound.name}</strong> wilt bijwerken
-                met de nieuwe gegevens?
+            <div className="remove-confirm-box" style={{ borderColor: "rgba(94,161,255,0.35)", background: "rgba(94,161,255,0.08)" }}>
+              <p style={{ color: "var(--text)" }}>
+                Weet je zeker dat je <strong style={{ color: "var(--blue)" }}>{editFound.name}</strong> wilt bijwerken met de nieuwe gegevens?
               </p>
               <div className="admin-form-actions">
                 <button
