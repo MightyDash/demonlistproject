@@ -767,6 +767,7 @@ function Detail({ label, value }) {
 function AdminPanel({ onBack, onDataChanged }) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showRemoveForm, setShowRemoveForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
 
   const [addForm, setAddForm] = useState({
     levelId: "",
@@ -778,9 +779,112 @@ function AdminPanel({ onBack, onDataChanged }) {
   const [removeLevelId, setRemoveLevelId] = useState("");
   const [removeConfirm, setRemoveConfirm] = useState(false);
 
+  // Edit Demon state
+  const [editSearch, setEditSearch] = useState("");
+  const [editFound, setEditFound] = useState(null);
+  const [editNotFound, setEditNotFound] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    difficulty: "",
+    creator: "",
+    year: "",
+    attempts: "",
+    skillsets: ""
+  });
+  const [editConfirm, setEditConfirm] = useState(false);
+
   const [adminMessage, setAdminMessage] = useState("");
   const [adminError, setAdminError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  async function handleSearchEdit() {
+    setAdminMessage("");
+    setAdminError("");
+    setEditFound(null);
+    setEditNotFound(false);
+    setEditConfirm(false);
+
+    const q = editSearch.trim();
+    if (!q) {
+      setAdminError("Vul een Level ID of naam in.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const data = await sendAdminRequest({ action: "findDemon", query: q });
+      if (!data.success || !data.demon) {
+        setEditNotFound(true);
+        return;
+      }
+      setEditFound(data.demon);
+      setEditForm({
+        name: data.demon.name || "",
+        difficulty: data.demon.difficulty || "",
+        creator: data.demon.creator || "",
+        year: String(data.demon.year || ""),
+        attempts: String(data.demon.attempts || ""),
+        skillsets: Array.isArray(data.demon.skillsets)
+          ? data.demon.skillsets.join(", ")
+          : (data.demon.skillsets || "")
+      });
+    } catch (error) {
+      setAdminError(error.message || "Kon geen verbinding maken met Apps Script.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleEditDemon() {
+    setAdminMessage("");
+    setAdminError("");
+
+    const year = Number(editForm.year);
+    const attempts = Number(editForm.attempts);
+
+    if (!editForm.name.trim()) {
+      setAdminError("Naam is verplicht.");
+      return;
+    }
+    if (!Number.isInteger(year) || String(year).length !== 4) {
+      setAdminError("Jaar moet een geldig 4-cijferig jaar zijn.");
+      return;
+    }
+    if (!Number.isInteger(attempts) || attempts < 0) {
+      setAdminError("Attempts moet een geldig getal zijn.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const data = await sendAdminRequest({
+        action: "editDemon",
+        levelId: editFound.id,
+        name: editForm.name.trim(),
+        difficulty: editForm.difficulty.trim(),
+        creator: editForm.creator.trim(),
+        year,
+        attempts,
+        skillsets: editForm.skillsets
+      });
+
+      if (!data.success) {
+        setAdminError(data.message || "Bewerken mislukt.");
+        return;
+      }
+
+      setAdminMessage(data.message || "Demon bijgewerkt.");
+      setEditFound(null);
+      setEditSearch("");
+      setEditConfirm(false);
+      setShowEditForm(false);
+      if (onDataChanged) onDataChanged();
+    } catch (error) {
+      setAdminError(error.message || "Kon geen verbinding maken met Apps Script.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   async function sendAdminRequest(payload) {
     const adminUrl = import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL;
@@ -923,6 +1027,10 @@ function AdminPanel({ onBack, onDataChanged }) {
           onClick={() => {
             setShowAddForm(open => !open);
             setShowRemoveForm(false);
+            setShowEditForm(false);
+            setEditFound(null);
+            setEditNotFound(false);
+            setEditConfirm(false);
             setRemoveConfirm(false);
             setAdminMessage("");
             setAdminError("");
@@ -938,6 +1046,10 @@ function AdminPanel({ onBack, onDataChanged }) {
           onClick={() => {
             setShowRemoveForm(open => !open);
             setShowAddForm(false);
+            setShowEditForm(false);
+            setEditFound(null);
+            setEditNotFound(false);
+            setEditConfirm(false);
             setRemoveConfirm(false);
             setAdminMessage("");
             setAdminError("");
@@ -947,6 +1059,24 @@ function AdminPanel({ onBack, onDataChanged }) {
           <span>Demon verwijderen via Level ID.</span>
         </button>
 
+        <button
+          className="admin-action-card"
+          type="button"
+          onClick={() => {
+            setShowEditForm(open => !open);
+            setShowAddForm(false);
+            setShowRemoveForm(false);
+            setEditFound(null);
+            setEditNotFound(false);
+            setEditConfirm(false);
+            setRemoveConfirm(false);
+            setAdminMessage("");
+            setAdminError("");
+          }}
+        >
+          <strong>Edit Demon</strong>
+          <span>Naam, difficulty, makers en meer aanpassen.</span>
+        </button>
       </div>
 
       {showAddForm && (
@@ -1079,6 +1209,148 @@ function AdminPanel({ onBack, onDataChanged }) {
                   type="button"
                 >
                   No, go back
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {showEditForm && (
+        <div className="admin-form">
+          <h3>Edit Demon</h3>
+
+          <div className="edit-search-row">
+            <input
+              value={editSearch}
+              onChange={e => {
+                setEditSearch(e.target.value);
+                setEditFound(null);
+                setEditNotFound(false);
+                setEditConfirm(false);
+              }}
+              placeholder="Zoek op Level ID of naam..."
+            />
+            <button
+              className="login-button"
+              onClick={handleSearchEdit}
+              disabled={isSubmitting}
+              type="button"
+            >
+              {isSubmitting ? "Zoeken..." : "Zoek"}
+            </button>
+          </div>
+
+          {editNotFound && (
+            <p className="admin-error">Geen demon gevonden met die naam of Level ID.</p>
+          )}
+
+          {editFound && !editConfirm && (
+            <>
+              <p className="edit-found-label">
+                Gevonden: <strong>{editFound.name}</strong> (ID: {editFound.id})
+              </p>
+
+              <label>
+                Naam
+                <input
+                  value={editForm.name}
+                  onChange={e => setEditForm({ ...editForm, name: e.target.value })}
+                />
+              </label>
+
+              <label>
+                Difficulty
+                <input
+                  value={editForm.difficulty}
+                  onChange={e => setEditForm({ ...editForm, difficulty: e.target.value })}
+                  placeholder="Bijv. Extreme Demon"
+                />
+              </label>
+
+              <label>
+                Maker(s)
+                <input
+                  value={editForm.creator}
+                  onChange={e => setEditForm({ ...editForm, creator: e.target.value })}
+                  placeholder="Bijv. Riot & more"
+                />
+              </label>
+
+              <label>
+                Jaar
+                <input
+                  type="number"
+                  value={editForm.year}
+                  onChange={e => setEditForm({ ...editForm, year: e.target.value })}
+                  placeholder="Bijv. 2024"
+                />
+              </label>
+
+              <label>
+                Attempts
+                <input
+                  type="number"
+                  min="0"
+                  value={editForm.attempts}
+                  onChange={e => setEditForm({ ...editForm, attempts: e.target.value })}
+                  placeholder="Bijv. 5000"
+                />
+              </label>
+
+              <label>
+                Skillsets
+                <input
+                  value={editForm.skillsets}
+                  onChange={e => setEditForm({ ...editForm, skillsets: e.target.value })}
+                  placeholder="Bijv. Timing, Straight fly (komma gescheiden)"
+                />
+              </label>
+
+              <div className="admin-form-actions">
+                <button
+                  className="login-button"
+                  onClick={() => setEditConfirm(true)}
+                  type="button"
+                >
+                  Opslaan
+                </button>
+                <button
+                  className="close-button"
+                  onClick={() => {
+                    setEditFound(null);
+                    setEditSearch("");
+                    setEditNotFound(false);
+                  }}
+                  type="button"
+                >
+                  Annuleren
+                </button>
+              </div>
+            </>
+          )}
+
+          {editFound && editConfirm && (
+            <div className="remove-confirm-box">
+              <p>
+                Weet je zeker dat je <strong>{editFound.name}</strong> wilt bijwerken
+                met de nieuwe gegevens?
+              </p>
+              <div className="admin-form-actions">
+                <button
+                  className="login-button"
+                  onClick={handleEditDemon}
+                  disabled={isSubmitting}
+                  type="button"
+                >
+                  {isSubmitting ? "Opslaan..." : "Ja, opslaan"}
+                </button>
+                <button
+                  className="close-button"
+                  onClick={() => setEditConfirm(false)}
+                  type="button"
+                >
+                  Terug
                 </button>
               </div>
             </div>
