@@ -833,6 +833,94 @@ h1 {
   font-weight: 900;
   font-size: 13px;
 }
+
+/* ── Edit Demon form ── */
+.edit-search-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.edit-search-row input {
+  flex: 1;
+  min-height: 46px;
+  padding: 0 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  outline: none;
+  font: inherit;
+}
+
+.edit-search-row input:focus {
+  border-color: rgba(94, 161, 255, 0.65);
+}
+
+.edit-search-btn {
+  min-height: 46px;
+  padding: 0 22px;
+  border-radius: 14px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.edit-search-hint {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.edit-found-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 18px 0 20px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(67, 209, 122, 0.35);
+  background: rgba(67, 209, 122, 0.08);
+}
+
+.edit-found-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  flex-shrink: 0;
+}
+
+.edit-found-badge strong {
+  color: var(--text);
+}
+
+.edit-found-id {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.edit-fields-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 18px;
+}
+
+.edit-field-full {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 640px) {
+  .edit-fields-grid {
+    grid-template-columns: 1fr;
+  }
+  .edit-field-full {
+    grid-column: 1;
+  }
+}
+
 @media (max-width: 980px) {
   .admin-panel-grid {
     grid-template-columns: 1fr;
