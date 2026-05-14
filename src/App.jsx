@@ -947,10 +947,6 @@ function AdminPanel({ onBack, onDataChanged }) {
           <span>Demon verwijderen via Level ID.</span>
         </button>
 
-        <button className="admin-action-card" type="button" onClick={onDataChanged}>
-          <strong>Refresh Data</strong>
-          <span>Sheet data opnieuw laden.</span>
-        </button>
       </div>
 
       {showAddForm && (
