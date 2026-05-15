@@ -24,7 +24,7 @@ function normalizeDemon(row, index) {
       .map(s => s.trim())
       .filter(Boolean),
     status: row.status ?? row["Done/Progress?"] ?? "COMPLETED",
-    thumbnail: row.thumbnail || row.thumbnailUrl || (id ? `/thumbnails/${id}.JPG` : ""),
+    thumbnail: id ? `https://gdbrowser.com/assets/level/${id}` : "",
     notes: row.notes ?? ""
   };
 }
@@ -232,9 +232,9 @@ export default function App() {
   }
 
   function getThumbnailSrc(demon) {
-    if (!demon) return "";
-    return demon.thumbnail || (demon.id ? `/thumbnails/${demon.id}.jpg` : "");
-  }
+  if (!demon?.id) return "";
+  return `https://gdbrowser.com/assets/level/${demon.id}`;
+}
 
   useEffect(() => {
     if (currentIndex < 0) return;
@@ -685,20 +685,14 @@ function DemonModal({ demon, onClose, onPrev, onNext, hasPrev, hasNext }) {
         </div>
 
         <div className="modal-cover">
-          {demon.thumbnail ? (
-            <img
-              src={thumbnailSrc}
-              alt={demon.name}
-              onError={e => {
-                e.currentTarget.style.display = "none";
-              }}
-            />
-          ) : (
-            <div className="thumbnail-placeholder">
-              {demon.name.slice(0, 2).toUpperCase()}
-            </div>
-          )}
-        </div>
+  <img
+    src={thumbnailSrc}
+    alt={demon.name}
+    onError={e => {
+      e.currentTarget.style.display = "none";
+    }}
+  />
+</div>
 
         <div className="modal-content">
           <p className="placement-large">{demon.placement}</p>
