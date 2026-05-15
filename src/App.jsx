@@ -661,8 +661,9 @@ function StatCard({ icon, label, value, highlight }) {
 }
 
 function DemonModal({ demon, onClose, onPrev, onNext, hasPrev, hasNext }) {
-  const thumbnailSrc =
-    demon.thumbnail || (demon.id ? `/thumbnails/${demon.id}.jpg` : "");
+  const thumbnailSrc = demon.id
+  ? `https://gdbrowser.com/assets/level/${demon.id}`
+  : "";
 
   return (
     <div className="modal-backdrop" onMouseDown={onClose}>
