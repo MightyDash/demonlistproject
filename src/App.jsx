@@ -24,7 +24,7 @@ function normalizeDemon(row, index) {
       .map(s => s.trim())
       .filter(Boolean),
     status: row.status ?? row["Done/Progress?"] ?? "COMPLETED",
-    thumbnail: id ? `https://gdbrowser.com/assets/level/${id}` : "",
+    thumbnail: id ? `https://levelthumbs.prevter.me/thumbnail/${id}` : "",
     notes: row.notes ?? ""
   };
 }
@@ -662,7 +662,7 @@ function StatCard({ icon, label, value, highlight }) {
 
 function DemonModal({ demon, onClose, onPrev, onNext, hasPrev, hasNext }) {
   const thumbnailSrc = demon.id
-  ? `https://gdbrowser.com/assets/level/${demon.id}`
+  ? `https://levelthumbs.prevter.me/thumbnail/${demon.id}`
   : "";
 
   return (
