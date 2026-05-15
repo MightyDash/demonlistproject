@@ -233,7 +233,7 @@ export default function App() {
 
   function getThumbnailSrc(demon) {
   if (!demon?.id) return "";
-  return `https://gdbrowser.com/assets/level/${demon.id}`;
+  return `https://levelthumbs.prevter.me/thumbnail/${demon.id}`;
 }
 
   useEffect(() => {
