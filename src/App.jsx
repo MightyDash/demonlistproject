@@ -112,6 +112,12 @@ export default function App() {
       })
     });
 
+    useEffect(() => {
+  if (requestView) {
+    loadRequests();
+  }
+}, [requestView]);
+
     const data = await response.json();
 
     if (data.success) {
@@ -215,6 +221,7 @@ export default function App() {
   async function handleSubmitRequest() {
   setRequestLoading(true);
   setRequestMessage("");
+  loadRequests();
   setRequestError("");
 
   try {
@@ -455,14 +462,16 @@ export default function App() {
   />
 ) : requestView ? (
   <RequestPanel
-    onBack={() => setRequestView(false)}
-    requestForm={requestForm}
-    setRequestForm={setRequestForm}
-    requestLoading={requestLoading}
-    requestMessage={requestMessage}
-    requestError={requestError}
-    handleSubmitRequest={handleSubmitRequest}
-  />
+  onBack={() => setRequestView(false)}
+  requestForm={requestForm}
+  setRequestForm={setRequestForm}
+  requestLoading={requestLoading}
+  requestMessage={requestMessage}
+  requestError={requestError}
+  handleSubmitRequest={handleSubmitRequest}
+  requests={requests}
+  requestsLoading={requestsLoading}
+/>
 ) : (
       <>
         <section className="stats-grid">
@@ -784,7 +793,9 @@ function RequestPanel({
   requestLoading,
   requestMessage,
   requestError,
-  handleSubmitRequest
+  handleSubmitRequest,
+  requests,
+  requestsLoading
 }) {
   return (
     <section className="panel request-panel">
@@ -839,6 +850,37 @@ function RequestPanel({
 
         {requestMessage && <p className="admin-success">{requestMessage}</p>}
         {requestError && <p className="admin-error">{requestError}</p>}
+        <hr className="request-divider" />
+
+<h3>Pending Requests</h3>
+
+{requestsLoading ? (
+  <p className="request-loading">Loading requests...</p>
+) : requests.length === 0 ? (
+  <p className="request-empty">No requests found.</p>
+) : (
+  <div className="request-list">
+    {requests.map((request, index) => (
+      <div className="request-card" key={`${request.levelId}-${index}`}>
+        <div className="request-card-top">
+          <strong>{request.levelId}</strong>
+          <span className={`request-status ${String(request.status || "").toLowerCase()}`}>
+            {request.status || "Pending"}
+          </span>
+        </div>
+
+        <div className="request-meta">
+          <span>{request.type || "Classic"}</span>
+          <span>Weight: {request.weight || 1}</span>
+        </div>
+
+        {request.notes && (
+          <p className="request-notes">{request.notes}</p>
+        )}
+      </div>
+    ))}
+  </div>
+)}
       </div>
     </section>
   );
