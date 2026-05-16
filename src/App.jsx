@@ -88,6 +88,8 @@ export default function App() {
   type: "Classic",
   notes: ""
 });
+  const [requestStatusDrafts, setRequestStatusDrafts] = useState({});
+  const [requestStatusSaving, setRequestStatusSaving] = useState(false);
   const [requests, setRequests] = useState([]);
   const [requestsLoading, setRequestsLoading] = useState(false);
   const [requestLoading, setRequestLoading] = useState(false);
@@ -258,32 +260,53 @@ export default function App() {
     setRequestLoading(false);
   }
 }
-async function handleUpdateRequestStatus(rowNumber, status) {
+function handleRequestStatusDraft(rowNumber, status) {
+  setRequestStatusDrafts(prev => ({
+    ...prev,
+    [rowNumber]: status
+  }));
+}
+
+async function handleSaveRequestStatusChanges() {
   setRequestError("");
   setRequestMessage("");
 
+  const changes = Object.entries(requestStatusDrafts);
+
+  if (changes.length === 0) {
+    setRequestMessage("Geen status wijzigingen om op te slaan.");
+    return;
+  }
+
+  setRequestStatusSaving(true);
+
   try {
-    const response = await fetch(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        action: "updateRequestStatus",
-        rowNumber,
-        status,
-        token: localStorage.getItem("admin_token")
-      })
-    });
+    for (const [rowNumber, status] of changes) {
+      const response = await fetch(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "updateRequestStatus",
+          rowNumber: Number(rowNumber),
+          status,
+          token: localStorage.getItem("admin_token")
+        })
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!data.success) {
-      setRequestError(data.message || "Status wijzigen mislukt.");
-      return;
+      if (!data.success) {
+        setRequestError(data.message || "Status wijzigen mislukt.");
+        return;
+      }
     }
 
-    setRequestMessage("Status bijgewerkt.");
+    setRequestStatusDrafts({});
+    setRequestMessage("Status wijzigingen opgeslagen.");
     loadRequests();
   } catch (error) {
     setRequestError("Kon geen verbinding maken.");
+  } finally {
+    setRequestStatusSaving(false);
   }
 }
   const difficulties = useMemo(() => {
@@ -503,6 +526,10 @@ async function handleUpdateRequestStatus(rowNumber, status) {
   requestsLoading={requestsLoading}
   isAdmin={isAdmin}
   handleUpdateRequestStatus={handleUpdateRequestStatus}
+  requestStatusDrafts={requestStatusDrafts}
+  handleRequestStatusDraft={handleRequestStatusDraft}
+  handleSaveRequestStatusChanges={handleSaveRequestStatusChanges}
+  requestStatusSaving={requestStatusSaving}
 />
 ) : (
       <>
@@ -829,7 +856,10 @@ function RequestPanel({
   requests,
   requestsLoading,
   isAdmin,
-  handleUpdateRequestStatus
+  requestStatusDrafts,
+  handleRequestStatusDraft,
+  handleSaveRequestStatusChanges,
+  requestStatusSaving
 }) {
   return (
     <section className="panel request-panel">
@@ -907,6 +937,21 @@ function RequestPanel({
         />
       </div>
 
+      {isAdmin && (
+  <div className="request-save-bar">
+    <button
+      className="login-button"
+      type="button"
+      onClick={handleSaveRequestStatusChanges}
+      disabled={requestStatusSaving || Object.keys(requestStatusDrafts).length === 0}
+    >
+      {requestStatusSaving
+        ? "Saving..."
+        : `Save Status Changes (${Object.keys(requestStatusDrafts).length})`}
+    </button>
+  </div>
+)}
+
       <div className="request-card-content">
         <div className="request-card-top">
           <div>
@@ -916,9 +961,11 @@ function RequestPanel({
 
           {isAdmin ? (
   <select
-    className="request-status-select"
-    value={request.status || "Pending"}
-    onChange={e => handleUpdateRequestStatus(request.rowNumber, e.target.value)}
+    className={`request-status-select ${String(
+      requestStatusDrafts[request.rowNumber] || request.status || "Pending"
+    ).toLowerCase()}`}
+    value={requestStatusDrafts[request.rowNumber] || request.status || "Pending"}
+    onChange={e => handleRequestStatusDraft(request.rowNumber, e.target.value)}
   >
     <option value="Pending">Pending</option>
     <option value="Approved">Approved</option>
@@ -930,6 +977,7 @@ function RequestPanel({
   <span className={`request-status ${String(request.status || "Pending").toLowerCase()}`}>
     {request.status || "Pending"}
   </span>
+)}
 )}
         </div>
 
