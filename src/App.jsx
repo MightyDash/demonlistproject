@@ -114,27 +114,12 @@ export default function App() {
 
     const data = await response.json();
 
-    console.log("getRequests response:", data);
-
     if (data.success) {
       setRequests(data.requests || []);
     }
-  } catch (error) {
-    console.warn("Could not load requests.", error);
   } finally {
     setRequestsLoading(false);
   }
-}
-
-useEffect(() => {
-  if (requestView) {
-    loadRequests();
-  }
-}, [requestView]);
-
-    if (data.success) {
-      setRequests(data.requests || []);
-    }
 }
   useEffect(() => {
     const savedToken = localStorage.getItem("admin_token");
@@ -230,7 +215,6 @@ useEffect(() => {
   async function handleSubmitRequest() {
   setRequestLoading(true);
   setRequestMessage("");
-  loadRequests();
   setRequestError("");
 
   try {
@@ -471,16 +455,14 @@ useEffect(() => {
   />
 ) : requestView ? (
   <RequestPanel
-  onBack={() => setRequestView(false)}
-  requestForm={requestForm}
-  setRequestForm={setRequestForm}
-  requestLoading={requestLoading}
-  requestMessage={requestMessage}
-  requestError={requestError}
-  handleSubmitRequest={handleSubmitRequest}
-  requests={requests}
-  requestsLoading={requestsLoading}
-/>
+    onBack={() => setRequestView(false)}
+    requestForm={requestForm}
+    setRequestForm={setRequestForm}
+    requestLoading={requestLoading}
+    requestMessage={requestMessage}
+    requestError={requestError}
+    handleSubmitRequest={handleSubmitRequest}
+  />
 ) : (
       <>
         <section className="stats-grid">
@@ -802,9 +784,7 @@ function RequestPanel({
   requestLoading,
   requestMessage,
   requestError,
-  handleSubmitRequest,
-  requests,
-  requestsLoading
+  handleSubmitRequest
 }) {
   return (
     <section className="panel request-panel">
@@ -859,37 +839,6 @@ function RequestPanel({
 
         {requestMessage && <p className="admin-success">{requestMessage}</p>}
         {requestError && <p className="admin-error">{requestError}</p>}
-        <hr className="request-divider" />
-
-<h3>Pending Requests</h3>
-
-{requestsLoading ? (
-  <p className="request-loading">Loading requests...</p>
-) : requests.length === 0 ? (
-  <p className="request-empty">No requests found.</p>
-) : (
-  <div className="request-list">
-    {requests.map((request, index) => (
-      <div className="request-card" key={`${request.levelId}-${index}`}>
-        <div className="request-card-top">
-          <strong>{request.levelId}</strong>
-          <span className={`request-status ${String(request.status || "").toLowerCase()}`}>
-            {request.status || "Pending"}
-          </span>
-        </div>
-
-        <div className="request-meta">
-          <span>{request.type || "Classic"}</span>
-          <span>Weight: {request.weight || 1}</span>
-        </div>
-
-        {request.notes && (
-          <p className="request-notes">{request.notes}</p>
-        )}
-      </div>
-    ))}
-  </div>
-)}
       </div>
     </section>
   );
