@@ -109,6 +109,7 @@ h1 {
   border-radius: 22px;
   box-shadow: var(--shadow);
   backdrop-filter: blur(14px);
+  padding: 24px;
 }
 
 .stat-card {
@@ -926,14 +927,26 @@ h1 {
 }
 
 .request-panel {
+  padding: 28px;
+  overflow: hidden;
+}
+
+.request-panel .admin-panel-header {
+  padding: 0;
   margin-bottom: 24px;
+  align-items: flex-start;
+}
+
+.request-panel .eyebrow,
+.request-panel h2,
+.request-panel p {
+  margin-left: 0;
 }
 
 .request-form {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-top: 18px;
 }
 
 .request-form input,
@@ -952,16 +965,13 @@ h1 {
   resize: vertical;
 }
 .request-divider {
+  margin: 32px -28px 28px;
   border: none;
-  border-top: 1px solid rgba(255,255,255,0.08);
-  margin: 28px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .request-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 16px;
-  margin-top: 16px;
+  padding-top: 12px;
 }
 
 .request-card {
@@ -1114,9 +1124,8 @@ h1 {
 }
 
 .request-save-bar {
-  margin-top: 18px;
-  display: flex;
-  justify-content: flex-end;
+  margin-top: 20px;
+  padding-bottom: 4px;
 }
 
 .request-save-bar .login-button:disabled {
