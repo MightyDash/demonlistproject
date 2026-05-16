@@ -603,24 +603,7 @@ export default function App() {
       }
     />
 
-    <button
-      className="login-button"
-      onClick={handleSubmitRequest}
-      disabled={requestLoading}
-      type="button"
-    >
-      {requestLoading ? "Submitting..." : "Submit Request"}
-    </button>
-
-    {requestMessage && (
-      <p className="admin-success">{requestMessage}</p>
-    )}
-
-    {requestError && (
-      <p className="admin-error">{requestError}</p>
-    )}
-  </div>
-
+  
         <main className="panel table-panel">
           <div className="table-header">
             <span>{filtered.length} demons shown</span>
