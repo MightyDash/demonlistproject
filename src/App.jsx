@@ -81,6 +81,7 @@ export default function App() {
   const [selected, setSelected] = useState(null);
   const [yearView, setYearView] = useState("all");
   const [apiLatestDemon, setApiLatestDemon] = useState("");
+  const [viewMode, setViewMode] = useState("list");
 
   const [showLogin, setShowLogin] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -311,218 +312,217 @@ export default function App() {
   }, [demons]);
 
   return (
-    <div className="app">
-      <header className="hero">
-        <div>
-          <p className="eyebrow">Moik's Geometry Dash Demon Archive</p>
-          <h1>{adminView ? "Admin Panel" : "Demon List"}</h1>
-          <p className="subtitle">
-            {adminView
-              ? "Manage your demon list tools and admin actions."
-              : "A clean, searchable demon list powered by my Google Spreadsheet."}
-          </p>
+  <div className="app">
+    <header className="hero">
+      <div>
+        <p className="eyebrow">Moik's Geometry Dash Demon Archive</p>
+        <h1>{adminView ? "Admin Panel" : "Demon List"}</h1>
+        <p className="subtitle">
+          {adminView
+            ? "Manage your demon list tools and admin actions."
+            : "A clean, searchable demon list powered by my Google Spreadsheet."}
+        </p>
+      </div>
+
+      <div>
+        <div className={`source-pill ${source}`}>
+          {source === "live" ? "Live Sheet Data" : source === "mock" ? "Mock Data" : "Loading"}
         </div>
 
-        <div>
-          <div className={`source-pill ${source}`}>
-            {source === "live" ? "Live Sheet Data" : source === "mock" ? "Mock Data" : "Loading"}
-          </div>
+        {!isAdmin && (
+          <button className="admin-button" onClick={() => setShowLogin(true)} type="button">
+            Admin Login
+          </button>
+        )}
 
-          {!isAdmin && (
-            <button className="admin-button" onClick={() => setShowLogin(true)} type="button">
-              Admin Login
+        {isAdmin && !adminView && (
+          <button className="admin-button panel-button" onClick={() => setAdminView(true)} type="button">
+            Go to panel
+          </button>
+        )}
+
+        {isAdmin && adminView && (
+          <button className="admin-button panel-button" onClick={() => setAdminView(false)} type="button">
+            Back to list
+          </button>
+        )}
+
+        {isAdmin && (
+          <button className="admin-button logout-button" onClick={() => setShowLogoutConfirm(true)} type="button">
+            Logout
+          </button>
+        )}
+      </div>
+    </header>
+
+    {showLogoutConfirm && (
+      <div className="modal-backdrop">
+        <div className="confirm-panel">
+          <h2>Logout?</h2>
+          <p>Weet je zeker dat je wilt uitloggen?</p>
+
+          <div className="confirm-actions">
+            <button className="logout-confirm-button" onClick={handleLogout} type="button">
+              Ja, log uit
             </button>
-          )}
 
-          {isAdmin && !adminView && (
-            <button
-              className="admin-button panel-button"
-              onClick={() => setAdminView(true)}
-              type="button"
-            >
-              Go to panel
+            <button className="close-button" onClick={() => setShowLogoutConfirm(false)} type="button">
+              Annuleren
             </button>
-          )}
-
-          {isAdmin && adminView && (
-            <button
-              className="admin-button panel-button"
-              onClick={() => setAdminView(false)}
-              type="button"
-            >
-              Back to list
-            </button>
-          )}
-
-          {isAdmin && (
-            <button
-              className="admin-button logout-button"
-              onClick={() => setShowLogoutConfirm(true)}
-              type="button"
-            >
-              Logout
-            </button>
-          )}
-        </div>
-      </header>
-
-      {showLogoutConfirm && (
-        <div className="modal-backdrop">
-          <div className="confirm-panel">
-            <h2>Logout?</h2>
-            <p>Weet je zeker dat je wilt uitloggen?</p>
-
-            <div className="confirm-actions">
-              <button className="logout-confirm-button" onClick={handleLogout} type="button">
-                Ja, log uit
-              </button>
-
-              <button
-                className="close-button"
-                onClick={() => setShowLogoutConfirm(false)}
-                type="button"
-              >
-                Annuleren
-              </button>
-            </div>
           </div>
         </div>
-      )}
+      </div>
+    )}
 
-      {adminView ? (
-        <AdminPanel
-          onBack={() => setAdminView(false)}
-          onDataChanged={() => window.location.reload()}
-        />
-      ) : (
-        <>
-          <section className="stats-grid">
-            <StatCard icon={<Trophy />} label="Total Demons" value={formatNumber(stats.total)} />
-            <StatCard icon={<Target />} label="Total Attempts" value={formatNumber(stats.attempts)} />
-            <StatCard icon={<BarChart3 />} label="Avg Attempts" value={formatNumber(stats.avgAttempts)} />
-            <StatCard icon={<Film />} label="Hardest Demon" value={stats.hardest?.name || "Unknown"} highlight />
-          </section>
+    {adminView ? (
+      <AdminPanel
+        onBack={() => setAdminView(false)}
+        onDataChanged={() => window.location.reload()}
+      />
+    ) : (
+      <>
+        <section className="stats-grid">
+          <StatCard icon={<Trophy />} label="Total Demons" value={formatNumber(stats.total)} />
+          <StatCard icon={<Target />} label="Total Attempts" value={formatNumber(stats.attempts)} />
+          <StatCard icon={<BarChart3 />} label="Avg Attempts" value={formatNumber(stats.avgAttempts)} />
+          <StatCard icon={<Film />} label="Hardest Demon" value={stats.hardest?.name || "Unknown"} highlight />
+        </section>
 
-          {Object.keys(hardestBySkillset).length > 0 && (
-            <section className="panel skillset-overview">
-              <button
-                className="skillset-header"
-                onClick={() => setSkillsetOpen(open => !open)}
-                type="button"
-              >
-                <span>Hardest demon by skillset</span>
-                <span className={`skillset-arrow ${skillsetOpen ? "open" : ""}`}>
-                  ⌄
-                </span>
-              </button>
+        {Object.keys(hardestBySkillset).length > 0 && (
+          <section className="panel skillset-overview">
+            <button
+              className="skillset-header"
+              onClick={() => setSkillsetOpen(open => !open)}
+              type="button"
+            >
+              <span>Hardest demon by skillset</span>
+              <span className={`skillset-arrow ${skillsetOpen ? "open" : ""}`}>⌄</span>
+            </button>
 
-              <div className={`skillset-content ${skillsetOpen ? "open" : ""}`}>
-                <div className="skillset-overview-grid">
-                  {Object.entries(hardestBySkillset)
-                    .sort(([a], [b]) => a.localeCompare(b))
-                    .map(([skill, demon]) => (
-                      <button
-                        key={skill}
-                        className="skillset-overview-card"
-                        type="button"
-                        onClick={() => setSelected(demon)}
-                      >
-                        <span>{skill}</span>
-                        <strong>{demon.name}</strong>
-                        <small>{demon.placement} • Tier {formatTier(demon.tier)}</small>
-                      </button>
-                    ))}
-                </div>
-              </div>
-            </section>
-          )}
-
-          <section className="panel controls">
-            <div className="searchbox">
-              <Search size={18} />
-              <input
-                value={query}
-                onChange={e => setQuery(e.target.value)}
-                placeholder="Search demon, creator or ID..."
-              />
-            </div>
-
-            <div className="custom-select">
-              <button
-                className="custom-select-button"
-                onClick={() => setDifficultyOpen(open => !open)}
-                type="button"
-              >
-                <span>{difficulty === "all" ? "All difficulties" : difficulty}</span>
-                <span className="custom-select-arrow">⌄</span>
-              </button>
-
-              {difficultyOpen && (
-                <div className="custom-select-menu">
-                  {difficulties.map(d => (
+            <div className={`skillset-content ${skillsetOpen ? "open" : ""}`}>
+              <div className="skillset-overview-grid">
+                {Object.entries(hardestBySkillset)
+                  .sort(([a], [b]) => a.localeCompare(b))
+                  .map(([skill, demon]) => (
                     <button
-                      key={d}
+                      key={skill}
+                      className="skillset-overview-card"
                       type="button"
-                      className={`custom-select-option ${difficulty === d ? "active" : ""}`}
-                      onClick={() => {
-                        setDifficulty(d);
-                        setDifficultyOpen(false);
-                      }}
+                      onClick={() => setSelected(demon)}
                     >
-                      {d === "all" ? "All difficulties" : d}
+                      <span>{skill}</span>
+                      <strong>{demon.name}</strong>
+                      <small>{demon.placement} • Tier {formatTier(demon.tier)}</small>
                     </button>
                   ))}
-                </div>
-              )}
-            </div>
-
-            <div className="tabs">
-              {[
-                ["all", "All"],
-                ["main", "Main"],
-                ["extended", "Extended"],
-                ["legacy", "Legacy"]
-              ].map(([value, label]) => (
-                <button
-                  key={value}
-                  className={segment === value ? "active" : ""}
-                  onClick={() => setSegment(value)}
-                  type="button"
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-
-            <div className="tabs year-tabs">
-              {[
-                ["all", "2026"],
-                ["2025", "2025"],
-                ["2024", "2024"],
-                ["2023", "2023"],
-                ["2022", "2022"],
-                ["2021", "2021"],
-                ["2020", "2020"],
-                ["2019", "2019"]
-              ].map(([value, label]) => (
-                <button
-                  key={value}
-                  className={yearView === value ? "active" : ""}
-                  onClick={() => setYearView(value)}
-                  type="button"
-                >
-                  {label}
-                </button>
-              ))}
+              </div>
             </div>
           </section>
+        )}
 
-          <main className="panel table-panel">
-            <div className="table-header">
-              <span>{filtered.length} demons shown</span>
-              <span>{apiLatestDemon ? `Latest: ${apiLatestDemon}` : ""}</span>
-            </div>
+        <section className="panel controls">
+          <div className="searchbox">
+            <Search size={18} />
+            <input
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Search demon, creator or ID..."
+            />
+          </div>
 
+          <div className="custom-select">
+            <button
+              className="custom-select-button"
+              onClick={() => setDifficultyOpen(open => !open)}
+              type="button"
+            >
+              <span>{difficulty === "all" ? "All difficulties" : difficulty}</span>
+              <span className="custom-select-arrow">⌄</span>
+            </button>
+
+            {difficultyOpen && (
+              <div className="custom-select-menu">
+                {difficulties.map(d => (
+                  <button
+                    key={d}
+                    type="button"
+                    className={`custom-select-option ${difficulty === d ? "active" : ""}`}
+                    onClick={() => {
+                      setDifficulty(d);
+                      setDifficultyOpen(false);
+                    }}
+                  >
+                    {d === "all" ? "All difficulties" : d}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="tabs">
+            {[
+              ["all", "All"],
+              ["main", "Main"],
+              ["extended", "Extended"],
+              ["legacy", "Legacy"]
+            ].map(([value, label]) => (
+              <button
+                key={value}
+                className={segment === value ? "active" : ""}
+                onClick={() => setSegment(value)}
+                type="button"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <div className="tabs year-tabs">
+            {[
+              ["all", "2026"],
+              ["2025", "2025"],
+              ["2024", "2024"],
+              ["2023", "2023"],
+              ["2022", "2022"],
+              ["2021", "2021"],
+              ["2020", "2020"],
+              ["2019", "2019"]
+            ].map(([value, label]) => (
+              <button
+                key={value}
+                className={yearView === value ? "active" : ""}
+                onClick={() => setYearView(value)}
+                type="button"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <div className="tabs view-tabs">
+            {[
+              ["list", "List"],
+              ["grid", "Grid"]
+            ].map(([value, label]) => (
+              <button
+                key={value}
+                className={viewMode === value ? "active" : ""}
+                onClick={() => setViewMode(value)}
+                type="button"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <main className="panel table-panel">
+          <div className="table-header">
+            <span>{filtered.length} demons shown</span>
+            <span>{apiLatestDemon ? `Latest: ${apiLatestDemon}` : ""}</span>
+          </div>
+
+          {viewMode === "list" ? (
             <div className="demon-table">
               <div className="row heading">
                 <div>#</div>
@@ -558,96 +558,128 @@ export default function App() {
                 </button>
               ))}
             </div>
-          </main>
-        </>
-      )}
-
-      {selected && (
-        <DemonModal
-          demon={selected}
-          onClose={() => setSelected(null)}
-          onPrev={goToPrev}
-          onNext={goToNext}
-          hasPrev={currentIndex > 0}
-          hasNext={currentIndex < filtered.length - 1}
-        />
-      )}
-
-      {showLogin && (
-        <div className="modal-backdrop">
-          <div className="login-panel">
-            <button
-              className="login-close-x"
-              onClick={() => {
-                setShowLogin(false);
-                setLoginError("");
-              }}
-              type="button"
-            >
-              <X size={20} />
-            </button>
-
-            <div className="login-header">
-              <p className="login-eyebrow">Admin Area</p>
-              <h2>Admin Login</h2>
-              <p>Login om toegang te krijgen tot het admin panel.</p>
-            </div>
-
-            <div className="login-form">
-              <label>
-                Username
-                <input
-                  className="login-input"
-                  placeholder="Enter username"
-                  value={loginData.username}
-                  onChange={e =>
-                    setLoginData({ ...loginData, username: e.target.value })
-                  }
-                />
-              </label>
-
-              <label>
-                Password
-                <input
-                  className="login-input"
-                  type="password"
-                  placeholder="Enter password"
-                  value={loginData.password}
-                  onChange={e =>
-                    setLoginData({ ...loginData, password: e.target.value })
-                  }
-                  onKeyDown={e => {
-                    if (e.key === "Enter") handleLogin();
-                  }}
-                />
-              </label>
-
-              {loginError && <p className="login-error">{loginError}</p>}
-
-              <div className="login-actions">
-                <button className="login-button" onClick={handleLogin} type="button">
-                  Login
-                </button>
-
+          ) : (
+            <div className="demon-grid">
+              {filtered.map(demon => (
                 <button
-                  className="close-button"
-                  onClick={() => {
-                    setShowLogin(false);
-                    setLoginError("");
-                  }}
+                  className="grid-card"
+                  key={`${demon.id}-${demon.name}`}
+                  onClick={() => setSelected(demon)}
                   type="button"
                 >
-                  Cancel
+                  <img
+                    src={demon.thumbnail}
+                    alt={demon.name}
+                    className="grid-thumb"
+                    onError={e => {
+                      e.currentTarget.style.display = "none";
+                    }}
+                  />
+
+                  <div className="grid-overlay">
+                    <div>
+                      <h3>{demon.name}</h3>
+                      <p>by {demon.creator || "Unknown creator"}</p>
+                    </div>
+
+                    <div className="grid-meta">
+                      <span>{demon.placement}</span>
+                      <span>Tier {formatTier(demon.tier)}</span>
+                      <span>{demon.year || "Unknown"}</span>
+                    </div>
+                  </div>
                 </button>
-              </div>
+              ))}
+            </div>
+          )}
+        </main>
+      </>
+    )}
+
+    {selected && (
+      <DemonModal
+        demon={selected}
+        onClose={() => setSelected(null)}
+        onPrev={goToPrev}
+        onNext={goToNext}
+        hasPrev={currentIndex > 0}
+        hasNext={currentIndex < filtered.length - 1}
+      />
+    )}
+
+    {showLogin && (
+      <div className="modal-backdrop">
+        <div className="login-panel">
+          <button
+            className="login-close-x"
+            onClick={() => {
+              setShowLogin(false);
+              setLoginError("");
+            }}
+            type="button"
+          >
+            <X size={20} />
+          </button>
+
+          <div className="login-header">
+            <p className="login-eyebrow">Admin Area</p>
+            <h2>Admin Login</h2>
+            <p>Login om toegang te krijgen tot het admin panel.</p>
+          </div>
+
+          <div className="login-form">
+            <label>
+              Username
+              <input
+                className="login-input"
+                placeholder="Enter username"
+                value={loginData.username}
+                onChange={e =>
+                  setLoginData({ ...loginData, username: e.target.value })
+                }
+              />
+            </label>
+
+            <label>
+              Password
+              <input
+                className="login-input"
+                type="password"
+                placeholder="Enter password"
+                value={loginData.password}
+                onChange={e =>
+                  setLoginData({ ...loginData, password: e.target.value })
+                }
+                onKeyDown={e => {
+                  if (e.key === "Enter") handleLogin();
+                }}
+              />
+            </label>
+
+            {loginError && <p className="login-error">{loginError}</p>}
+
+            <div className="login-actions">
+              <button className="login-button" onClick={handleLogin} type="button">
+                Login
+              </button>
+
+              <button
+                className="close-button"
+                onClick={() => {
+                  setShowLogin(false);
+                  setLoginError("");
+                }}
+                type="button"
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </div>
-      )}
-    </div>
-  );
-}
-
+      </div>
+    )}
+  </div>
+);
 function StatCard({ icon, label, value, highlight }) {
   return (
     <div className={`stat-card ${highlight ? "highlight" : ""}`}>
