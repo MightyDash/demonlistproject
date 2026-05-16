@@ -88,6 +88,8 @@ export default function App() {
   type: "Classic",
   notes: ""
 });
+  const [requests, setRequests] = useState([]);
+  const [requestsLoading, setRequestsLoading] = useState(false);
   const [requestLoading, setRequestLoading] = useState(false);
   const [requestMessage, setRequestMessage] = useState("");
   const [requestError, setRequestError] = useState("");
@@ -99,7 +101,26 @@ export default function App() {
   const [adminView, setAdminView] = useState(false);
   const [skillsetOpen, setSkillsetOpen] = useState(false);
 
-  // ✅ FIXED: Verify token with server on load instead of blindly trusting localStorage
+  async function loadRequests() {
+  setRequestsLoading(true);
+
+  try {
+    const response = await fetch(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "getRequests"
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      setRequests(data.requests || []);
+    }
+  } finally {
+    setRequestsLoading(false);
+  }
+}
   useEffect(() => {
     const savedToken = localStorage.getItem("admin_token");
     if (!savedToken) return;
