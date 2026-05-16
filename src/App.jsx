@@ -125,7 +125,8 @@ export default function App() {
     setRequestsLoading(false);
   }
 }
-    useEffect(() => {
+
+useEffect(() => {
   if (requestView) {
     loadRequests();
   }
