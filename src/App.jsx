@@ -87,7 +87,9 @@ export default function App() {
   type: "Classic",
   notes: ""
 });
-
+  const [requestLoading, setRequestLoading] = useState(false);
+  const [requestMessage, setRequestMessage] = useState("");
+  const [requestError, setRequestError] = useState("");
   const [showLogin, setShowLogin] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loginData, setLoginData] = useState({ username: "", password: "" });
@@ -187,6 +189,43 @@ export default function App() {
     setAdminView(false);
     setShowLogoutConfirm(false);
   }
+
+  async function handleSubmitRequest() {
+  setRequestLoading(true);
+  setRequestMessage("");
+  setRequestError("");
+
+  try {
+    const response = await fetch(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "submitRequest",
+        levelId: requestForm.levelId,
+        type: requestForm.type,
+        notes: requestForm.notes
+      })
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      setRequestError(data.message || "Request mislukt.");
+      return;
+    }
+
+    setRequestMessage("Request succesvol verstuurd!");
+
+    setRequestForm({
+      levelId: "",
+      type: "Classic",
+      notes: ""
+    });
+  } catch (error) {
+    setRequestError("Kon geen verbinding maken.");
+  } finally {
+    setRequestLoading(false);
+  }
+}
 
   const difficulties = useMemo(() => {
     const unique = new Set(demons.map(d => d.difficulty).filter(Boolean));
@@ -563,6 +602,68 @@ export default function App() {
     <button type="button">
       Submit Request
     </button>
+  </div>
+</section>
+
+<section className="panel request-panel">
+  <h2>Submit Demon Request</h2>
+  <p>
+    Submit een demon die gespeeld moet worden voor de request list.
+  </p>
+
+  <div className="request-form">
+    <input
+      type="text"
+      placeholder="Level ID"
+      value={requestForm.levelId}
+      onChange={e =>
+        setRequestForm({
+          ...requestForm,
+          levelId: e.target.value
+        })
+      }
+    />
+
+    <select
+      value={requestForm.type}
+      onChange={e =>
+        setRequestForm({
+          ...requestForm,
+          type: e.target.value
+        })
+      }
+    >
+      <option value="Classic">Classic</option>
+      <option value="Platformer">Platformer</option>
+    </select>
+
+    <textarea
+      placeholder="Extra notes..."
+      value={requestForm.notes}
+      onChange={e =>
+        setRequestForm({
+          ...requestForm,
+          notes: e.target.value
+        })
+      }
+    />
+
+    <button
+      className="login-button"
+      onClick={handleSubmitRequest}
+      disabled={requestLoading}
+      type="button"
+    >
+      {requestLoading ? "Submitting..." : "Submit Request"}
+    </button>
+
+    {requestMessage && (
+      <p className="admin-success">{requestMessage}</p>
+    )}
+
+    {requestError && (
+      <p className="admin-error">{requestError}</p>
+    )}
   </div>
 </section>
 
