@@ -258,7 +258,34 @@ export default function App() {
     setRequestLoading(false);
   }
 }
+async function handleUpdateRequestStatus(rowNumber, status) {
+  setRequestError("");
+  setRequestMessage("");
 
+  try {
+    const response = await fetch(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "updateRequestStatus",
+        rowNumber,
+        status,
+        token: localStorage.getItem("admin_token")
+      })
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      setRequestError(data.message || "Status wijzigen mislukt.");
+      return;
+    }
+
+    setRequestMessage("Status bijgewerkt.");
+    loadRequests();
+  } catch (error) {
+    setRequestError("Kon geen verbinding maken.");
+  }
+}
   const difficulties = useMemo(() => {
     const unique = new Set(demons.map(d => d.difficulty).filter(Boolean));
     return ["all", ...Array.from(unique)];
@@ -474,6 +501,8 @@ export default function App() {
   handleSubmitRequest={handleSubmitRequest}
   requests={requests}
   requestsLoading={requestsLoading}
+  isAdmin={isAdmin}
+  handleUpdateRequestStatus={handleUpdateRequestStatus}
 />
 ) : (
       <>
@@ -798,7 +827,9 @@ function RequestPanel({
   requestError,
   handleSubmitRequest,
   requests,
-  requestsLoading
+  requestsLoading,
+  isAdmin,
+  handleUpdateRequestStatus
 }) {
   return (
     <section className="panel request-panel">
@@ -883,9 +914,23 @@ function RequestPanel({
             <span>ID: {request.levelId}</span>
           </div>
 
-          <span className={`request-status ${String(request.status || "Pending").toLowerCase()}`}>
-            {request.status || "Pending"}
-          </span>
+          {isAdmin ? (
+  <select
+    className="request-status-select"
+    value={request.status || "Pending"}
+    onChange={e => handleUpdateRequestStatus(request.rowNumber, e.target.value)}
+  >
+    <option value="Pending">Pending</option>
+    <option value="Approved">Approved</option>
+    <option value="Dropped">Dropped</option>
+    <option value="Denied">Denied</option>
+    <option value="Completed">Completed</option>
+  </select>
+) : (
+  <span className={`request-status ${String(request.status || "Pending").toLowerCase()}`}>
+    {request.status || "Pending"}
+  </span>
+)}
         </div>
 
         <div className="request-meta">
