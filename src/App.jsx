@@ -114,15 +114,17 @@ export default function App() {
 
     const data = await response.json();
 
-      console.log("getRequests response:", data);
+    console.log("getRequests response:", data);
 
-      if (data.success) {
-        setRequests(data.requests || []);
-      }
-    } finally {
-      setRequestsLoading(false);
+    if (data.success) {
+      setRequests(data.requests || []);
     }
+  } catch (error) {
+    console.warn("Could not load requests.", error);
+  } finally {
+    setRequestsLoading(false);
   }
+}
 
     useEffect(() => {
   if (requestView) {
