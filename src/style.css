@@ -1020,15 +1020,14 @@ h1 {
   .request-card-title {
   display: grid;
   gap: 4px;
+  min-width: 0;
 }
 .request-card-title strong {
-  font-size: 1.05rem;
   line-height: 1.2;
-  color: var(--text);
 }
 .request-card-title span {
-  font-size: 0.86rem;
   color: var(--muted);
+  font-size: 0.86rem;
 }
 
 .request-card-top {
@@ -1097,6 +1096,7 @@ h1 {
   color: #cfe2ff;
   font-weight: 700;
   outline: none;
+  text-align: center;
 }
 
 .request-status,
