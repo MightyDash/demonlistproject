@@ -1099,8 +1099,8 @@ h1 {
   color: #fcd34d;
 }
 
-.request-status.denied,
-.request-status-select.denied {
+.request-status.rejected,
+.request-status-select.rejected {
   background: rgba(239, 68, 68, 0.16);
   border-color: rgba(239, 68, 68, 0.35);
   color: #fca5a5;
