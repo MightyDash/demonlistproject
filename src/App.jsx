@@ -948,7 +948,7 @@ function RequestPanel({
         {requestError && <p className="admin-error">{requestError}</p>}
         <hr className="request-divider" />
 
-<h3>Submissions</h3>
+<h2>Submissions</h2>
 
 {requestsLoading ? (
   <p className="request-loading">Loading requests...</p>
