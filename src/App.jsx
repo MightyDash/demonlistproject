@@ -135,9 +135,6 @@ useEffect(() => {
     if (data.success) {
       setRequests(data.requests || []);
     }
-  } finally {
-    setRequestsLoading(false);
-  }
 }
   useEffect(() => {
     const savedToken = localStorage.getItem("admin_token");
