@@ -950,6 +950,31 @@ function RequestPanel({
 
 <h3>Submissions</h3>
 
+        <h3>Submissions</h3>
+
+{isAdmin && (
+  <div className="request-save-bar">
+    <button
+      className="login-button"
+      type="button"
+      onClick={handleSaveRequestStatusChanges}
+      disabled={requestStatusSaving || Object.keys(requestStatusDrafts).length === 0}
+    >
+      {requestStatusSaving
+        ? "Saving..."
+        : `Save Status Changes (${Object.keys(requestStatusDrafts).length})`}
+    </button>
+  </div>
+)}
+
+<div className="request-list">
+  {requests.map((request, index) => (
+    <div className="request-card" key={`${request.levelId}-${index}`}>
+      ...
+    </div>
+  ))}
+</div>
+
 {requestsLoading ? (
   <p className="request-loading">Loading requests...</p>
 ) : requests.length === 0 ? (
@@ -968,20 +993,6 @@ function RequestPanel({
           }}
         />
       </div>
-
-      {isAdmin && (
-  <div className="request-save-bar">
-    <button
-      className="login-button"
-      type="button"
-      onClick={handleSaveRequestStatusChanges}
-      disabled={requestStatusSaving || Object.keys(requestStatusDrafts).length === 0}
-    >
-      {requestStatusSaving
-        ? "Saving..."
-        : `Save Status Changes (${Object.keys(requestStatusDrafts).length})`}
-    </button>
-  </div>
 )}
 
       <div className="request-card-content">
