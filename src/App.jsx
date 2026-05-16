@@ -993,7 +993,6 @@ function RequestPanel({
           }}
         />
       </div>
-)}
 
       <div className="request-card-content">
         <div className="request-card-top">
