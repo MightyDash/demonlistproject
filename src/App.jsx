@@ -82,6 +82,11 @@ export default function App() {
   const [yearView, setYearView] = useState("all");
   const [apiLatestDemon, setApiLatestDemon] = useState("");
   const [viewMode, setViewMode] = useState("list");
+  const [requestForm, setRequestForm] = useState({
+  levelId: "",
+  type: "Classic",
+  notes: ""
+});
 
   const [showLogin, setShowLogin] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -515,6 +520,51 @@ export default function App() {
             ))}
           </div>
         </section>
+
+<section className="panel request-panel">
+  <h2>Demon Requests</h2>
+
+  <div className="request-form">
+    <input
+      value={requestForm.levelId}
+      onChange={e =>
+        setRequestForm({
+          ...requestForm,
+          levelId: e.target.value
+        })
+      }
+      placeholder="Level ID"
+    />
+
+    <select
+      value={requestForm.type}
+      onChange={e =>
+        setRequestForm({
+          ...requestForm,
+          type: e.target.value
+        })
+      }
+    >
+      <option value="Classic">Classic</option>
+      <option value="Platformer">Platformer</option>
+    </select>
+
+    <textarea
+      value={requestForm.notes}
+      onChange={e =>
+        setRequestForm({
+          ...requestForm,
+          notes: e.target.value
+        })
+      }
+      placeholder="Extra notes..."
+    />
+
+    <button type="button">
+      Submit Request
+    </button>
+  </div>
+</section>
 
         <main className="panel table-panel">
           <div className="table-header">
