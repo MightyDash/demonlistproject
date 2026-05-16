@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Search, X, Trophy, Target, Film, BarChart3 } from "lucide-react";
+import { Search, X, Trophy, Target, Film, BarChart3, Trash2 } from "lucide-react";
 import { SHEET_API_URL } from "./config.js";
 import { mockDemons } from "./mockData.js";
 
@@ -309,6 +309,36 @@ async function handleSaveRequestStatusChanges() {
     setRequestStatusSaving(false);
   }
 }
+  async function handleDeleteRequest(rowNumber) {
+  setRequestError("");
+  setRequestMessage("");
+
+  const confirmDelete = window.confirm("Weet je zeker dat je deze rejected request wilt verwijderen?");
+  if (!confirmDelete) return;
+
+  try {
+    const response = await fetch(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "deleteRequest",
+        rowNumber,
+        token: localStorage.getItem("admin_token")
+      })
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      setRequestError(data.message || "Request verwijderen mislukt.");
+      return;
+    }
+
+    setRequestMessage("Request verwijderd.");
+    loadRequests();
+  } catch {
+    setRequestError("Kon geen verbinding maken.");
+  }
+}
   const difficulties = useMemo(() => {
     const unique = new Set(demons.map(d => d.difficulty).filter(Boolean));
     return ["all", ...Array.from(unique)];
@@ -530,6 +560,7 @@ async function handleSaveRequestStatusChanges() {
   handleRequestStatusDraft={handleRequestStatusDraft}
   handleSaveRequestStatusChanges={handleSaveRequestStatusChanges}
   requestStatusSaving={requestStatusSaving}
+  handleDeleteRequest={handleDeleteRequest}
 />
 ) : (
       <>
@@ -859,7 +890,8 @@ function RequestPanel({
   requestStatusDrafts,
   handleRequestStatusDraft,
   handleSaveRequestStatusChanges,
-  requestStatusSaving
+  requestStatusSaving,
+  handleDeleteRequest
 }) {
   return (
     <section className="panel request-panel">
@@ -958,6 +990,17 @@ function RequestPanel({
             <strong>{request.demon || `Level ${request.levelId}`}</strong>
             <span>ID: {request.levelId}</span>
           </div>
+
+          {isAdmin && String(request.status || "").toLowerCase() === "rejected" && (
+  <button
+    className="request-delete-button"
+    type="button"
+    onClick={() => handleDeleteRequest(request.rowNumber)}
+    title="Delete request"
+  >
+    <Trash2 size={16} />
+  </button>
+)}
 
           {isAdmin ? (
   <select
