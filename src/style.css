@@ -1054,6 +1054,76 @@ h1 {
   outline: none;
 }
 
+.request-status,
+.request-status-select {
+  border-radius: 999px;
+  padding: 7px 12px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.request-status-select {
+  appearance: none;
+  cursor: pointer;
+  outline: none;
+  min-width: 120px;
+  color: white;
+  background-color: rgba(15, 23, 42, 0.95);
+}
+
+.request-status-select option {
+  background: #111827;
+  color: white;
+}
+
+.request-status.pending,
+.request-status-select.pending {
+  background: rgba(94, 161, 255, 0.16);
+  border-color: rgba(94, 161, 255, 0.35);
+  color: #9cc4ff;
+}
+
+.request-status.approved,
+.request-status-select.approved {
+  background: rgba(34, 197, 94, 0.16);
+  border-color: rgba(34, 197, 94, 0.35);
+  color: #86efac;
+}
+
+.request-status.dropped,
+.request-status-select.dropped {
+  background: rgba(245, 158, 11, 0.16);
+  border-color: rgba(245, 158, 11, 0.35);
+  color: #fcd34d;
+}
+
+.request-status.denied,
+.request-status-select.denied {
+  background: rgba(239, 68, 68, 0.16);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+}
+
+.request-status.completed,
+.request-status-select.completed {
+  background: rgba(168, 85, 247, 0.16);
+  border-color: rgba(168, 85, 247, 0.35);
+  color: #d8b4fe;
+}
+
+.request-save-bar {
+  margin-top: 18px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.request-save-bar .login-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 /* ── Admin forms ── */
 .admin-success {
   padding: 12px 14px;
