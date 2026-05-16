@@ -970,7 +970,7 @@ function RequestPanel({
     <option value="Pending">Pending</option>
     <option value="Approved">Approved</option>
     <option value="Dropped">Dropped</option>
-    <option value="Denied">Denied</option>
+    <option value="Rejected">Rejected</option>
     <option value="Completed">Completed</option>
   </select>
 ) : (
