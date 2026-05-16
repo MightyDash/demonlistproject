@@ -1044,6 +1044,16 @@ h1 {
   color: rgba(255,255,255,0.7);
 }
 
+.request-status-select {
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: rgba(94,161,255,0.15);
+  border: 1px solid rgba(94,161,255,0.25);
+  color: #cfe2ff;
+  font-weight: 700;
+  outline: none;
+}
+
 /* ── Admin forms ── */
 .admin-success {
   padding: 12px 14px;
