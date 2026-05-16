@@ -967,14 +967,6 @@ function RequestPanel({
   </div>
 )}
 
-<div className="request-list">
-  {requests.map((request, index) => (
-    <div className="request-card" key={`${request.levelId}-${index}`}>
-      ...
-    </div>
-  ))}
-</div>
-
 {requestsLoading ? (
   <p className="request-loading">Loading requests...</p>
 ) : requests.length === 0 ? (
