@@ -105,24 +105,10 @@ h1 {
 .stat-card,
 .panel {
   border: 1px solid var(--line);
-  background: linear-gradient(
-    180deg,
-    rgba(19, 31, 53, 0.86),
-    rgba(9, 15, 28, 0.86)
-  );
+  background: linear-gradient(180deg, rgba(19, 31, 53, 0.86), rgba(9, 15, 28, 0.86));
   border-radius: 22px;
   box-shadow: var(--shadow);
   backdrop-filter: blur(14px);
-}
-
-/* Alleen panels zonder globale padding */
-.panel {
-  overflow: hidden;
-}
-
-.request-panel {
-  padding: 28px;
-  overflow: hidden;
 }
 
 .stat-card {
@@ -940,26 +926,14 @@ h1 {
 }
 
 .request-panel {
-  padding: 28px;
-  overflow: hidden;
-}
-
-.request-panel .admin-panel-header {
-  padding: 0;
   margin-bottom: 24px;
-  align-items: flex-start;
-}
-
-.request-panel .eyebrow,
-.request-panel h2,
-.request-panel p {
-  margin-left: 0;
 }
 
 .request-form {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  margin-top: 18px;
 }
 
 .request-form input,
@@ -978,17 +952,16 @@ h1 {
   resize: vertical;
 }
 .request-divider {
-  margin: 32px -28px 28px;
   border: none;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(255,255,255,0.08);
+  margin: 28px 0;
 }
 
 .request-list {
-  padding-top: 12px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 18px;
-  align-items: start;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
 }
 
 .request-card {
@@ -996,13 +969,13 @@ h1 {
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 18px;
   background: rgba(15,23,42,0.7);
-  max-width: 430px;
-  width: 100%;
 }
 
 .request-thumb-wrap {
   width: 100%;
-  aspect-ratio: 16 / 8.2;
+  aspect-ratio: 16 / 9;
+  background: rgba(255,255,255,0.04);
+}
 
 .request-thumb {
   width: 100%;
@@ -1012,22 +985,7 @@ h1 {
 }
 
 .request-card-content {
-  padding: 16px 18px 18px;
-  display: grid;
-  gap: 12px;
-}
-
-  .request-card-title {
-  display: grid;
-  gap: 4px;
-  min-width: 0;
-}
-.request-card-title strong {
-  line-height: 1.2;
-}
-.request-card-title span {
-  color: var(--muted);
-  font-size: 0.86rem;
+  padding: 14px;
 }
 
 .request-card-top {
@@ -1063,18 +1021,16 @@ h1 {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  margin: 0;
+  margin-top: 12px;
 }
 
 .request-meta span {
-  display: inline-flex;
-  align-items: center;
   border-radius: 999px;
   padding: 6px 10px;
-  background: rgba(255,255,255,0.07);
+  background: rgba(255,255,255,0.06);
   color: rgba(255,255,255,0.78);
   font-size: 0.82rem;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .request-notes {
@@ -1096,7 +1052,6 @@ h1 {
   color: #cfe2ff;
   font-weight: 700;
   outline: none;
-  text-align: center;
 }
 
 .request-status,
@@ -1126,41 +1081,42 @@ h1 {
 .request-status.pending,
 .request-status-select.pending {
   background: rgba(94, 161, 255, 0.16);
-  border-color: rgba(94, 161, 255, 0.45);
+  border-color: rgba(94, 161, 255, 0.35);
   color: #9cc4ff;
 }
 
 .request-status.approved,
 .request-status-select.approved {
   background: rgba(34, 197, 94, 0.16);
-  border-color: rgba(34, 197, 94, 0.45);
+  border-color: rgba(34, 197, 94, 0.35);
   color: #86efac;
 }
 
 .request-status.dropped,
 .request-status-select.dropped {
   background: rgba(245, 158, 11, 0.16);
-  border-color: rgba(245, 158, 11, 0.45);
+  border-color: rgba(245, 158, 11, 0.35);
   color: #fcd34d;
 }
 
 .request-status.rejected,
 .request-status-select.rejected {
   background: rgba(239, 68, 68, 0.16);
-  border-color: rgba(239, 68, 68, 0.45);
+  border-color: rgba(239, 68, 68, 0.35);
   color: #fca5a5;
 }
 
 .request-status.completed,
 .request-status-select.completed {
   background: rgba(168, 85, 247, 0.16);
-  border-color: rgba(168, 85, 247, 0.45);
+  border-color: rgba(168, 85, 247, 0.35);
   color: #d8b4fe;
 }
 
 .request-save-bar {
-  margin-top: 20px;
-  padding-bottom: 4px;
+  margin-top: 18px;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .request-save-bar .login-button:disabled {
@@ -1186,51 +1142,6 @@ h1 {
 .request-delete-button:hover {
   background: rgba(239, 68, 68, 0.24);
   transform: translateY(-1px);
-}
-
-  .request-card-content {
-  padding: 18px;
-  display: grid;
-  gap: 12px;
-}
-
-.request-card-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 14px;
-}
-
-.request-card-top strong {
-  display: block;
-  margin-bottom: 4px;
-  font-size: 1.05rem;
-  line-height: 1.2;
-}
-
-.request-card-top span {
-  display: block;
-  color: var(--muted);
-  font-size: 0.85rem;
-}
-
-.request-meta {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 0;
-}
-
-.request-meta span {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 999px;
-  padding: 6px 10px;
-}
-
-.request-notes {
-  margin: 0;
-  line-height: 1.55;
 }
 
 /* ── Admin forms ── */
@@ -1515,61 +1426,4 @@ h1 {
   .edit-field-full {
     grid-column: 1;
   }
-}
-.request-status-select {
-  appearance: none;
-  -webkit-appearance: none;
-  min-width: 130px;
-  padding: 9px 34px 9px 14px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background-color: rgba(15, 23, 42, 0.96);
-  color: var(--text);
-  font-weight: 900;
-  cursor: pointer;
-  outline: none;
-  background-image:
-    linear-gradient(45deg, transparent 50%, currentColor 50%),
-    linear-gradient(135deg, currentColor 50%, transparent 50%);
-  background-position:
-    calc(100% - 18px) 50%,
-    calc(100% - 13px) 50%;
-  background-size: 5px 5px, 5px 5px;
-  background-repeat: no-repeat;
-}
-
-.request-status-select option {
-  background: #111827;
-  color: #eaf1ff;
-  font-weight: 800;
-}
-
-.request-status-select.pending {
-  background-color: rgba(94, 161, 255, 0.16);
-  border-color: rgba(94, 161, 255, 0.45);
-  color: #9cc4ff;
-}
-
-.request-status-select.approved {
-  background-color: rgba(34, 197, 94, 0.16);
-  border-color: rgba(34, 197, 94, 0.45);
-  color: #86efac;
-}
-
-.request-status-select.dropped {
-  background-color: rgba(245, 158, 11, 0.16);
-  border-color: rgba(245, 158, 11, 0.45);
-  color: #fcd34d;
-}
-
-.request-status-select.rejected {
-  background-color: rgba(239, 68, 68, 0.16);
-  border-color: rgba(239, 68, 68, 0.45);
-  color: #fca5a5;
-}
-
-.request-status-select.completed {
-  background-color: rgba(168, 85, 247, 0.16);
-  border-color: rgba(168, 85, 247, 0.45);
-  color: #d8b4fe;
 }
