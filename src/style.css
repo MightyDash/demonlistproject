@@ -925,6 +925,33 @@ h1 {
   font-weight: 700;
 }
 
+.request-panel {
+  margin-bottom: 24px;
+}
+
+.request-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.request-form input,
+.request-form select,
+.request-form textarea {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 14px;
+  color: white;
+  font-size: 15px;
+}
+
+.request-form textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
 /* ── Admin forms ── */
 .admin-success {
   padding: 12px 14px;
