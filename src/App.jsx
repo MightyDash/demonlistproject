@@ -579,31 +579,6 @@ export default function App() {
           </div>
         </section>
 
-    <select
-      value={requestForm.type}
-      onChange={e =>
-        setRequestForm({
-          ...requestForm,
-          type: e.target.value
-        })
-      }
-    >
-      <option value="Classic">Classic</option>
-      <option value="Platformer">Platformer</option>
-    </select>
-
-    <textarea
-      placeholder="Extra notes..."
-      value={requestForm.notes}
-      onChange={e =>
-        setRequestForm({
-          ...requestForm,
-          notes: e.target.value
-        })
-      }
-    />
-
-  
         <main className="panel table-panel">
           <div className="table-header">
             <span>{filtered.length} demons shown</span>
