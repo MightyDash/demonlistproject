@@ -525,7 +525,7 @@ async function handleSaveRequestStatusChanges() {
   requests={requests}
   requestsLoading={requestsLoading}
   isAdmin={isAdmin}
-  handleUpdateRequestStatus={handleUpdateRequestStatus}
+  handleRequestStatusDraft={handleRequestStatusDraft}
   requestStatusDrafts={requestStatusDrafts}
   handleRequestStatusDraft={handleRequestStatusDraft}
   handleSaveRequestStatusChanges={handleSaveRequestStatusChanges}
