@@ -978,7 +978,6 @@ function RequestPanel({
     {request.status || "Pending"}
   </span>
 )}
-)}
         </div>
 
         <div className="request-meta">
