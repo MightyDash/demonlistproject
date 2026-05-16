@@ -995,59 +995,56 @@ function RequestPanel({
       </div>
 
       <div className="request-card-content">
-        <div className="request-card-top">
-          <div>
-            <strong>{request.demon || `Level ${request.levelId}`}</strong>
-            <span>ID: {request.levelId}</span>
-          </div>
-
-          {isAdmin && String(request.status || "").toLowerCase() === "rejected" && (
-  <button
-    className="request-delete-button"
-    type="button"
-    onClick={() => handleDeleteRequest(request.rowNumber)}
-    title="Delete request"
-  >
-    <Trash2 size={16} />
-  </button>
-)}
-
-          {isAdmin ? (
-  <select
-    className={`request-status-select ${String(
-      requestStatusDrafts[request.rowNumber] || request.status || "Pending"
-    ).toLowerCase()}`}
-    value={requestStatusDrafts[request.rowNumber] || request.status || "Pending"}
-    onChange={e => handleRequestStatusDraft(request.rowNumber, e.target.value)}
-  >
-    <option value="Pending">Pending</option>
-    <option value="Approved">Approved</option>
-    <option value="Dropped">Dropped</option>
-    <option value="Rejected">Rejected</option>
-    <option value="Completed">Completed</option>
-  </select>
-) : (
-  <span className={`request-status ${String(request.status || "Pending").toLowerCase()}`}>
-    {request.status || "Pending"}
-  </span>
-)}
-        </div>
-
-        <div className="request-meta">
-          <span>{request.type || "Classic"}</span>
-          <span>Weight: {request.weight || 1}</span>
-        </div>
-
-        {request.notes && <p className="request-notes">{request.notes}</p>}
-      </div>
+  <div className="request-card-top">
+    <div className="request-card-title">
+      <strong>{request.demon || `Level ${request.levelId}`}</strong>
+      <span>ID: {request.levelId}</span>
     </div>
-  ))}
+
+    <div className="request-actions">
+      {isAdmin && (
+        <select
+          className={`request-status-select ${String(
+            requestStatusDrafts[request.rowNumber] || request.status || "Pending"
+          ).toLowerCase()}`}
+          value={requestStatusDrafts[request.rowNumber] || request.status || "Pending"}
+          onChange={e => handleRequestStatusDraft(request.rowNumber, e.target.value)}
+        >
+          <option value="Pending">Pending</option>
+          <option value="Approved">Approved</option>
+          <option value="Dropped">Dropped</option>
+          <option value="Rejected">Rejected</option>
+          <option value="Completed">Completed</option>
+        </select>
+      )}
+
+      {!isAdmin && (
+        <span className={`request-status ${String(request.status || "Pending").toLowerCase()}`}>
+          {request.status || "Pending"}
+        </span>
+      )}
+
+      {isAdmin && String(request.status || "").toLowerCase() === "rejected" && (
+        <button
+          className="request-delete-button"
+          type="button"
+          onClick={() => handleDeleteRequest(request.rowNumber)}
+          title="Delete request"
+        >
+          <Trash2 size={16} />
+        </button>
+      )}
+    </div>
+  </div>
+
+  <div className="request-meta">
+    <span>{request.type || "Classic"}</span>
+    <span>Weight: {request.weight || 1}</span>
+  </div>
+
+  {request.notes && <p className="request-notes">{request.notes}</p>}
 </div>
-)}
-      </div>
-    </section>
-  );
-}
+    </div>
 
 function DemonModal({ demon, onClose, onPrev, onNext, hasPrev, hasNext }) {
   const thumbnailSrc = demon.id
