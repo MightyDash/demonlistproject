@@ -112,6 +112,18 @@ export default function App() {
       })
     });
 
+    const data = await response.json();
+
+      console.log("getRequests response:", data);
+
+      if (data.success) {
+        setRequests(data.requests || []);
+      }
+    } finally {
+      setRequestsLoading(false);
+    }
+  }
+
     useEffect(() => {
   if (requestView) {
     loadRequests();
