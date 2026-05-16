@@ -125,14 +125,11 @@ export default function App() {
     setRequestsLoading(false);
   }
 }
-
     useEffect(() => {
   if (requestView) {
     loadRequests();
   }
 }, [requestView]);
-
-    const data = await response.json();
 
     if (data.success) {
       setRequests(data.requests || []);
