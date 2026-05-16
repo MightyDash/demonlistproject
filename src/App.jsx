@@ -866,8 +866,8 @@ function RequestPanel({
       <div className="admin-panel-header">
         <div>
           <p className="eyebrow">Requests</p>
-          <h2>Submit Demon Request</h2>
-          <p>Submit een demon die gespeeld moet worden voor de request list.</p>
+          <h2>Recommend Demon</h2>
+          <p>Recommend me a demon I haven't played yet! Platformers are usually rejected.</p>
         </div>
 
         <button className="admin-button" onClick={onBack} type="button">
@@ -896,7 +896,7 @@ function RequestPanel({
         </select>
 
         <textarea
-          placeholder="Extra notes..."
+          placeholder="Describe this demon in terms of gameplay, decorations and skillsets"
           value={requestForm.notes}
           onChange={e =>
             setRequestForm({ ...requestForm, notes: e.target.value })
