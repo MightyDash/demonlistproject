@@ -1042,9 +1042,16 @@ function RequestPanel({
     <span>Weight: {request.weight || 1}</span>
   </div>
 
-  {request.notes && <p className="request-notes">{request.notes}</p>}
-</div>
+          {request.notes && <p className="request-notes">{request.notes}</p>}
+      </div>
     </div>
+  ))}
+</div>
+)}
+      </div>
+    </section>
+  );
+}
 
 function DemonModal({ demon, onClose, onPrev, onNext, hasPrev, hasNext }) {
   const thumbnailSrc = demon.id
