@@ -863,11 +863,27 @@ function RequestPanel({
   <p className="request-empty">No requests found.</p>
 ) : (
   <div className="request-list">
-    {requests.map((request, index) => (
-      <div className="request-card" key={`${request.levelId}-${index}`}>
+  {requests.map((request, index) => (
+    <div className="request-card" key={`${request.levelId}-${index}`}>
+      <div className="request-thumb-wrap">
+        <img
+          className="request-thumb"
+          src={`https://levelthumbs.prevter.me/thumbnail/${request.levelId}`}
+          alt={request.demon || request.levelId}
+          onError={e => {
+            e.currentTarget.style.display = "none";
+          }}
+        />
+      </div>
+
+      <div className="request-card-content">
         <div className="request-card-top">
-          <strong>{request.levelId}</strong>
-          <span className={`request-status ${String(request.status || "").toLowerCase()}`}>
+          <div>
+            <strong>{request.demon || `Level ${request.levelId}`}</strong>
+            <span>ID: {request.levelId}</span>
+          </div>
+
+          <span className={`request-status ${String(request.status || "Pending").toLowerCase()}`}>
             {request.status || "Pending"}
           </span>
         </div>
@@ -877,12 +893,11 @@ function RequestPanel({
           <span>Weight: {request.weight || 1}</span>
         </div>
 
-        {request.notes && (
-          <p className="request-notes">{request.notes}</p>
-        )}
+        {request.notes && <p className="request-notes">{request.notes}</p>}
       </div>
-    ))}
-  </div>
+    </div>
+  ))}
+</div>
 )}
       </div>
     </section>
