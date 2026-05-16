@@ -82,6 +82,7 @@ export default function App() {
   const [yearView, setYearView] = useState("all");
   const [apiLatestDemon, setApiLatestDemon] = useState("");
   const [viewMode, setViewMode] = useState("list");
+  const [requestView, setRequestView] = useState(false);
   const [requestForm, setRequestForm] = useState({
   levelId: "",
   type: "Classic",
@@ -373,6 +374,14 @@ export default function App() {
           {source === "live" ? "Live Sheet Data" : source === "mock" ? "Mock Data" : "Loading"}
         </div>
 
+        {!adminView && (
+          <button className="admin-button panel-button" onClick={() => setRequestView(true)}
+          type="button"
+          >
+    Demon Requests
+  </button>
+)}
+
         {!isAdmin && (
           <button className="admin-button" onClick={() => setShowLogin(true)} type="button">
             Admin Login
@@ -419,11 +428,21 @@ export default function App() {
     )}
 
     {adminView ? (
-      <AdminPanel
-        onBack={() => setAdminView(false)}
-        onDataChanged={() => window.location.reload()}
-      />
-    ) : (
+  <AdminPanel
+    onBack={() => setAdminView(false)}
+    onDataChanged={() => window.location.reload()}
+  />
+) : requestView ? (
+  <RequestPanel
+    onBack={() => setRequestView(false)}
+    requestForm={requestForm}
+    setRequestForm={setRequestForm}
+    requestLoading={requestLoading}
+    requestMessage={requestMessage}
+    requestError={requestError}
+    handleSubmitRequest={handleSubmitRequest}
+  />
+) : (
       <>
         <section className="stats-grid">
           <StatCard icon={<Trophy />} label="Total Demons" value={formatNumber(stats.total)} />
@@ -831,7 +850,7 @@ export default function App() {
     )}
   </div>
 );
-}
+})
 function StatCard({ icon, label, value, highlight }) {
   return (
     <div className={`stat-card ${highlight ? "highlight" : ""}`}>
@@ -841,6 +860,73 @@ function StatCard({ icon, label, value, highlight }) {
         <strong>{value}</strong>
       </div>
     </div>
+  );
+}
+
+function RequestPanel({
+  onBack,
+  requestForm,
+  setRequestForm,
+  requestLoading,
+  requestMessage,
+  requestError,
+  handleSubmitRequest
+}) {
+  return (
+    <section className="panel request-panel">
+      <div className="admin-panel-header">
+        <div>
+          <p className="eyebrow">Requests</p>
+          <h2>Submit Demon Request</h2>
+          <p>Submit een demon die gespeeld moet worden voor de request list.</p>
+        </div>
+
+        <button className="admin-button" onClick={onBack} type="button">
+          Back to list
+        </button>
+      </div>
+
+      <div className="request-form">
+        <input
+          type="text"
+          placeholder="Level ID"
+          value={requestForm.levelId}
+          onChange={e =>
+            setRequestForm({ ...requestForm, levelId: e.target.value })
+          }
+        />
+
+        <select
+          value={requestForm.type}
+          onChange={e =>
+            setRequestForm({ ...requestForm, type: e.target.value })
+          }
+        >
+          <option value="Classic">Classic</option>
+          <option value="Platformer">Platformer</option>
+        </select>
+
+        <textarea
+          placeholder="Extra notes..."
+          value={requestForm.notes}
+          onChange={e =>
+            setRequestForm({ ...requestForm, notes: e.target.value })
+          }
+        />
+
+        <button
+          className="login-button"
+          onClick={handleSubmitRequest}
+          disabled={requestLoading}
+          type="button"
+        >
+          {requestLoading ? "Submitting..." : "Submit Request"}
+        </button>
+
+        {requestMessage && <p className="admin-success">{requestMessage}</p>}
+        {requestError && <p className="admin-error">{requestError}</p>}
+      </div>
+    </section>
   );
 }
 
