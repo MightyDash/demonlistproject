@@ -105,10 +105,24 @@ h1 {
 .stat-card,
 .panel {
   border: 1px solid var(--line);
-  background: linear-gradient(180deg, rgba(19, 31, 53, 0.86), rgba(9, 15, 28, 0.86));
+  background: linear-gradient(
+    180deg,
+    rgba(19, 31, 53, 0.86),
+    rgba(9, 15, 28, 0.86)
+  );
   border-radius: 22px;
   box-shadow: var(--shadow);
   backdrop-filter: blur(14px);
+}
+
+/* Alleen panels zonder globale padding */
+.panel {
+  overflow: hidden;
+}
+
+.request-panel {
+  padding: 28px;
+  overflow: hidden;
 }
 
 .stat-card {
