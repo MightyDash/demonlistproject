@@ -620,7 +620,6 @@ export default function App() {
       <p className="admin-error">{requestError}</p>
     )}
   </div>
-</section>
 
         <main className="panel table-panel">
           <div className="table-header">
