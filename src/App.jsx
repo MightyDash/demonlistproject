@@ -81,7 +81,7 @@ export default function App() {
   const [selected, setSelected] = useState(null);
   const [yearView, setYearView] = useState("all");
   const [apiLatestDemon, setApiLatestDemon] = useState("");
-  const [viewMode, setViewMode] = useState("list");
+  const [viewMode, setViewMode] = useState("grid");
   const [requestView, setRequestView] = useState(false);
   const [requestForm, setRequestForm] = useState({
   levelId: "",
