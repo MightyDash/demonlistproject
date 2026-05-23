@@ -1143,7 +1143,29 @@ h1 {
   background: rgba(239, 68, 68, 0.24);
   transform: translateY(-1px);
 }
+.request-sort-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin: 14px 0;
+}
 
+.request-sort-row span {
+  color: var(--muted);
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+.request-sort-row select {
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(15, 23, 42, 0.95);
+  color: var(--text);
+  padding: 9px 14px;
+  font-weight: 800;
+  outline: none;
+}
 /* ── Admin forms ── */
 .admin-success {
   padding: 12px 14px;
