@@ -71,11 +71,13 @@ export function DemonListContent({
                 <Search size={18} />
                 <input
                   type="search"
-                  name="demon-search"
+                  name="search"
                   autoComplete="off"
                   autoCorrect="off"
                   autoCapitalize="none"
                   spellCheck="false"
+                  data-lpignore="true"
+                  data-1p-ignore="true"
                   value={query}
                   onChange={e => setQuery(e.target.value)}
                   placeholder="Search demon, creator or ID..."
