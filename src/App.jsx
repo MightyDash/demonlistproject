@@ -42,6 +42,8 @@ export default function App() {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [adminView, setAdminView] = useState(false);
   const [skillsetOpen, setSkillsetOpen] = useState(false);
+  const [isMobileView, setIsMobileView] = useState(false);
+  const [visibleDemonCount, setVisibleDemonCount] = useState(60);
 
   async function loadRequests({ silent = false } = {}) {
   if (!silent) setRequestsLoading(true);
@@ -77,6 +79,20 @@ export default function App() {
     return () => window.clearInterval(intervalId);
   }, [requestView]);
   
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 640px)");
+    const updateMobileView = () => setIsMobileView(mediaQuery.matches);
+
+    updateMobileView();
+    mediaQuery.addEventListener("change", updateMobileView);
+
+    return () => mediaQuery.removeEventListener("change", updateMobileView);
+  }, []);
+
+  useEffect(() => {
+    setVisibleDemonCount(60);
+  }, [query, difficulty, segment, yearView, viewMode, isMobileView]);
+
   useEffect(() => {
     const savedToken = localStorage.getItem("admin_token");
     if (!savedToken) return;
@@ -321,6 +337,14 @@ async function handleSaveRequestStatusChanges() {
     );
   }, [selected, filtered]);
 
+  const displayedDemons = useMemo(() => {
+    if (!isMobileView || viewMode !== "grid") return filtered;
+    return filtered.slice(0, visibleDemonCount);
+  }, [filtered, isMobileView, viewMode, visibleDemonCount]);
+
+  const hasMoreMobileDemons =
+    isMobileView && viewMode === "grid" && visibleDemonCount < filtered.length;
+
   function goToPrev() {
     if (currentIndex > 0) {
       setSelected(filtered[currentIndex - 1]);
@@ -477,7 +501,10 @@ async function handleSaveRequestStatusChanges() {
           setYearView={setYearView}
           viewMode={viewMode}
           setViewMode={setViewMode}
-          filtered={filtered}
+          filtered={displayedDemons}
+          totalCount={filtered.length}
+          hasMoreDemons={hasMoreMobileDemons}
+          onLoadMore={() => setVisibleDemonCount(count => count + 60)}
           apiLatestDemon={apiLatestDemon}
         />
       )}
