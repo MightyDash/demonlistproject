@@ -19,11 +19,22 @@ export function LoginModal({ loginData, setLoginData, loginError, handleLogin, o
                 <p>Login om toegang te krijgen tot het admin panel.</p>
               </div>
     
-              <div className="login-form">
+              <form
+                className="login-form"
+                autoComplete="on"
+                onSubmit={e => {
+                  e.preventDefault();
+                  handleLogin();
+                }}
+              >
                 <label>
                   Username
                   <input
                     className="login-input"
+                    id="admin-username"
+                    name="username"
+                    type="text"
+                    autoComplete="username"
                     placeholder="Enter username"
                     value={loginData.username}
                     onChange={e =>
@@ -36,22 +47,22 @@ export function LoginModal({ loginData, setLoginData, loginError, handleLogin, o
                   Password
                   <input
                     className="login-input"
+                    id="admin-password"
+                    name="password"
                     type="password"
+                    autoComplete="current-password"
                     placeholder="Enter password"
                     value={loginData.password}
                     onChange={e =>
                       setLoginData({ ...loginData, password: e.target.value })
                     }
-                    onKeyDown={e => {
-                      if (e.key === "Enter") handleLogin();
-                    }}
                   />
                 </label>
     
                 {loginError && <p className="login-error">{loginError}</p>}
     
                 <div className="login-actions">
-                  <button className="login-button" onClick={handleLogin} type="button">
+                  <button className="login-button" type="submit">
                     Login
                   </button>
     
@@ -63,8 +74,9 @@ export function LoginModal({ loginData, setLoginData, loginError, handleLogin, o
                     Cancel
                   </button>
                 </div>
-              </div>
+              </form>
             </div>
           </div>
   );
 }
+
