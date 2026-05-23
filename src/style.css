@@ -29,6 +29,51 @@ body {
     linear-gradient(180deg, #0f1724 0%, #080b10 42%, #07090d 100%),
     var(--bg);
   color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::before {
+  background-image:
+    linear-gradient(rgba(73, 163, 255, 0.075) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(73, 163, 255, 0.075) 1px, transparent 1px),
+    linear-gradient(rgba(99, 226, 143, 0.055) 2px, transparent 2px),
+    linear-gradient(90deg, rgba(99, 226, 143, 0.055) 2px, transparent 2px);
+  background-size: 72px 72px, 72px 72px, 288px 288px, 288px 288px;
+  background-position: 0 0, 0 0, 36px 36px, 36px 36px;
+  opacity: 0.34;
+  mask-image: linear-gradient(to bottom, transparent, black 14%, black 82%, transparent);
+  animation: grid-drift 42s linear infinite;
+}
+
+body::after {
+  background:
+    linear-gradient(
+      to bottom,
+      transparent 0%,
+      transparent 47%,
+      rgba(73, 163, 255, 0.11) 49%,
+      rgba(99, 226, 143, 0.06) 50%,
+      transparent 53%,
+      transparent 100%
+    ),
+    radial-gradient(circle at 14% 26%, rgba(73, 163, 255, 0.18) 0 1px, transparent 2px),
+    radial-gradient(circle at 72% 18%, rgba(99, 226, 143, 0.16) 0 1px, transparent 2px),
+    radial-gradient(circle at 84% 68%, rgba(73, 163, 255, 0.14) 0 1px, transparent 2px),
+    radial-gradient(circle at 28% 82%, rgba(99, 226, 143, 0.12) 0 1px, transparent 2px);
+  background-size: 100% 280px, 360px 360px, 420px 420px, 520px 520px, 460px 460px;
+  opacity: 0.62;
+  animation: scanline-sweep 9s ease-in-out infinite, pixel-drift 36s linear infinite;
 }
 
 button,
@@ -42,6 +87,8 @@ button {
 }
 
 .app {
+  position: relative;
+  z-index: 1;
   width: min(1420px, calc(100% - 32px));
   margin: 0 auto;
   padding: 24px 0 60px;
@@ -1452,6 +1499,34 @@ h1 {
   }
   100% {
     box-shadow: 0 0 0 0 rgba(73, 163, 255, 0);
+  }
+}
+
+@keyframes grid-drift {
+  from {
+    background-position: 0 0, 0 0, 36px 36px, 36px 36px;
+  }
+  to {
+    background-position: 72px 72px, 72px 72px, 324px 324px, 324px 324px;
+  }
+}
+
+@keyframes scanline-sweep {
+  0%,
+  100% {
+    background-position: 0 -220px, 0 0, 0 0, 0 0, 0 0;
+  }
+  50% {
+    background-position: 0 220px, 0 0, 0 0, 0 0, 0 0;
+  }
+}
+
+@keyframes pixel-drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-28px, 22px, 0);
   }
 }
 
