@@ -975,31 +975,29 @@ function RequestPanel({
 ) : requests.length === 0 ? (
   <p className="request-empty">No requests found.</p>
 ) : (
-  <div className="request-sort-row">
-  <span>Sort by</span>
+  <>
+    <div className="request-sort-row">
+      <span>Sort by</span>
 
-  <select
-    value={requestSort}
-    onChange={e => setRequestSort(e.target.value)}
-  >
-    <option value="weight">Highest weight</option>
-    <option value="newest">Newest</option>
-    <option value="oldest">Oldest</option>
-  </select>
-</div>
-  <div className="request-list">
-  {sortedRequests.map((request, index) => (
-    <div className="request-card" key={`${request.levelId}-${index}`}>
-      <div className="request-thumb-wrap">
-        <img
-          className="request-thumb"
-          src={`https://levelthumbs.prevter.me/thumbnail/${request.levelId}`}
-          alt={request.demon || request.levelId}
-          onError={e => {
-            e.currentTarget.style.display = "none";
-          }}
-        />
-      </div>
+      <select
+        value={requestSort}
+        onChange={e => setRequestSort(e.target.value)}
+      >
+        <option value="weight">Highest weight</option>
+        <option value="newest">Newest</option>
+        <option value="oldest">Oldest</option>
+      </select>
+    </div>
+
+    <div className="request-list">
+      {sortedRequests.map((request, index) => (
+        <div className="request-card" key={`${request.levelId}-${index}`}>
+          {/* jouw card content hier */}
+        </div>
+      ))}
+    </div>
+  </>
+)}
 
       {isAdmin && (
   <div className="request-save-bar">
