@@ -26,7 +26,8 @@ export function DemonListContent({
   totalCount = filtered.length,
   hasMoreDemons,
   onLoadMore,
-  apiLatestDemon
+  apiLatestDemon,
+  onLatestDemonClick
 }) {
   return (
           <>
@@ -180,7 +181,13 @@ export function DemonListContent({
                 ? `${totalCount} demons shown`
                 : `${filtered.length} of ${totalCount} demons shown`}
             </span>
-            <span>{apiLatestDemon ? `Latest: ${apiLatestDemon}` : ""}</span>
+            {apiLatestDemon ? (
+              <button className="latest-link" onClick={onLatestDemonClick} type="button">
+                Latest: {apiLatestDemon}
+              </button>
+            ) : (
+              <span />
+            )}
           </div>
     
               {viewMode === "list" ? (
@@ -225,6 +232,7 @@ export function DemonListContent({
                     <button
                       className="grid-card"
                       key={`${demon.id}-${demon.name}`}
+                      data-demon-id={demon.id}
                       onClick={() => setSelected(demon)}
                       type="button"
                     >
