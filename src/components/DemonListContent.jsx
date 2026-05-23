@@ -213,6 +213,7 @@ export function DemonListContent({
                       onClick={() => setSelected(demon)}
                       type="button"
                     >
+                      <span className="grid-rank-badge">{demon.placement}</span>
                       <img
                         src={demon.thumbnail}
                         alt={demon.name}
@@ -229,9 +230,11 @@ export function DemonListContent({
                         </div>
     
                         <div className="grid-meta">
-                          <span>{demon.placement}</span>
-                          <span>Tier {formatTier(demon.tier)}</span>
-                          <span>{demon.year || "Unknown"}</span>
+                          <span className="grid-chip tier-chip">Tier {formatTier(demon.tier)}</span>
+                          <span className={`grid-chip difficulty-chip ${difficultyClass(demon.difficulty)}`}>
+                            {demon.difficulty || "Unknown"}
+                          </span>
+                          <span className="grid-chip">{demon.year || "Unknown"}</span>
                         </div>
                       </div>
                     </button>
@@ -242,3 +245,4 @@ export function DemonListContent({
           </>
   );
 }
+
