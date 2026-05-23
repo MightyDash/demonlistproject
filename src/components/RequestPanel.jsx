@@ -50,24 +50,28 @@ export function RequestPanel({
       </div>
 
       <div className="request-form">
-        <input
-          type="text"
-          placeholder="Level ID"
-          value={requestForm.levelId}
-          onChange={e =>
-            setRequestForm({ ...requestForm, levelId: e.target.value })
-          }
-        />
+        <div className="request-form-row">
+          <input
+            type="text"
+            inputMode="numeric"
+            autoComplete="off"
+            placeholder="Level ID"
+            value={requestForm.levelId}
+            onChange={e =>
+              setRequestForm({ ...requestForm, levelId: e.target.value })
+            }
+          />
 
-        <select
-          value={requestForm.type}
-          onChange={e =>
-            setRequestForm({ ...requestForm, type: e.target.value })
-          }
-        >
-          <option value="Classic">Classic</option>
-          <option value="Platformer">Platformer</option>
-        </select>
+          <select
+            value={requestForm.type}
+            onChange={e =>
+              setRequestForm({ ...requestForm, type: e.target.value })
+            }
+          >
+            <option value="Classic">Classic</option>
+            <option value="Platformer">Platformer</option>
+          </select>
+        </div>
 
         <textarea
           placeholder="Describe this demon in terms of gameplay, decorations and skillsets"
@@ -93,9 +97,15 @@ export function RequestPanel({
 <h2>Submissions</h2>
 
 {requestsLoading ? (
-  <p className="request-loading">Loading requests...</p>
+  <div className="request-loading">
+    <span className="loading-dot" />
+    Loading requests...
+  </div>
 ) : requests.length === 0 ? (
-  <p className="request-empty">No requests found.</p>
+  <div className="request-empty">
+    <strong>No requests found.</strong>
+    <span>New recommendations will appear here.</span>
+  </div>
 ) : (
   <>
     <div className="request-sort-row">
@@ -200,3 +210,4 @@ export function RequestPanel({
     </section>
   );
 }
+
