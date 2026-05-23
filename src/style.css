@@ -1044,12 +1044,25 @@ h1 {
   isolation: isolate;
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   animation: card-in 0.28s ease both;
+  content-visibility: auto;
+  contain-intrinsic-size: 170px;
 }
 
 .grid-card:hover {
   transform: translateY(-5px);
   border-color: rgba(94, 161, 255, 0.55);
   box-shadow: var(--glow);
+}
+
+.load-more-row {
+  display: flex;
+  justify-content: center;
+  padding: 6px 16px 20px;
+}
+
+.load-more-button {
+  flex: 0 1 260px;
+  min-height: 46px;
 }
 
 .grid-thumb {
@@ -1907,6 +1920,26 @@ h1 {
   .demon-grid {
     grid-template-columns: 1fr;
     padding: 10px;
+  }
+
+  body::before,
+  body::after {
+    animation: none;
+    opacity: 0.18;
+  }
+
+  .grid-card {
+    animation: none;
+  }
+
+  .grid-card:hover {
+    transform: none;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
+  }
+
+  .grid-card:hover .grid-thumb {
+    transform: scale(1.01);
+    filter: none;
   }
 
   .row {
