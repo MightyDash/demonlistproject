@@ -1188,6 +1188,94 @@ h1 {
   animation: panel-in 0.35s ease both;
 }
 
+.recent-panel {
+  padding: 24px;
+  animation: panel-in 0.35s ease both;
+}
+
+.recent-list {
+  display: grid;
+  gap: 12px;
+}
+
+.recent-card {
+  padding: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.045);
+  animation: card-in 0.28s ease both;
+}
+
+.recent-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.recent-card time {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.recent-card h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 1.2rem;
+}
+
+.recent-card p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.recent-type {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(73, 163, 255, 0.35);
+  background: rgba(73, 163, 255, 0.12);
+  color: #b8dcff;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.recent-type.new-entry,
+.recent-type.new {
+  border-color: rgba(99, 226, 143, 0.35);
+  background: rgba(99, 226, 143, 0.12);
+  color: #adf4c6;
+}
+
+.recent-type.removed,
+.recent-type.remove {
+  border-color: rgba(255, 107, 122, 0.35);
+  background: rgba(255, 107, 122, 0.12);
+  color: #ffc0c8;
+}
+
+.recent-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.recent-meta span {
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--text);
+  padding: 6px 10px;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
 .request-form {
   display: flex;
   flex-direction: column;
@@ -1897,7 +1985,8 @@ h1 {
   }
 
   .request-panel,
-  .admin-panel {
+  .admin-panel,
+  .recent-panel {
     padding: 16px;
   }
 
