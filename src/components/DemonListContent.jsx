@@ -23,6 +23,9 @@ export function DemonListContent({
   viewMode,
   setViewMode,
   filtered,
+  totalCount = filtered.length,
+  hasMoreDemons,
+  onLoadMore,
   apiLatestDemon
 }) {
   return (
@@ -171,10 +174,14 @@ export function DemonListContent({
             </section>
     
             <main className="panel table-panel">
-              <div className="table-header">
-                <span>{filtered.length} demons shown</span>
-                <span>{apiLatestDemon ? `Latest: ${apiLatestDemon}` : ""}</span>
-              </div>
+          <div className="table-header">
+            <span>
+              {filtered.length === totalCount
+                ? `${totalCount} demons shown`
+                : `${filtered.length} of ${totalCount} demons shown`}
+            </span>
+            <span>{apiLatestDemon ? `Latest: ${apiLatestDemon}` : ""}</span>
+          </div>
     
               {viewMode === "list" ? (
                 <div className="demon-table">
@@ -226,6 +233,8 @@ export function DemonListContent({
                         src={demon.thumbnail}
                         alt={demon.name}
                         className="grid-thumb"
+                        loading="lazy"
+                        decoding="async"
                         onError={e => {
                           e.currentTarget.style.display = "none";
                         }}
@@ -247,6 +256,13 @@ export function DemonListContent({
                       </div>
                     </button>
                   ))}
+                </div>
+              )}
+              {hasMoreDemons && (
+                <div className="load-more-row">
+                  <button className="login-button load-more-button" onClick={onLoadMore} type="button">
+                    Load more demons
+                  </button>
                 </div>
               )}
             </main>
