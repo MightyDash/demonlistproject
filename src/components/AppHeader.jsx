@@ -4,7 +4,9 @@ export function AppHeader({
   adminView,
   source,
   isAdmin,
+  historyView,
   onOpenRequests,
+  onOpenHistory,
   onOpenLogin,
   onOpenAdmin,
   onCloseAdmin,
@@ -28,6 +30,12 @@ export function AppHeader({
             </div>
     
             {!adminView && (
+              <button className="admin-button panel-button" onClick={onOpenHistory} type="button">
+                {historyView ? "Back to list" : "Recent Changes"}
+              </button>
+            )}
+
+            {!adminView && !historyView && (
               <button className="admin-button panel-button" onClick={onOpenRequests} type="button">
                 Demon Requests
               </button>
@@ -60,3 +68,4 @@ export function AppHeader({
         </header>
   );
 }
+
