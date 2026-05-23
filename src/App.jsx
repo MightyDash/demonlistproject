@@ -382,6 +382,44 @@ async function handleSaveRequestStatusChanges() {
   const hasMoreMobileDemons =
     isMobileView && viewMode === "grid" && visibleDemonCount < filtered.length;
 
+  function handleLatestDemonClick() {
+    const latestName = String(apiLatestDemon || "").trim();
+    if (!latestName) return;
+
+    const latest = demons.find(
+      demon => demon.name.toLowerCase() === latestName.toLowerCase()
+    );
+
+    if (!latest) return;
+
+    const sortedDemons = demons
+      .slice()
+      .sort((a, b) => placementNumber(a.placement) - placementNumber(b.placement));
+    const latestIndex = sortedDemons.findIndex(
+      demon => demon.id === latest.id && demon.name === latest.name
+    );
+
+    setQuery("");
+    setDifficulty("all");
+    setSegment("all");
+    setYearView("all");
+    setViewMode("grid");
+
+    if (latestIndex >= 0) {
+      setVisibleDemonCount(Math.max(60, Math.ceil((latestIndex + 1) / 60) * 60));
+    }
+
+    window.setTimeout(() => {
+      const escapedId = window.CSS?.escape ? window.CSS.escape(latest.id) : latest.id;
+      const card = document.querySelector(`[data-demon-id="${escapedId}"]`);
+      if (!card) return;
+
+      card.scrollIntoView({ behavior: "smooth", block: "center" });
+      card.classList.add("grid-card-highlight");
+      window.setTimeout(() => card.classList.remove("grid-card-highlight"), 1800);
+    }, 80);
+  }
+
   function goToPrev() {
     if (currentIndex > 0) {
       setSelected(filtered[currentIndex - 1]);
@@ -558,6 +596,7 @@ async function handleSaveRequestStatusChanges() {
           hasMoreDemons={hasMoreMobileDemons}
           onLoadMore={() => setVisibleDemonCount(count => count + 60)}
           apiLatestDemon={apiLatestDemon}
+          onLatestDemonClick={handleLatestDemonClick}
         />
       )}
 
