@@ -70,12 +70,6 @@ export function DemonModal({ demon, onClose, onPrev, onNext, hasPrev, hasNext })
             </div>
           )}
 
-          <div className="modal-chip-row">
-            <span>{demon.difficulty || "Unknown difficulty"}</span>
-            <span>{formatNumber(demon.attempts)} attempts</span>
-            <span>{demon.year || "Unknown year"}</span>
-          </div>
-
           <div className="detail-grid">
             <Detail label="Level ID" value={demon.id} />
             <Detail label="Tier" value={formatTier(demon.tier)} />
