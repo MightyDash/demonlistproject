@@ -88,6 +88,7 @@ export default function App() {
   type: "Classic",
   notes: ""
 });
+  const [requestSort, setRequestSort] = useState("weight");
   const [requestStatusDrafts, setRequestStatusDrafts] = useState({});
   const [requestStatusSaving, setRequestStatusSaving] = useState(false);
   const [requests, setRequests] = useState([]);
@@ -561,6 +562,8 @@ async function handleSaveRequestStatusChanges() {
   handleSaveRequestStatusChanges={handleSaveRequestStatusChanges}
   requestStatusSaving={requestStatusSaving}
   handleDeleteRequest={handleDeleteRequest}
+  requestSort={requestSort}
+  setRequestSort={setRequestSort}
 />
 ) : (
       <>
@@ -891,8 +894,25 @@ function RequestPanel({
   handleRequestStatusDraft,
   handleSaveRequestStatusChanges,
   requestStatusSaving,
-  handleDeleteRequest
+  handleDeleteRequest,
+  requestSort,
+  setRequestSort
 }) {
+  const sortedRequests = [...requests].sort((a, b) => {
+  if (requestSort === "newest") {
+    return new Date(b.timestamp) - new Date(a.timestamp);
+  }
+
+  if (requestSort === "oldest") {
+    return new Date(a.timestamp) - new Date(b.timestamp);
+  }
+
+  if (requestSort === "weight") {
+    return Number(b.weight || 1) - Number(a.weight || 1);
+  }
+
+  return 0;
+});
   return (
     <section className="panel request-panel">
       <div className="admin-panel-header">
@@ -955,8 +975,20 @@ function RequestPanel({
 ) : requests.length === 0 ? (
   <p className="request-empty">No requests found.</p>
 ) : (
+  <div className="request-sort-row">
+  <span>Sort by</span>
+
+  <select
+    value={requestSort}
+    onChange={e => setRequestSort(e.target.value)}
+  >
+    <option value="weight">Highest weight</option>
+    <option value="newest">Newest</option>
+    <option value="oldest">Oldest</option>
+  </select>
+</div>
   <div className="request-list">
-  {requests.map((request, index) => (
+  {sortedRequests.map((request, index) => (
     <div className="request-card" key={`${request.levelId}-${index}`}>
       <div className="request-thumb-wrap">
         <img
