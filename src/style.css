@@ -356,7 +356,7 @@ h1 {
   inset: 0;
   display: grid;
   place-items: center;
-  padding: 20px;
+  padding: 20px 96px;
   background: rgba(2, 6, 14, 0.74);
   backdrop-filter: blur(10px);
   z-index: 9999;
@@ -508,11 +508,11 @@ h1 {
 }
 
 .nav-button.left {
-  left: max(22px, calc(50% - 580px));
+  left: 28px;
 }
 
 .nav-button.right {
-  right: max(22px, calc(50% - 580px));
+  right: 28px;
 }
 
 .nav-button:hover {
@@ -1646,12 +1646,17 @@ h1 {
     min-height: 220px;
   }
 
+  .modal-backdrop {
+    padding-left: 76px;
+    padding-right: 76px;
+  }
+
   .nav-button.left {
-    left: 18px;
+    left: 16px;
   }
 
   .nav-button.right {
-    right: 18px;
+    right: 16px;
   }
 }
 
@@ -1659,6 +1664,28 @@ h1 {
   .app {
     width: min(100% - 20px, 1380px);
     padding-top: 22px;
+  }
+
+  .modal-backdrop {
+    padding: 12px;
+  }
+
+  .nav-button {
+    top: auto;
+    bottom: 18px;
+    transform: none;
+  }
+
+  .nav-button:hover {
+    transform: translateY(-2px);
+  }
+
+  .nav-button.left {
+    left: 18px;
+  }
+
+  .nav-button.right {
+    right: 18px;
   }
 
   .hero {
