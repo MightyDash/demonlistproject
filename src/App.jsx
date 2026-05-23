@@ -990,14 +990,15 @@ function RequestPanel({
     </div>
 
     <div className="request-list">
-      {sortedRequests.map((request, index) => (
-        <div className="request-card" key={`${request.levelId}-${index}`}>
-          {/* jouw card content hier */}
-        </div>
-      ))}
+  {sortedRequests.map((request, index) => (
+    <div
+      className="request-card"
+      key={`${request.levelId}-${index}`}
+    >
+      {/* content */}
     </div>
-  </>
   ))}
+</div>
     
       {isAdmin && (
   <div className="request-save-bar">
