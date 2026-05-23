@@ -43,8 +43,8 @@ export default function App() {
   const [adminView, setAdminView] = useState(false);
   const [skillsetOpen, setSkillsetOpen] = useState(false);
 
-  async function loadRequests() {
-  setRequestsLoading(true);
+  async function loadRequests({ silent = false } = {}) {
+  if (!silent) setRequestsLoading(true);
 
   try {
     const response = await fetch(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
@@ -62,15 +62,20 @@ export default function App() {
         setRequests(data.requests || []);
       }
     } finally {
-      setRequestsLoading(false);
+      if (!silent) setRequestsLoading(false);
     }
   }
 
-    useEffect(() => {
-  if (requestView) {
+  useEffect(() => {
+    if (!requestView) return;
+
     loadRequests();
-  }
-}, [requestView]);
+    const intervalId = window.setInterval(() => {
+      loadRequests({ silent: true });
+    }, 15000);
+
+    return () => window.clearInterval(intervalId);
+  }, [requestView]);
   
   useEffect(() => {
     const savedToken = localStorage.getItem("admin_token");
@@ -166,7 +171,6 @@ export default function App() {
   async function handleSubmitRequest() {
   setRequestLoading(true);
   setRequestMessage("");
-  loadRequests();
   setRequestError("");
 
   try {
@@ -194,6 +198,7 @@ export default function App() {
       type: "Classic",
       notes: ""
     });
+    await loadRequests({ silent: true });
   } catch (error) {
     setRequestError("Kon geen verbinding maken.");
   } finally {
@@ -242,7 +247,7 @@ async function handleSaveRequestStatusChanges() {
 
     setRequestStatusDrafts({});
     setRequestMessage("Status wijzigingen opgeslagen.");
-    loadRequests();
+    await loadRequests({ silent: true });
   } catch (error) {
     setRequestError("Kon geen verbinding maken.");
   } finally {
@@ -274,7 +279,7 @@ async function handleSaveRequestStatusChanges() {
     }
 
     setRequestMessage("Request verwijderd.");
-    loadRequests();
+    await loadRequests({ silent: true });
   } catch {
     setRequestError("Kon geen verbinding maken.");
   }
@@ -503,3 +508,4 @@ async function handleSaveRequestStatusChanges() {
     </div>
   );
 }
+
