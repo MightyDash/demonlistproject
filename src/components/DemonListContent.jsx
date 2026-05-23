@@ -70,6 +70,12 @@ export function DemonListContent({
               <div className="searchbox">
                 <Search size={18} />
                 <input
+                  type="search"
+                  name="demon-search"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="none"
+                  spellCheck="false"
                   value={query}
                   onChange={e => setQuery(e.target.value)}
                   placeholder="Search demon, creator or ID..."
