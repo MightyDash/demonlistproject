@@ -367,7 +367,7 @@ h1 {
   position: relative;
   display: grid;
   grid-template-columns: 1fr;
-  width: min(940px, 100%);
+  width: min(940px, calc(100% - 160px));
   max-height: calc(100vh - 32px);
   overflow: auto;
   border-radius: 8px;
@@ -491,13 +491,13 @@ h1 {
   position: fixed;
   top: 50%;
   transform: translateY(-50%);
-  width: 46px;
-  height: 46px;
+  width: 54px;
+  height: 54px;
   display: grid;
   place-items: center;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(8, 13, 20, 0.68);
+  background: rgba(8, 13, 20, 0.84);
   color: var(--text);
   cursor: pointer;
   pointer-events: auto;
@@ -508,11 +508,11 @@ h1 {
 }
 
 .nav-button.left {
-  left: calc(50% - 500px);
+  left: max(22px, calc(50% - 580px));
 }
 
 .nav-button.right {
-  right: calc(50% - 500px);
+  right: max(22px, calc(50% - 580px));
 }
 
 .nav-button:hover {
@@ -540,26 +540,6 @@ h1 {
 .creator {
   margin: 8px 0 24px;
   color: var(--muted);
-}
-
-.modal-chip-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 0 0 18px;
-}
-
-.modal-chip-row span {
-  display: inline-flex;
-  align-items: center;
-  min-height: 34px;
-  padding: 0 11px;
-  border-radius: 8px;
-  border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.045);
-  color: var(--text);
-  font-size: 0.84rem;
-  font-weight: 800;
 }
 
 .detail-grid {
