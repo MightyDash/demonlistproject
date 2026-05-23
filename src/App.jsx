@@ -7,6 +7,7 @@ import { DemonListContent } from "./components/DemonListContent.jsx";
 import { DemonModal } from "./components/DemonModal.jsx";
 import { LoginModal } from "./components/LoginModal.jsx";
 import { LogoutConfirm } from "./components/LogoutConfirm.jsx";
+import { RecentChanges } from "./components/RecentChanges.jsx";
 import { RequestPanel } from "./components/RequestPanel.jsx";
 import { normalizeDemon, placementNumber, segmentForPlacement } from "./demonUtils.js";
 
@@ -22,6 +23,7 @@ export default function App() {
   const [apiLatestDemon, setApiLatestDemon] = useState("");
   const [viewMode, setViewMode] = useState("grid");
   const [requestView, setRequestView] = useState(false);
+  const [historyView, setHistoryView] = useState(false);
   const [requestForm, setRequestForm] = useState({
   levelId: "",
   type: "Classic",
@@ -36,6 +38,9 @@ export default function App() {
   const [requestMessage, setRequestMessage] = useState("");
   const [requestError, setRequestError] = useState("");
   const [showLogin, setShowLogin] = useState(false);
+  const [historyChanges, setHistoryChanges] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
   const [loginData, setLoginData] = useState({ username: "", password: "" });
   const [loginError, setLoginError] = useState("");
@@ -68,6 +73,27 @@ export default function App() {
     }
   }
 
+  async function loadHistoryChanges({ silent = false } = {}) {
+    if (!SHEET_API_URL) return;
+    if (!silent) {
+      setHistoryLoading(true);
+      setHistoryError("");
+    }
+
+    try {
+      const separator = SHEET_API_URL.includes("?") ? "&" : "?";
+      const response = await fetch(`${SHEET_API_URL}${separator}view=history&limit=60`);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+      const data = await response.json();
+      setHistoryChanges(data.changes || []);
+    } catch (error) {
+      setHistoryError("Could not load recent changes.");
+    } finally {
+      if (!silent) setHistoryLoading(false);
+    }
+  }
+
   useEffect(() => {
     if (!requestView) return;
 
@@ -78,6 +104,17 @@ export default function App() {
 
     return () => window.clearInterval(intervalId);
   }, [requestView]);
+
+  useEffect(() => {
+    if (!historyView) return;
+
+    loadHistoryChanges();
+    const intervalId = window.setInterval(() => {
+      loadHistoryChanges({ silent: true });
+    }, 30000);
+
+    return () => window.clearInterval(intervalId);
+  }, [historyView]);
   
   useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 640px)");
@@ -442,7 +479,15 @@ async function handleSaveRequestStatusChanges() {
         adminView={adminView}
         source={source}
         isAdmin={isAdmin}
-        onOpenRequests={() => setRequestView(true)}
+        historyView={historyView}
+        onOpenRequests={() => {
+          setHistoryView(false);
+          setRequestView(true);
+        }}
+        onOpenHistory={() => {
+          setRequestView(false);
+          setHistoryView(open => !open);
+        }}
         onOpenLogin={() => setShowLogin(true)}
         onOpenAdmin={() => setAdminView(true)}
         onCloseAdmin={() => setAdminView(false)}
@@ -480,6 +525,13 @@ async function handleSaveRequestStatusChanges() {
           handleDeleteRequest={handleDeleteRequest}
           requestSort={requestSort}
           setRequestSort={setRequestSort}
+        />
+      ) : historyView ? (
+        <RecentChanges
+          changes={historyChanges}
+          loading={historyLoading}
+          error={historyError}
+          onBack={() => setHistoryView(false)}
         />
       ) : (
         <DemonListContent
