@@ -996,6 +996,8 @@ function RequestPanel({
         </div>
       ))}
     </div>
+  </>
+  ))}
     
       {isAdmin && (
   <div className="request-save-bar">
