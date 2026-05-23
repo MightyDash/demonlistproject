@@ -481,10 +481,7 @@ h1 {
 }
 
 .modal-nav {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 9999;
+  display: none;
 }
 
 .nav-button {
@@ -1644,6 +1641,14 @@ h1 {
   .modal-cover,
   .thumbnail-placeholder {
     min-height: 220px;
+  }
+
+  .modal-nav {
+    position: fixed;
+    inset: 0;
+    display: block;
+    pointer-events: none;
+    z-index: 9999;
   }
 
   .modal-backdrop {
