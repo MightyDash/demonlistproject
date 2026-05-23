@@ -305,11 +305,27 @@ h1 {
 .table-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 16px;
   padding: 16px 18px;
   border-bottom: 1px solid var(--line);
   color: var(--muted);
   font-size: 14px;
+}
+
+.latest-link {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-weight: 800;
+  padding: 0;
+  transition: color 0.18s ease, transform 0.18s ease;
+}
+
+.latest-link:hover {
+  color: var(--blue);
+  transform: translateY(-1px);
 }
 
 .demon-table {
@@ -1052,6 +1068,13 @@ h1 {
   transform: translateY(-5px);
   border-color: rgba(94, 161, 255, 0.55);
   box-shadow: var(--glow);
+}
+
+.grid-card-highlight {
+  border-color: rgba(99, 226, 143, 0.72) !important;
+  box-shadow:
+    0 0 0 2px rgba(99, 226, 143, 0.36),
+    0 18px 54px rgba(99, 226, 143, 0.22) !important;
 }
 
 .load-more-row {
