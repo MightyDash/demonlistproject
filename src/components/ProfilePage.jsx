@@ -1,25 +1,6 @@
 import React from "react";
 import { formatNumber, formatTier } from "../demonUtils.js";
 
-const PROFILE_FEATURES = [
-  {
-    title: "My Demon List",
-    description: "A personal list workspace will connect here later."
-  },
-  {
-    title: "My Requests",
-    description: "Track the demons you recommended."
-  },
-  {
-    title: "Favorites",
-    description: "Save demons you want to revisit."
-  },
-  {
-    title: "Progress Tracker",
-    description: "Log attempts, runs and completions."
-  }
-];
-
 function MiniDemonList({ title, demons, emptyText, onOpenDemon, getMeta }) {
   return (
     <section className="profile-list-panel">
@@ -57,10 +38,14 @@ export function ProfilePage({
   user,
   favoriteDemons = [],
   progressDemons = [],
+  personalList,
+  onCreatePersonalList,
+  onOpenPersonalList,
   onOpenDemon,
   onBack
 }) {
   const completedCount = progressDemons.filter(item => item.progress?.status === "Completed").length;
+  const hasPersonalList = Boolean(personalList);
 
   return (
     <section className="panel profile-panel">
@@ -88,19 +73,21 @@ export function ProfilePage({
 
       <div className="build-list-panel">
         <div>
-          <p className="eyebrow">Create</p>
-          <h3>Build Your Own List!</h3>
+          <p className="eyebrow">{hasPersonalList ? "Personal list" : "Create"}</p>
+          <h3>{hasPersonalList ? "Go to your Demon List" : "Build Your Own List!"}</h3>
           <p>
-            Start your personal demon list. Google Sheets sync and list tools can be connected here later.
+            {hasPersonalList
+              ? "You already have a personal demon list on this account. Each account can have one list."
+              : "Start your personal demon list. Each account can create one personal list."}
           </p>
         </div>
 
         <button
           className="login-button build-list-button"
-          onClick={() => window.alert("Build Your Own List is coming soon.")}
+          onClick={hasPersonalList ? onOpenPersonalList : onCreatePersonalList}
           type="button"
         >
-          Build Your Own List!
+          {hasPersonalList ? "Go to your Demon List" : "Build Your Own List!"}
         </button>
       </div>
 
@@ -115,7 +102,7 @@ export function ProfilePage({
         </article>
         <article>
           <span>Personal lists</span>
-          <strong>0</strong>
+          <strong>{hasPersonalList ? "1" : "0"}</strong>
         </article>
       </div>
 
@@ -134,15 +121,6 @@ export function ProfilePage({
           onOpenDemon={onOpenDemon}
           getMeta={item => `${item.progress?.status || "Tracked"} - ${item.demon.difficulty || "Unknown"}`}
         />
-      </div>
-
-      <div className="profile-feature-grid">
-        {PROFILE_FEATURES.map(feature => (
-          <article className="profile-feature-card" key={feature.title}>
-            <strong>{feature.title}</strong>
-            <span>{feature.description}</span>
-          </article>
-        ))}
       </div>
     </section>
   );
