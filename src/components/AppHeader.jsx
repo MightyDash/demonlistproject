@@ -8,6 +8,7 @@ export function AppHeader({
   historyView,
   onOpenRequests,
   onOpenHistory,
+  onOpenProfile,
   onOpenLogin,
   onOpenAdmin,
   onCloseAdmin,
@@ -49,10 +50,10 @@ export function AppHeader({
             )}
 
             {!isAdmin && currentUser && (
-              <span className="user-pill">
+              <button className="user-pill" onClick={onOpenProfile} type="button">
                 {currentUser.picture && <img src={currentUser.picture} alt="" />}
                 {currentUser.name}
-              </span>
+              </button>
             )}
     
             {isAdmin && !adminView && (
