@@ -719,14 +719,21 @@ h1 {
 }
 
 .google-login-box {
-  display: grid;
-  place-items: center;
+  display: flex;
+  justify-content: center;
   min-height: 54px;
-  margin-bottom: 12px;
+  margin: 20px 0 14px;
 }
 
 .google-login-button {
+  display: flex;
+  justify-content: center;
+  width: 100%;
   min-height: 44px;
+}
+
+.google-login-button > div {
+  margin: 0 auto !important;
 }
 
 .login-hint {
