@@ -1,5 +1,37 @@
 import React, { useState } from "react";
 
+const SKILLSET_CATALOG = [
+  ["Cube", "This level has cube sections that make up a large portion of its difficulty."],
+  ["Ship", "This level has ship sections that make up a large portion of its difficulty."],
+  ["Ball", "This level has ball sections that make up a large portion of its difficulty."],
+  ["UFO", "This level has UFO sections that make up a large portion of its difficulty."],
+  ["Wave", "This level has wave sections that make up a large portion of its difficulty."],
+  ["Robot", "This level has robot sections that make up a large portion of its difficulty."],
+  ["Spider", "This level has spider sections that make up a large portion of its difficulty."],
+  ["Nerve Control", "This level tests your consistency and ability to handle stress near the end of the level."],
+  ["Gimmicky", "This level primarily focuses on developing an experimental, unorthodox gameplay type."],
+  ["Memory", "This level requires remembering a complex path to complete, usually with several fakes, potential routes, and/or visual obscurity."],
+  ["Learny", "This level needs a significant time investment in order to understand its complex/unintuitive gameplay."],
+  ["Duals", "This level has duals that make up a large portion of its difficulty. Generally refers to asymmetrical duals."],
+  ["Fast-Paced", "This level has fast-moving sections (3x or 4x speed) for the majority of the level."],
+  ["Chokepoints", "This level contains parts with very condensed difficulty in relation to the rest of the level."],
+  ["High CPS", "This level has several sections that require very fast (usually controlled) inputs."],
+  ["Timings", "This level tests your ability to perform many very precise inputs."],
+  ["Overall", "This level has no specific skillset it tests, instead drawing on multiple skillsets in smaller proportion for its difficulty."],
+  ["Slow-Paced", "This level has slower-moving sections (0.5x) for a large part of the level."],
+  ["Swing", "This level has swing copter sections that make up a large portion of its difficulty."],
+  ["Flow", "This level has many dynamic gameplay transitions throughout the level, forming a smooth and flowy type of gameplay."]
+].map(([name, description]) => ({ name, description }));
+
+const SKILLSET_NAMES = SKILLSET_CATALOG.map(skillset => skillset.name);
+
+function parseSkillsets(value) {
+  return String(value || "")
+    .split(",")
+    .map(item => item.trim())
+    .filter(Boolean);
+}
+
 export function AdminPanel({ onBack, onDataChanged }) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showRemoveForm, setShowRemoveForm] = useState(false);
@@ -32,6 +64,41 @@ export function AdminPanel({ onBack, onDataChanged }) {
   const [adminMessage, setAdminMessage] = useState("");
   const [adminError, setAdminError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  function selectedSkillsets() {
+    return parseSkillsets(editForm.skillsets);
+  }
+
+  function setSelectedSkillsets(skillsets) {
+    const cleanSkillsets = skillsets.filter((skillset, index) =>
+      skillset && skillsets.indexOf(skillset) === index
+    );
+
+    setEditForm({
+      ...editForm,
+      skillsets: cleanSkillsets.join(", ")
+    });
+  }
+
+  function addSkillset(skillset) {
+    if (!SKILLSET_NAMES.includes(skillset)) return;
+    const current = selectedSkillsets();
+    if (current.includes(skillset)) return;
+    setSelectedSkillsets([...current, skillset]);
+  }
+
+  function removeSkillset(skillset) {
+    setSelectedSkillsets(selectedSkillsets().filter(item => item !== skillset));
+  }
+
+  function toggleSkillset(skillset) {
+    const current = selectedSkillsets();
+    if (current.includes(skillset)) {
+      removeSkillset(skillset);
+    } else {
+      addSkillset(skillset);
+    }
+  }
 
   async function handleSearchEdit() {
     setAdminMessage("");
@@ -496,6 +563,96 @@ export function AdminPanel({ onBack, onDataChanged }) {
                 <span className="edit-found-id">ID: {editFound.id}</span>
               </div>
 
+              {(() => {
+                const currentSkillsets = selectedSkillsets();
+                const availableSkillsets = SKILLSET_CATALOG.filter(
+                  skillset => !currentSkillsets.includes(skillset.name)
+                );
+
+                return (
+                  <div className="skillset-picker">
+                    <div className="skillset-picker-header">
+                      <div>
+                        <span>Skillsets</span>
+                        <strong>Drag skillsets to this demon</strong>
+                      </div>
+                      <small>{currentSkillsets.length} selected</small>
+                    </div>
+
+                    <div className="skillset-drag-layout">
+                      <div className="skillset-bank">
+                        <span className="skillset-picker-label">Available</span>
+                        <div className="skillset-chip-grid">
+                          {availableSkillsets.map(skillset => (
+                            <button
+                              className="skillset-choice"
+                              key={skillset.name}
+                              type="button"
+                              draggable
+                              onClick={() => addSkillset(skillset.name)}
+                              onDragStart={event => {
+                                event.dataTransfer.setData("text/plain", skillset.name);
+                                event.dataTransfer.effectAllowed = "copy";
+                              }}
+                            >
+                              {skillset.name}
+                              <span className="skillset-tooltip">{skillset.description}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div
+                        className="skillset-drop-zone"
+                        onDragOver={event => {
+                          event.preventDefault();
+                          event.dataTransfer.dropEffect = "copy";
+                        }}
+                        onDrop={event => {
+                          event.preventDefault();
+                          addSkillset(event.dataTransfer.getData("text/plain"));
+                        }}
+                      >
+                        <span className="skillset-picker-label">Selected for {editFound.name}</span>
+                        {currentSkillsets.length > 0 ? (
+                          <div className="skillset-selected-list">
+                            {currentSkillsets.map(skillset => (
+                              <button
+                                className="skillset-selected-chip"
+                                key={skillset}
+                                type="button"
+                                onClick={() => removeSkillset(skillset)}
+                              >
+                                {skillset}
+                                <span>Remove</span>
+                              </button>
+                            ))}
+                          </div>
+                        ) : (
+                          <p>Drop skillsets here or click available skillsets to add them.</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="skillset-mobile-checks">
+                      {SKILLSET_CATALOG.map(skillset => (
+                        <label key={skillset.name}>
+                          <input
+                            type="checkbox"
+                            checked={currentSkillsets.includes(skillset.name)}
+                            onChange={() => toggleSkillset(skillset.name)}
+                          />
+                          <span>
+                            <strong>{skillset.name}</strong>
+                            <small>{skillset.description}</small>
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
               <div className="edit-fields-grid">
                 <label>
                   Naam
@@ -545,13 +702,9 @@ export function AdminPanel({ onBack, onDataChanged }) {
                   />
                 </label>
 
-                <label className="edit-field-full">
+                <label className="edit-field-full skillset-hidden-field">
                   Skillsets
-                  <input
-                    value={editForm.skillsets}
-                    onChange={e => setEditForm({ ...editForm, skillsets: e.target.value })}
-                    placeholder="Bijv. Timing, Straight fly (komma gescheiden)"
-                  />
+                  <input value={editForm.skillsets} readOnly />
                 </label>
               </div>
 
@@ -607,3 +760,4 @@ export function AdminPanel({ onBack, onDataChanged }) {
     </section>
   );
 }
+
