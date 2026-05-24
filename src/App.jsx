@@ -26,6 +26,17 @@ const ACCOUNT_PREVIEW_ITEMS = [
   "Track personal progress"
 ];
 
+function accountStorageKey(user) {
+  return user?.email ? `demon_account_${user.email.toLowerCase()}` : "";
+}
+
+function createEmptyAccountData() {
+  return {
+    favorites: [],
+    progress: {}
+  };
+}
+
 function normalizeRoute(pathname) {
   const path = pathname.replace(/\/+$/, "") || ROUTES.home;
   return Object.values(ROUTES).includes(path) ? path : ROUTES.home;
@@ -60,6 +71,7 @@ export default function App() {
   const [requestError, setRequestError] = useState("");
   const [showLogin, setShowLogin] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [accountData, setAccountData] = useState(createEmptyAccountData);
   const [historyChanges, setHistoryChanges] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState("");
@@ -119,6 +131,50 @@ export default function App() {
     } catch (error) {
       setLoginError("Google login kon niet worden verwerkt.");
     }
+  }
+
+  function updateAccountData(updater) {
+    if (!currentUser) {
+      navigateTo(ROUTES.profile);
+      setShowLogin(true);
+      return;
+    }
+
+    setAccountData(prev => {
+      const nextData = updater(prev);
+      const key = accountStorageKey(currentUser);
+      if (key) localStorage.setItem(key, JSON.stringify(nextData));
+      return nextData;
+    });
+  }
+
+  function toggleFavorite(demon) {
+    updateAccountData(prev => {
+      const exists = prev.favorites.includes(demon.id);
+      return {
+        ...prev,
+        favorites: exists
+          ? prev.favorites.filter(id => id !== demon.id)
+          : [...prev.favorites, demon.id]
+      };
+    });
+  }
+
+  function setDemonProgress(demon, status) {
+    updateAccountData(prev => {
+      const progress = { ...prev.progress };
+
+      if (!status) {
+        delete progress[demon.id];
+      } else {
+        progress[demon.id] = {
+          status,
+          updatedAt: new Date().toISOString()
+        };
+      }
+
+      return { ...prev, progress };
+    });
   }
 
   async function loadRequests({ silent = false } = {}) {
@@ -230,6 +286,23 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (!currentUser) {
+      setAccountData(createEmptyAccountData());
+      return;
+    }
+
+    try {
+      const savedData = JSON.parse(localStorage.getItem(accountStorageKey(currentUser)) || "null");
+      setAccountData({
+        ...createEmptyAccountData(),
+        ...(savedData || {})
+      });
+    } catch {
+      setAccountData(createEmptyAccountData());
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
     const savedToken = localStorage.getItem("admin_token");
     if (!savedToken) return;
 
@@ -319,6 +392,7 @@ export default function App() {
     localStorage.removeItem("site_user");
     setIsAdmin(false);
     setCurrentUser(null);
+    setAccountData(createEmptyAccountData());
     setAdminView(false);
     setProfileView(false);
     setShowLogoutConfirm(false);
@@ -485,6 +559,23 @@ async function handleSaveRequestStatusChanges() {
 
   const hasMoreMobileDemons =
     isMobileView && viewMode === "grid" && visibleDemonCount < filtered.length;
+
+  const favoriteDemons = useMemo(() => {
+    const favoriteSet = new Set(accountData.favorites);
+    return demons
+      .filter(demon => favoriteSet.has(demon.id))
+      .sort((a, b) => placementNumber(a.placement) - placementNumber(b.placement));
+  }, [demons, accountData.favorites]);
+
+  const progressDemons = useMemo(() => {
+    return Object.entries(accountData.progress)
+      .map(([id, progress]) => {
+        const demon = demons.find(item => item.id === id);
+        return demon ? { demon, progress } : null;
+      })
+      .filter(Boolean)
+      .sort((a, b) => placementNumber(a.demon.placement) - placementNumber(b.demon.placement));
+  }, [demons, accountData.progress]);
 
   function handleLatestDemonClick() {
     const latestName = String(apiLatestDemon || "").trim();
@@ -656,6 +747,9 @@ async function handleSaveRequestStatusChanges() {
       ) : profileView && currentUser ? (
         <ProfilePage
           user={currentUser}
+          favoriteDemons={favoriteDemons}
+          progressDemons={progressDemons}
+          onOpenDemon={setSelected}
           onBack={() => navigateTo(ROUTES.home)}
         />
       ) : profileView ? (
@@ -750,6 +844,11 @@ async function handleSaveRequestStatusChanges() {
           onLoadMore={() => setVisibleDemonCount(count => count + 60)}
           apiLatestDemon={apiLatestDemon}
           onLatestDemonClick={handleLatestDemonClick}
+          currentUser={currentUser}
+          favoriteIds={accountData.favorites}
+          progressById={accountData.progress}
+          onToggleFavorite={toggleFavorite}
+          onSetProgress={setDemonProgress}
         />
       )}
 
