@@ -11,6 +11,7 @@ import { ProfilePage } from "./components/ProfilePage.jsx";
 import { RecentChanges } from "./components/RecentChanges.jsx";
 import { RequestPanel } from "./components/RequestPanel.jsx";
 import { normalizeDemon, placementNumber, segmentForPlacement } from "./demonUtils.js";
+import { isSupabaseConfigured, supabase } from "./supabaseClient.js";
 
 const ROUTES = {
   home: "/",
@@ -35,6 +36,24 @@ function createEmptyAccountData() {
     favorites: [],
     progress: {},
     personalList: null
+  };
+}
+
+function userFromSupabaseUser(user) {
+  if (!user) return null;
+
+  const metadata = user.user_metadata || {};
+
+  return {
+    id: user.id,
+    name:
+      metadata.full_name ||
+      metadata.name ||
+      metadata.user_name ||
+      user.email ||
+      "User",
+    email: user.email || "",
+    picture: metadata.avatar_url || metadata.picture || ""
   };
 }
 
@@ -111,28 +130,34 @@ export default function App() {
     applyRoute(route);
   }
 
-  function decodeGoogleCredential(credential) {
-    const payload = credential.split(".")[1];
-    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
-    const decoded = JSON.parse(window.atob(normalized));
+  async function syncSupabaseProfile(user) {
+    if (!supabase || !user) return;
 
-    return {
-      id: decoded.sub,
-      name: decoded.name || decoded.given_name || decoded.email || "User",
-      email: decoded.email || "",
-      picture: decoded.picture || ""
-    };
+    await supabase.from("profiles").upsert({
+      id: user.id,
+      display_name: user.name,
+      avatar_url: user.picture,
+      updated_at: new Date().toISOString()
+    });
   }
 
-  function handleGoogleLogin(credential) {
-    try {
-      const user = decodeGoogleCredential(credential);
-      setCurrentUser(user);
-      localStorage.setItem("site_user", JSON.stringify(user));
-      setShowLogin(false);
-      navigateTo(ROUTES.profile, { replace: true });
-    } catch (error) {
-      setLoginError("Google login kon niet worden verwerkt.");
+  async function handleSupabaseLogin() {
+    setLoginError("");
+
+    if (!supabase) {
+      setLoginError("Supabase login is nog niet geconfigureerd.");
+      return;
+    }
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}${ROUTES.profile}`
+      }
+    });
+
+    if (error) {
+      setLoginError(error.message || "Google login kon niet worden gestart.");
     }
   }
 
@@ -302,14 +327,45 @@ export default function App() {
   }, [query, difficulty, segment, yearView, viewMode, isMobileView]);
 
   useEffect(() => {
-    try {
-      const savedUser = JSON.parse(localStorage.getItem("site_user") || "null");
-      if (savedUser && savedUser.email) {
-        setCurrentUser(savedUser);
+    if (!supabase) return;
+
+    let mounted = true;
+
+    async function loadSupabaseSession() {
+      const { data } = await supabase.auth.getSession();
+      const user = userFromSupabaseUser(data.session?.user);
+
+      if (!mounted) return;
+
+      setCurrentUser(user);
+      if (user) {
+        syncSupabaseProfile(user).catch(error => {
+          console.warn("Could not sync Supabase profile.", error);
+        });
       }
-    } catch {
-      localStorage.removeItem("site_user");
     }
+
+    loadSupabaseSession();
+
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      const user = userFromSupabaseUser(session?.user);
+      setCurrentUser(user);
+      setShowLogin(false);
+
+      if (user) {
+        syncSupabaseProfile(user).catch(error => {
+          console.warn("Could not sync Supabase profile.", error);
+        });
+        if (event === "SIGNED_IN") {
+          navigateTo(ROUTES.profile, { replace: true });
+        }
+      }
+    });
+
+    return () => {
+      mounted = false;
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -417,6 +473,9 @@ export default function App() {
   function handleLogout() {
     localStorage.removeItem("admin_token");
     localStorage.removeItem("site_user");
+    if (supabase) {
+      supabase.auth.signOut();
+    }
     setIsAdmin(false);
     setCurrentUser(null);
     setAccountData(createEmptyAccountData());
@@ -1027,8 +1086,8 @@ async function handleSaveRequestStatusChanges() {
           setLoginData={setLoginData}
           loginError={loginError}
           handleLogin={handleLogin}
-          googleClientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}
-          onGoogleLogin={handleGoogleLogin}
+          supabaseConfigured={isSupabaseConfigured}
+          onSupabaseLogin={handleSupabaseLogin}
           onClose={() => {
             setShowLogin(false);
             setLoginError("");
