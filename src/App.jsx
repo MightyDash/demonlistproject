@@ -7,6 +7,7 @@ import { DemonListContent } from "./components/DemonListContent.jsx";
 import { DemonModal } from "./components/DemonModal.jsx";
 import { LoginModal } from "./components/LoginModal.jsx";
 import { LogoutConfirm } from "./components/LogoutConfirm.jsx";
+import { ProfilePage } from "./components/ProfilePage.jsx";
 import { RecentChanges } from "./components/RecentChanges.jsx";
 import { RequestPanel } from "./components/RequestPanel.jsx";
 import { normalizeDemon, placementNumber, segmentForPlacement } from "./demonUtils.js";
@@ -24,6 +25,7 @@ export default function App() {
   const [viewMode, setViewMode] = useState("grid");
   const [requestView, setRequestView] = useState(false);
   const [historyView, setHistoryView] = useState(false);
+  const [profileView, setProfileView] = useState(false);
   const [requestForm, setRequestForm] = useState({
   levelId: "",
   type: "Classic",
@@ -563,7 +565,13 @@ async function handleSaveRequestStatusChanges() {
         }}
         onOpenHistory={() => {
           setRequestView(false);
+          setProfileView(false);
           setHistoryView(open => !open);
+        }}
+        onOpenProfile={() => {
+          setRequestView(false);
+          setHistoryView(false);
+          setProfileView(true);
         }}
         onOpenLogin={() => setShowLogin(true)}
         onOpenAdmin={() => setAdminView(true)}
@@ -582,6 +590,11 @@ async function handleSaveRequestStatusChanges() {
         <AdminPanel
           onBack={() => setAdminView(false)}
           onDataChanged={() => window.location.reload()}
+        />
+      ) : profileView && currentUser ? (
+        <ProfilePage
+          user={currentUser}
+          onBack={() => setProfileView(false)}
         />
       ) : requestView ? (
         <RequestPanel
