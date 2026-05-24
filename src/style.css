@@ -160,6 +160,14 @@ h1 {
   background: rgba(99, 226, 143, 0.08);
   color: var(--text);
   font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.user-pill:hover {
+  transform: translateY(-1px);
+  border-color: rgba(99, 226, 143, 0.48);
+  background: rgba(99, 226, 143, 0.13);
 }
 
 .user-pill img {
@@ -1286,6 +1294,109 @@ h1 {
   animation: panel-in 0.35s ease both;
 }
 
+.profile-panel {
+  padding: 24px;
+  animation: panel-in 0.35s ease both;
+}
+
+.profile-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 18px;
+}
+
+.profile-identity {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.profile-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 8px;
+  border: 1px solid rgba(99, 226, 143, 0.35);
+  object-fit: cover;
+  background: rgba(99, 226, 143, 0.1);
+}
+
+.fallback-avatar {
+  display: grid;
+  place-items: center;
+  color: var(--green);
+  font-size: 2rem;
+  font-weight: 900;
+}
+
+.profile-identity h2 {
+  margin: 0;
+  font-size: clamp(32px, 5vw, 52px);
+  line-height: 1;
+}
+
+.profile-identity p:last-child {
+  margin: 8px 0 0;
+  color: var(--muted);
+}
+
+.build-list-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin: 22px 0;
+  padding: 20px;
+  border: 1px solid rgba(73, 163, 255, 0.28);
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(73, 163, 255, 0.12), rgba(99, 226, 143, 0.06));
+}
+
+.build-list-panel h3 {
+  margin: 0;
+  font-size: clamp(26px, 4vw, 38px);
+}
+
+.build-list-panel p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  max-width: 680px;
+  line-height: 1.5;
+}
+
+.build-list-button {
+  flex: 0 0 auto;
+  min-height: 48px;
+  padding: 0 18px;
+}
+
+.profile-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.profile-feature-card {
+  min-height: 120px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.profile-feature-card strong {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text);
+  font-size: 1.05rem;
+}
+
+.profile-feature-card span {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
 .recent-list {
   display: grid;
   gap: 12px;
@@ -1956,6 +2067,10 @@ h1 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .profile-feature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .controls {
     grid-template-columns: 1fr;
   }
@@ -2079,8 +2194,36 @@ h1 {
 
   .request-panel,
   .admin-panel,
-  .recent-panel {
+  .recent-panel,
+  .profile-panel {
     padding: 16px;
+  }
+
+  .profile-hero,
+  .profile-identity,
+  .build-list-panel {
+    display: grid;
+  }
+
+  .profile-hero {
+    gap: 16px;
+  }
+
+  .profile-avatar {
+    width: 64px;
+    height: 64px;
+  }
+
+  .profile-identity h2 {
+    font-size: 34px;
+  }
+
+  .build-list-button {
+    width: 100%;
+  }
+
+  .profile-feature-grid {
+    grid-template-columns: 1fr;
   }
 
   .request-list {
