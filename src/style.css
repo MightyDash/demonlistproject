@@ -1744,6 +1744,68 @@ h1 {
   margin-top: 16px;
 }
 
+.request-admin-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.request-filter-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.request-filter-tabs button {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--muted);
+  padding: 9px 12px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
+}
+
+.request-filter-tabs button:hover,
+.request-filter-tabs button.active {
+  border-color: rgba(73, 163, 255, 0.5);
+  background: rgba(73, 163, 255, 0.14);
+  color: var(--text);
+}
+
+.request-bulk-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.request-bulk-button,
+.request-delete-selected-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.request-bulk-button:disabled,
+.request-delete-selected-button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.request-delete-selected-button {
+  border: 1px solid rgba(255, 107, 122, 0.38);
+  border-radius: 8px;
+  background: rgba(255, 107, 122, 0.1);
+  color: #ffb3bd;
+  padding: 11px 14px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
 .request-card {
   overflow: hidden;
   border: 1px solid rgba(148, 163, 184, 0.16);
@@ -1782,6 +1844,26 @@ h1 {
   justify-content: space-between;
   gap: 12px;
   align-items: flex-start;
+}
+
+.request-select-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(255, 107, 122, 0.28);
+  border-radius: 8px;
+  background: rgba(255, 107, 122, 0.08);
+  color: #ffb3bd;
+  padding: 7px 9px;
+  font-size: 0.82rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.request-select-check input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--red);
 }
 
 .request-card-top strong {
@@ -2311,6 +2393,10 @@ h1 {
 
   .request-form-row {
     grid-template-columns: 1fr;
+  }
+
+  .request-admin-toolbar {
+    display: grid;
   }
 
   .edit-search-row {
