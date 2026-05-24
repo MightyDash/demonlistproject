@@ -203,13 +203,13 @@ export default function App() {
     }
 
     const levelId = String(demon.id);
-    const exists = accountData.favorites.includes(levelId);
+    const exists = accountData.favorites.map(id => String(id)).includes(levelId);
 
     updateAccountData(prev => ({
       ...prev,
       favorites: exists
-        ? prev.favorites.filter(id => id !== levelId)
-        : [...prev.favorites, levelId]
+        ? prev.favorites.filter(id => String(id) !== levelId)
+        : Array.from(new Set([...prev.favorites.map(id => String(id)), levelId]))
     }));
 
     if (!supabase || !currentUser.id) return;
@@ -232,8 +232,8 @@ export default function App() {
       setAccountData(prev => ({
         ...prev,
         favorites: exists
-          ? [...prev.favorites, levelId]
-          : prev.favorites.filter(id => id !== levelId)
+          ? Array.from(new Set([...prev.favorites.map(id => String(id)), levelId]))
+          : prev.favorites.filter(id => String(id) !== levelId)
       }));
     }
   }
@@ -431,7 +431,9 @@ export default function App() {
       setAccountData({
         ...createEmptyAccountData(),
         ...(savedData || {}),
-        favorites: supabase && currentUser.id ? [] : (savedData?.favorites || [])
+        favorites: supabase && currentUser.id
+          ? []
+          : (savedData?.favorites || []).map(id => String(id))
       });
     } catch {
       setAccountData(createEmptyAccountData());
@@ -818,9 +820,9 @@ async function handleSaveRequestStatusChanges() {
     isMobileView && viewMode === "grid" && visibleDemonCount < filtered.length;
 
   const favoriteDemons = useMemo(() => {
-    const favoriteSet = new Set(accountData.favorites);
+    const favoriteSet = new Set(accountData.favorites.map(id => String(id)));
     return demons
-      .filter(demon => favoriteSet.has(demon.id))
+      .filter(demon => favoriteSet.has(String(demon.id)))
       .sort((a, b) => placementNumber(a.placement) - placementNumber(b.placement));
   }, [demons, accountData.favorites]);
 
