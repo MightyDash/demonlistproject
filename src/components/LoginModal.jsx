@@ -29,8 +29,8 @@ export function LoginModal({
       window.google.accounts.id.renderButton(googleButtonRef.current, {
         theme: "filled_black",
         size: "large",
-        shape: "rectangular",
-        width: 320,
+        shape: "pill",
+        width: 360,
         text: "continue_with"
       });
     }
