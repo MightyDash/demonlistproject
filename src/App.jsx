@@ -33,7 +33,8 @@ function accountStorageKey(user) {
 function createEmptyAccountData() {
   return {
     favorites: [],
-    progress: {}
+    progress: {},
+    personalList: null
   };
 }
 
@@ -175,6 +176,25 @@ export default function App() {
 
       return { ...prev, progress };
     });
+  }
+
+  function createPersonalList() {
+    updateAccountData(prev => {
+      if (prev.personalList) return prev;
+
+      return {
+        ...prev,
+        personalList: {
+          id: `personal-${Date.now()}`,
+          name: `${currentUser?.name || "My"}'s Demon List`,
+          createdAt: new Date().toISOString()
+        }
+      };
+    });
+  }
+
+  function openPersonalList() {
+    window.alert("Your personal Demon List page is coming next.");
   }
 
   async function loadRequests({ silent = false } = {}) {
@@ -749,6 +769,9 @@ async function handleSaveRequestStatusChanges() {
           user={currentUser}
           favoriteDemons={favoriteDemons}
           progressDemons={progressDemons}
+          personalList={accountData.personalList}
+          onCreatePersonalList={createPersonalList}
+          onOpenPersonalList={openPersonalList}
           onOpenDemon={setSelected}
           onBack={() => navigateTo(ROUTES.home)}
         />
