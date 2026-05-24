@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import { X } from "lucide-react";
 
 export function LoginModal({
@@ -6,49 +6,11 @@ export function LoginModal({
   setLoginData,
   loginError,
   handleLogin,
-  googleClientId,
-  onGoogleLogin,
+  supabaseConfigured,
+  onSupabaseLogin,
   onClose
 }) {
-  const googleButtonRef = useRef(null);
   const [adminOpen, setAdminOpen] = useState(false);
-
-  useEffect(() => {
-    if (!googleClientId || !googleButtonRef.current) return;
-
-    function renderGoogleButton() {
-      if (!window.google?.accounts?.id || !googleButtonRef.current) return;
-
-      window.google.accounts.id.initialize({
-        client_id: googleClientId,
-        callback: response => {
-          if (response.credential) onGoogleLogin(response.credential);
-        }
-      });
-
-      window.google.accounts.id.renderButton(googleButtonRef.current, {
-        theme: "filled_black",
-        size: "large",
-        shape: "pill",
-        width: 360,
-        text: "continue_with"
-      });
-    }
-
-    if (window.google?.accounts?.id) {
-      renderGoogleButton();
-      return;
-    }
-
-    const existingScript = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
-    const script = existingScript || document.createElement("script");
-    script.src = "https://accounts.google.com/gsi/client";
-    script.async = true;
-    script.defer = true;
-    script.onload = renderGoogleButton;
-
-    if (!existingScript) document.body.appendChild(script);
-  }, [googleClientId, onGoogleLogin]);
 
   return (
     <div className="modal-backdrop">
@@ -69,11 +31,14 @@ export function LoginModal({
         </div>
 
         <div className="google-login-box">
-          {googleClientId ? (
-            <div className="google-login-button" ref={googleButtonRef} />
+          {supabaseConfigured ? (
+            <button className="google-auth-button" onClick={onSupabaseLogin} type="button">
+              <span className="google-mark">G</span>
+              Doorgaan met Google
+            </button>
           ) : (
             <p className="login-hint">
-              Google login is bijna klaar. Voeg `VITE_GOOGLE_CLIENT_ID` toe in Render om dit te activeren.
+              Supabase login is bijna klaar. Voeg `VITE_SUPABASE_URL` en `VITE_SUPABASE_ANON_KEY` toe in Render.
             </p>
           )}
         </div>
