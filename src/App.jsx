@@ -63,6 +63,8 @@ export default function App() {
   notes: ""
 });
   const [requestSort, setRequestSort] = useState("weight");
+  const [requestStatusFilter, setRequestStatusFilter] = useState("all");
+  const [selectedRejectedRequests, setSelectedRejectedRequests] = useState([]);
   const [requestStatusDrafts, setRequestStatusDrafts] = useState({});
   const [requestStatusSaving, setRequestStatusSaving] = useState(false);
   const [requests, setRequests] = useState([]);
@@ -214,6 +216,11 @@ export default function App() {
 
       if (data.success) {
         setRequests(data.requests || []);
+        setSelectedRejectedRequests(selected =>
+          selected.filter(rowNumber =>
+            (data.requests || []).some(request => request.rowNumber === rowNumber)
+          )
+        );
       }
     } finally {
       if (!silent) setRequestsLoading(false);
@@ -570,6 +577,88 @@ async function handleSaveRequestStatusChanges() {
   } catch {
     setRequestError("Kon geen verbinding maken.");
   }
+  }
+  async function handleAllowWeightIncreaseForAll() {
+  setRequestError("");
+  setRequestMessage("");
+
+  const confirmOpen = window.confirm("Weet je zeker dat je Weight Increase voor alle requests wilt openzetten?");
+  if (!confirmOpen) return;
+
+  try {
+    const response = await fetch(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "allowWeightIncreaseForAll",
+        token: localStorage.getItem("admin_token")
+      })
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      setRequestError(data.message || "Alle Weight Increases openzetten mislukt.");
+      return;
+    }
+
+    setRequestMessage(data.message || "Alle requests staan open voor Weight Increase.");
+    await loadRequests({ silent: true });
+  } catch {
+    setRequestError("Kon geen verbinding maken.");
+  }
+}
+  function handleToggleRejectedRequest(rowNumber) {
+  setSelectedRejectedRequests(prev =>
+    prev.includes(rowNumber)
+      ? prev.filter(value => value !== rowNumber)
+      : [...prev, rowNumber]
+  );
+}
+  function handleSelectAllRejected(rowNumbers) {
+  setSelectedRejectedRequests(prev => {
+    const allSelected = rowNumbers.length > 0 && rowNumbers.every(rowNumber => prev.includes(rowNumber));
+    if (allSelected) {
+      return prev.filter(rowNumber => !rowNumbers.includes(rowNumber));
+    }
+
+    return Array.from(new Set([...prev, ...rowNumbers]));
+  });
+}
+  async function handleDeleteSelectedRequests() {
+  setRequestError("");
+  setRequestMessage("");
+
+  if (selectedRejectedRequests.length === 0) {
+    setRequestMessage("Geen rejected requests geselecteerd.");
+    return;
+  }
+
+  const confirmDelete = window.confirm(`Weet je zeker dat je ${selectedRejectedRequests.length} rejected requests wilt verwijderen?`);
+  if (!confirmDelete) return;
+
+  try {
+    const response = await fetch(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "deleteRequests",
+        rowNumbers: selectedRejectedRequests,
+        token: localStorage.getItem("admin_token")
+      })
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      setRequestError(data.message || "Geselecteerde requests verwijderen mislukt.");
+      return;
+    }
+
+    setSelectedRejectedRequests([]);
+    setRequestMessage(data.message || "Geselecteerde requests verwijderd.");
+    await loadRequests({ silent: true });
+  } catch {
+    setRequestError("Kon geen verbinding maken.");
+  }
 }
   const difficulties = useMemo(() => {
     const unique = new Set(demons.map(d => d.difficulty).filter(Boolean));
@@ -868,8 +957,15 @@ async function handleSaveRequestStatusChanges() {
           requestStatusSaving={requestStatusSaving}
           handleDeleteRequest={handleDeleteRequest}
           handleAllowWeightIncrease={handleAllowWeightIncrease}
+          handleAllowWeightIncreaseForAll={handleAllowWeightIncreaseForAll}
+          selectedRejectedRequests={selectedRejectedRequests}
+          handleToggleRejectedRequest={handleToggleRejectedRequest}
+          handleSelectAllRejected={handleSelectAllRejected}
+          handleDeleteSelectedRequests={handleDeleteSelectedRequests}
           requestSort={requestSort}
           setRequestSort={setRequestSort}
+          requestStatusFilter={requestStatusFilter}
+          setRequestStatusFilter={setRequestStatusFilter}
           currentUser={currentUser}
           onOpenLogin={() => setShowLogin(true)}
         />
