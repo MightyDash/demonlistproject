@@ -4,6 +4,7 @@ export function AppHeader({
   adminView,
   source,
   isAdmin,
+  currentUser,
   historyView,
   onOpenRequests,
   onOpenHistory,
@@ -41,10 +42,17 @@ export function AppHeader({
               </button>
             )}
     
-            {!isAdmin && (
+            {!isAdmin && !currentUser && (
               <button className="admin-button" onClick={onOpenLogin} type="button">
-                Admin Login
+                Login
               </button>
+            )}
+
+            {!isAdmin && currentUser && (
+              <span className="user-pill">
+                {currentUser.picture && <img src={currentUser.picture} alt="" />}
+                {currentUser.name}
+              </span>
             )}
     
             {isAdmin && !adminView && (
@@ -59,7 +67,7 @@ export function AppHeader({
               </button>
             )}
     
-            {isAdmin && (
+            {(isAdmin || currentUser) && (
               <button className="admin-button logout-button" onClick={onOpenLogout} type="button">
                 Logout
               </button>
