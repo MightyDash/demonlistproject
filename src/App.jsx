@@ -38,6 +38,7 @@ export default function App() {
   const [requestMessage, setRequestMessage] = useState("");
   const [requestError, setRequestError] = useState("");
   const [showLogin, setShowLogin] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
   const [historyChanges, setHistoryChanges] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState("");
@@ -49,6 +50,30 @@ export default function App() {
   const [skillsetOpen, setSkillsetOpen] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
   const [visibleDemonCount, setVisibleDemonCount] = useState(60);
+
+  function decodeGoogleCredential(credential) {
+    const payload = credential.split(".")[1];
+    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const decoded = JSON.parse(window.atob(normalized));
+
+    return {
+      id: decoded.sub,
+      name: decoded.name || decoded.given_name || decoded.email || "User",
+      email: decoded.email || "",
+      picture: decoded.picture || ""
+    };
+  }
+
+  function handleGoogleLogin(credential) {
+    try {
+      const user = decodeGoogleCredential(credential);
+      setCurrentUser(user);
+      localStorage.setItem("site_user", JSON.stringify(user));
+      setShowLogin(false);
+    } catch (error) {
+      setLoginError("Google login kon niet worden verwerkt.");
+    }
+  }
 
   async function loadRequests({ silent = false } = {}) {
   if (!silent) setRequestsLoading(true);
@@ -129,6 +154,17 @@ export default function App() {
   useEffect(() => {
     setVisibleDemonCount(60);
   }, [query, difficulty, segment, yearView, viewMode, isMobileView]);
+
+  useEffect(() => {
+    try {
+      const savedUser = JSON.parse(localStorage.getItem("site_user") || "null");
+      if (savedUser && savedUser.email) {
+        setCurrentUser(savedUser);
+      }
+    } catch {
+      localStorage.removeItem("site_user");
+    }
+  }, []);
 
   useEffect(() => {
     const savedToken = localStorage.getItem("admin_token");
@@ -216,7 +252,9 @@ export default function App() {
 
   function handleLogout() {
     localStorage.removeItem("admin_token");
+    localStorage.removeItem("site_user");
     setIsAdmin(false);
+    setCurrentUser(null);
     setAdminView(false);
     setShowLogoutConfirm(false);
   }
@@ -517,6 +555,7 @@ async function handleSaveRequestStatusChanges() {
         adminView={adminView}
         source={source}
         isAdmin={isAdmin}
+        currentUser={currentUser}
         historyView={historyView}
         onOpenRequests={() => {
           setHistoryView(false);
@@ -617,6 +656,8 @@ async function handleSaveRequestStatusChanges() {
           setLoginData={setLoginData}
           loginError={loginError}
           handleLogin={handleLogin}
+          googleClientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}
+          onGoogleLogin={handleGoogleLogin}
           onClose={() => {
             setShowLogin(false);
             setLoginError("");
