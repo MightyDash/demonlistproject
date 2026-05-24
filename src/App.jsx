@@ -20,6 +20,12 @@ const ROUTES = {
   admin: "/admin-panel"
 };
 
+const ACCOUNT_PREVIEW_ITEMS = [
+  "Build your own demon list",
+  "Save favorites",
+  "Track personal progress"
+];
+
 function normalizeRoute(pathname) {
   const path = pathname.replace(/\/+$/, "") || ROUTES.home;
   return Object.values(ROUTES).includes(path) ? path : ROUTES.home;
@@ -109,7 +115,7 @@ export default function App() {
       setCurrentUser(user);
       localStorage.setItem("site_user", JSON.stringify(user));
       setShowLogin(false);
-      if (profileView) navigateTo(ROUTES.profile, { replace: true });
+      navigateTo(ROUTES.profile, { replace: true });
     } catch (error) {
       setLoginError("Google login kon niet worden verwerkt.");
     }
@@ -299,6 +305,7 @@ export default function App() {
         setIsAdmin(true);
         setShowLogin(false);
         localStorage.setItem("admin_token", data.token);
+        navigateTo(ROUTES.admin, { replace: true });
       } else {
         setLoginError("Wrong login");
       }
@@ -625,7 +632,10 @@ async function handleSaveRequestStatusChanges() {
         onOpenProfile={() => {
           navigateTo(ROUTES.profile);
         }}
-        onOpenLogin={() => setShowLogin(true)}
+        onOpenLogin={() => {
+          navigateTo(ROUTES.profile);
+          setShowLogin(true);
+        }}
         onOpenAdmin={() => navigateTo(ROUTES.admin)}
         onCloseAdmin={() => navigateTo(ROUTES.home)}
         onOpenLogout={() => setShowLogoutConfirm(true)}
@@ -648,6 +658,45 @@ async function handleSaveRequestStatusChanges() {
           user={currentUser}
           onBack={() => navigateTo(ROUTES.home)}
         />
+      ) : profileView ? (
+        <section className="panel profile-panel account-gate-panel">
+          <div className="profile-hero">
+            <div>
+              <p className="eyebrow">Account</p>
+              <h2>Login</h2>
+              <p className="subtitle">
+                Log in met je Google account om je profiel en toekomstige accountfuncties te gebruiken.
+              </p>
+            </div>
+
+            <button className="admin-button" onClick={() => navigateTo(ROUTES.home)} type="button">
+              Back to list
+            </button>
+          </div>
+
+          <div className="build-list-panel">
+            <div>
+              <p className="eyebrow">Coming next</p>
+              <h3>Your account hub</h3>
+              <p>
+                Je profiel wordt de plek waar persoonlijke demon lists en extra accountfuncties komen.
+              </p>
+            </div>
+
+            <button className="login-button build-list-button" onClick={() => setShowLogin(true)} type="button">
+              Login with Google
+            </button>
+          </div>
+
+          <div className="profile-feature-grid">
+            {ACCOUNT_PREVIEW_ITEMS.map(item => (
+              <article className="profile-feature-card" key={item}>
+                <strong>{item}</strong>
+                <span>Available after account setup.</span>
+              </article>
+            ))}
+          </div>
+        </section>
       ) : requestView ? (
         <RequestPanel
           onBack={() => navigateTo(ROUTES.home)}
