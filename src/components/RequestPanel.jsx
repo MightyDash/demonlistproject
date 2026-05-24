@@ -1,5 +1,5 @@
 import React from "react";
-import { Trash2 } from "lucide-react";
+import { CheckSquare, Layers, Trash2 } from "lucide-react";
 
 export function RequestPanel({
   onBack,
@@ -18,12 +18,25 @@ export function RequestPanel({
   requestStatusSaving,
   handleDeleteRequest,
   handleAllowWeightIncrease,
+  handleAllowWeightIncreaseForAll,
+  selectedRejectedRequests,
+  handleToggleRejectedRequest,
+  handleSelectAllRejected,
+  handleDeleteSelectedRequests,
   requestSort,
   setRequestSort,
+  requestStatusFilter,
+  setRequestStatusFilter,
   currentUser,
   onOpenLogin
 }) {
-  const sortedRequests = [...requests].sort((a, b) => {
+  const filteredRequests = requests.filter(request => {
+    if (requestStatusFilter === "all") return true;
+    if (requestStatusFilter === "weight-open") return Boolean(request.weightIncreaseAllowed);
+    return String(request.status || "Pending").toLowerCase() === requestStatusFilter;
+  });
+
+  const sortedRequests = [...filteredRequests].sort((a, b) => {
   if (requestSort === "newest") {
     return new Date(b.timestamp) - new Date(a.timestamp);
   }
@@ -38,6 +51,14 @@ export function RequestPanel({
 
   return 0;
 });
+  const rejectedRowNumbers = sortedRequests
+    .filter(request => String(request.status || "").toLowerCase() === "rejected")
+    .map(request => request.rowNumber);
+  const selectedRejectedCount = selectedRejectedRequests.length;
+  const allVisibleRejectedSelected =
+    rejectedRowNumbers.length > 0 &&
+    rejectedRowNumbers.every(rowNumber => selectedRejectedRequests.includes(rowNumber));
+
   return (
     <section className="panel request-panel">
       <div className="admin-panel-header">
@@ -123,21 +144,43 @@ export function RequestPanel({
   </div>
 ) : (
   <>
-    <div className="request-sort-row">
-      <span>Sort by</span>
+    <div className="request-admin-toolbar">
+      <div className="request-filter-tabs">
+        {[
+          ["all", "All"],
+          ["pending", "Pending"],
+          ["approved", "Approved"],
+          ["rejected", "Rejected"],
+          ["completed", "Completed"],
+          ["weight-open", "Weight Open"]
+        ].map(([value, label]) => (
+          <button
+            key={value}
+            className={requestStatusFilter === value ? "active" : ""}
+            onClick={() => setRequestStatusFilter(value)}
+            type="button"
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
-      <select
-        value={requestSort}
-        onChange={e => setRequestSort(e.target.value)}
-      >
-        <option value="weight">Highest weight</option>
-        <option value="newest">Newest</option>
-        <option value="oldest">Oldest</option>
-      </select>
+      <div className="request-sort-row">
+        <span>Sort by</span>
+
+        <select
+          value={requestSort}
+          onChange={e => setRequestSort(e.target.value)}
+        >
+          <option value="weight">Highest weight</option>
+          <option value="newest">Newest</option>
+          <option value="oldest">Oldest</option>
+        </select>
+      </div>
     </div>
 
     {isAdmin && (
-      <div className="request-save-bar">
+      <div className="request-save-bar request-bulk-bar">
         <button
           className="login-button"
           type="button"
@@ -147,6 +190,35 @@ export function RequestPanel({
           {requestStatusSaving
             ? "Saving..."
             : `Save Status Changes (${Object.keys(requestStatusDrafts).length})`}
+        </button>
+
+        <button
+          className="admin-button request-bulk-button"
+          type="button"
+          onClick={handleAllowWeightIncreaseForAll}
+        >
+          <Layers size={16} />
+          Open All Weight Increase
+        </button>
+
+        <button
+          className="admin-button request-bulk-button"
+          type="button"
+          onClick={() => handleSelectAllRejected(rejectedRowNumbers)}
+          disabled={rejectedRowNumbers.length === 0}
+        >
+          <CheckSquare size={16} />
+          {allVisibleRejectedSelected ? "Unselect Rejected" : "Select Rejected"}
+        </button>
+
+        <button
+          className="request-delete-selected-button"
+          type="button"
+          onClick={handleDeleteSelectedRequests}
+          disabled={selectedRejectedCount === 0}
+        >
+          <Trash2 size={16} />
+          Delete Selected ({selectedRejectedCount})
         </button>
       </div>
     )}
@@ -170,6 +242,17 @@ export function RequestPanel({
 
           <div className="request-card-content">
             <div className="request-card-top">
+              {isAdmin && String(request.status || "").toLowerCase() === "rejected" && (
+                <label className="request-select-check">
+                  <input
+                    type="checkbox"
+                    checked={selectedRejectedRequests.includes(request.rowNumber)}
+                    onChange={() => handleToggleRejectedRequest(request.rowNumber)}
+                  />
+                  <span>Select</span>
+                </label>
+              )}
+
               <div className="request-card-title">
                 <strong>{request.demon || `Level ${request.levelId}`}</strong>
                 <span>ID: {request.levelId}</span>
