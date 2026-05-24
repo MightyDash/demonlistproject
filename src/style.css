@@ -1336,6 +1336,12 @@ h1 {
   line-height: 1;
 }
 
+.account-gate-panel h2 {
+  margin: 0;
+  font-size: clamp(36px, 5vw, 58px);
+  line-height: 1;
+}
+
 .profile-identity p:last-child {
   margin: 8px 0 0;
   color: var(--muted);
