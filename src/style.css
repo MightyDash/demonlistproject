@@ -149,6 +149,25 @@ h1 {
   margin-top: 0;
 }
 
+.user-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 42px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(99, 226, 143, 0.28);
+  background: rgba(99, 226, 143, 0.08);
+  color: var(--text);
+  font-weight: 800;
+}
+
+.user-pill img {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+}
+
 .source-pill.live {
   color: var(--green);
   border-color: rgba(67, 209, 122, 0.35);
@@ -697,6 +716,50 @@ h1 {
   border: 1px solid var(--line);
   background: var(--panel-strong);
   box-shadow: var(--shadow);
+}
+
+.google-login-box {
+  display: grid;
+  place-items: center;
+  min-height: 54px;
+  margin-bottom: 12px;
+}
+
+.google-login-button {
+  min-height: 44px;
+}
+
+.login-hint {
+  margin: 0;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(245, 158, 11, 0.32);
+  background: rgba(245, 158, 11, 0.1);
+  color: #ffd68a;
+  line-height: 1.45;
+}
+
+.admin-access-toggle {
+  width: 100%;
+  margin-top: 4px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.admin-access-toggle:hover {
+  color: var(--blue);
+}
+
+.admin-login-form {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
 }
 
 .login-form {
