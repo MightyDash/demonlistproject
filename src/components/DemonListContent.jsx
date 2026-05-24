@@ -34,7 +34,7 @@ export function DemonListContent({
   onToggleFavorite,
   onSetProgress
 }) {
-  const favorites = new Set(favoriteIds);
+  const favorites = new Set(favoriteIds.map(id => String(id)));
 
   function stopCardAction(event) {
     event.preventDefault();
@@ -259,10 +259,10 @@ export function DemonListContent({
                         {currentUser ? (
                           <>
                             <button
-                              className={`account-action-button ${favorites.has(demon.id) ? "active" : ""}`}
+                              className={`account-action-button ${favorites.has(String(demon.id)) ? "active" : ""}`}
                               onClick={event => handleFavoriteClick(event, demon)}
                               type="button"
-                              aria-label={favorites.has(demon.id) ? "Remove favorite" : "Add favorite"}
+                              aria-label={favorites.has(String(demon.id)) ? "Remove favorite" : "Add favorite"}
                             >
                               <Star size={16} />
                             </button>
@@ -297,10 +297,10 @@ export function DemonListContent({
                       {currentUser && (
                         <span className="account-actions grid-account-actions">
                           <button
-                            className={`account-action-button ${favorites.has(demon.id) ? "active" : ""}`}
+                            className={`account-action-button ${favorites.has(String(demon.id)) ? "active" : ""}`}
                             onClick={event => handleFavoriteClick(event, demon)}
                             type="button"
-                            aria-label={favorites.has(demon.id) ? "Remove favorite" : "Add favorite"}
+                            aria-label={favorites.has(String(demon.id)) ? "Remove favorite" : "Add favorite"}
                           >
                             <Star size={16} />
                           </button>
