@@ -12,6 +12,19 @@ import { RecentChanges } from "./components/RecentChanges.jsx";
 import { RequestPanel } from "./components/RequestPanel.jsx";
 import { normalizeDemon, placementNumber, segmentForPlacement } from "./demonUtils.js";
 
+const ROUTES = {
+  home: "/",
+  requests: "/demon-requests",
+  history: "/recent-changes",
+  profile: "/profile",
+  admin: "/admin-panel"
+};
+
+function normalizeRoute(pathname) {
+  const path = pathname.replace(/\/+$/, "") || ROUTES.home;
+  return Object.values(ROUTES).includes(path) ? path : ROUTES.home;
+}
+
 export default function App() {
   const [demons, setDemons] = useState([]);
   const [source, setSource] = useState("loading");
@@ -53,6 +66,30 @@ export default function App() {
   const [isMobileView, setIsMobileView] = useState(false);
   const [visibleDemonCount, setVisibleDemonCount] = useState(60);
 
+  function applyRoute(pathname) {
+    const route = normalizeRoute(pathname);
+
+    setRequestView(route === ROUTES.requests);
+    setHistoryView(route === ROUTES.history);
+    setProfileView(route === ROUTES.profile);
+    setAdminView(route === ROUTES.admin);
+  }
+
+  function navigateTo(pathname, { replace = false } = {}) {
+    const route = normalizeRoute(pathname);
+    const nextUrl = `${route}${window.location.search}${window.location.hash}`;
+
+    if (window.location.pathname !== route) {
+      if (replace) {
+        window.history.replaceState({}, "", nextUrl);
+      } else {
+        window.history.pushState({}, "", nextUrl);
+      }
+    }
+
+    applyRoute(route);
+  }
+
   function decodeGoogleCredential(credential) {
     const payload = credential.split(".")[1];
     const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
@@ -72,6 +109,7 @@ export default function App() {
       setCurrentUser(user);
       localStorage.setItem("site_user", JSON.stringify(user));
       setShowLogin(false);
+      if (profileView) navigateTo(ROUTES.profile, { replace: true });
     } catch (error) {
       setLoginError("Google login kon niet worden verwerkt.");
     }
@@ -120,6 +158,23 @@ export default function App() {
       if (!silent) setHistoryLoading(false);
     }
   }
+
+  useEffect(() => {
+    applyRoute(window.location.pathname);
+
+    function handlePopState() {
+      applyRoute(window.location.pathname);
+    }
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  useEffect(() => {
+    if (profileView && !currentUser) {
+      setShowLogin(true);
+    }
+  }, [profileView, currentUser]);
 
   useEffect(() => {
     if (!requestView) return;
@@ -258,7 +313,9 @@ export default function App() {
     setIsAdmin(false);
     setCurrentUser(null);
     setAdminView(false);
+    setProfileView(false);
     setShowLogoutConfirm(false);
+    navigateTo(ROUTES.home);
   }
 
   async function handleSubmitRequest() {
@@ -560,22 +617,17 @@ async function handleSaveRequestStatusChanges() {
         currentUser={currentUser}
         historyView={historyView}
         onOpenRequests={() => {
-          setHistoryView(false);
-          setRequestView(true);
+          navigateTo(ROUTES.requests);
         }}
         onOpenHistory={() => {
-          setRequestView(false);
-          setProfileView(false);
-          setHistoryView(open => !open);
+          navigateTo(historyView ? ROUTES.home : ROUTES.history);
         }}
         onOpenProfile={() => {
-          setRequestView(false);
-          setHistoryView(false);
-          setProfileView(true);
+          navigateTo(ROUTES.profile);
         }}
         onOpenLogin={() => setShowLogin(true)}
-        onOpenAdmin={() => setAdminView(true)}
-        onCloseAdmin={() => setAdminView(false)}
+        onOpenAdmin={() => navigateTo(ROUTES.admin)}
+        onCloseAdmin={() => navigateTo(ROUTES.home)}
         onOpenLogout={() => setShowLogoutConfirm(true)}
       />
 
@@ -588,17 +640,17 @@ async function handleSaveRequestStatusChanges() {
 
       {adminView ? (
         <AdminPanel
-          onBack={() => setAdminView(false)}
+          onBack={() => navigateTo(ROUTES.home)}
           onDataChanged={() => window.location.reload()}
         />
       ) : profileView && currentUser ? (
         <ProfilePage
           user={currentUser}
-          onBack={() => setProfileView(false)}
+          onBack={() => navigateTo(ROUTES.home)}
         />
       ) : requestView ? (
         <RequestPanel
-          onBack={() => setRequestView(false)}
+          onBack={() => navigateTo(ROUTES.home)}
           requestForm={requestForm}
           setRequestForm={setRequestForm}
           requestLoading={requestLoading}
@@ -621,7 +673,7 @@ async function handleSaveRequestStatusChanges() {
           changes={historyChanges}
           loading={historyLoading}
           error={historyError}
-          onBack={() => setHistoryView(false)}
+          onBack={() => navigateTo(ROUTES.home)}
         />
       ) : (
         <DemonListContent
