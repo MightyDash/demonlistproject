@@ -424,6 +424,13 @@ export default function App() {
   setRequestMessage("");
   setRequestError("");
 
+  if (!currentUser) {
+    setRequestLoading(false);
+    setRequestError("Log in met je account om een demon te submitten.");
+    setShowLogin(true);
+    return;
+  }
+
   try {
     const response = await fetch(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
       method: "POST",
@@ -431,7 +438,9 @@ export default function App() {
         action: "submitRequest",
         levelId: requestForm.levelId,
         type: requestForm.type,
-        notes: requestForm.notes
+        notes: requestForm.notes,
+        submittedBy: currentUser.name,
+        submittedEmail: currentUser.email
       })
     });
 
@@ -530,6 +539,33 @@ async function handleSaveRequestStatusChanges() {
     }
 
     setRequestMessage("Request verwijderd.");
+    await loadRequests({ silent: true });
+  } catch {
+    setRequestError("Kon geen verbinding maken.");
+  }
+}
+  async function handleAllowWeightIncrease(rowNumber) {
+  setRequestError("");
+  setRequestMessage("");
+
+  try {
+    const response = await fetch(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "allowWeightIncrease",
+        rowNumber,
+        token: localStorage.getItem("admin_token")
+      })
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      setRequestError(data.message || "Weight increase toestaan mislukt.");
+      return;
+    }
+
+    setRequestMessage("Weight Increase staat nu open voor deze request.");
     await loadRequests({ silent: true });
   } catch {
     setRequestError("Kon geen verbinding maken.");
@@ -831,8 +867,11 @@ async function handleSaveRequestStatusChanges() {
           handleSaveRequestStatusChanges={handleSaveRequestStatusChanges}
           requestStatusSaving={requestStatusSaving}
           handleDeleteRequest={handleDeleteRequest}
+          handleAllowWeightIncrease={handleAllowWeightIncrease}
           requestSort={requestSort}
           setRequestSort={setRequestSort}
+          currentUser={currentUser}
+          onOpenLogin={() => setShowLogin(true)}
         />
       ) : historyView ? (
         <RecentChanges
