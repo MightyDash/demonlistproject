@@ -62,7 +62,6 @@ export function ProfilePage({
           <div>
             <p className="eyebrow">Profile</p>
             <h2>{user?.name || "User"}</h2>
-            {user?.email && <p>{user.email}</p>}
           </div>
         </div>
 
