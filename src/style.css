@@ -805,6 +805,39 @@ h1 {
   margin: 0 auto !important;
 }
 
+.google-auth-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: min(360px, 100%);
+  min-height: 52px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  background: #202124;
+  color: white;
+  font-weight: 900;
+  cursor: pointer;
+  transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
+}
+
+.google-auth-button:hover {
+  border-color: rgba(73, 163, 255, 0.42);
+  background: #2b2d31;
+  transform: translateY(-1px);
+}
+
+.google-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: white;
+  color: #4285f4;
+  font-weight: 900;
+}
+
 .login-hint {
   margin: 0;
   padding: 12px;
