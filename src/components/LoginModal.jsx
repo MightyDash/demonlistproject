@@ -65,7 +65,7 @@ export function LoginModal({
         <div className="login-header">
           <p className="login-eyebrow">Account</p>
           <h2>Login</h2>
-          <p>Log in met je Google account. Account functies komen later.</p>
+          <p>Log in met je Google account om je profiel te openen.</p>
         </div>
 
         <div className="google-login-box">
