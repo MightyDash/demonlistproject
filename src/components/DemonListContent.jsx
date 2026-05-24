@@ -1,5 +1,5 @@
 import React from "react";
-import { Search, Trophy, Target, Film, BarChart3 } from "lucide-react";
+import { CheckCircle2, Circle, Search, Star, Trophy, Target, Film, BarChart3 } from "lucide-react";
 import { StatCard } from "./StatCard.jsx";
 import { difficultyClass, formatNumber, formatTier } from "../demonUtils.js";
 
@@ -27,8 +27,37 @@ export function DemonListContent({
   hasMoreDemons,
   onLoadMore,
   apiLatestDemon,
-  onLatestDemonClick
+  onLatestDemonClick,
+  currentUser,
+  favoriteIds = [],
+  progressById = {},
+  onToggleFavorite,
+  onSetProgress
 }) {
+  const favorites = new Set(favoriteIds);
+
+  function stopCardAction(event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  function handleFavoriteClick(event, demon) {
+    stopCardAction(event);
+    onToggleFavorite(demon);
+  }
+
+  function handleProgressClick(event, demon) {
+    stopCardAction(event);
+    const currentStatus = progressById[demon.id]?.status || "";
+    onSetProgress(demon, currentStatus === "Completed" ? "" : "Completed");
+  }
+
+  function handleOpenKey(event, demon) {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    setSelected(demon);
+  }
+
   return (
           <>
             <section className="stats-grid">
@@ -200,14 +229,17 @@ export function DemonListContent({
                     <div>Difficulty</div>
                     <div>Attempts</div>
                     <div>Year</div>
+                    <div>Account</div>
                   </div>
     
                   {filtered.map(demon => (
-                    <button
+                    <div
                       className="row demon-row"
                       key={`${demon.id}-${demon.name}`}
                       onClick={() => setSelected(demon)}
-                      type="button"
+                      onKeyDown={event => handleOpenKey(event, demon)}
+                      role="button"
+                      tabIndex={0}
                     >
                       <div className="placement">{demon.placement}</div>
                       <div className="name-cell">
@@ -223,19 +255,65 @@ export function DemonListContent({
                       </div>
                       <div>{formatNumber(demon.attempts)}</div>
                       <div>{demon.year || ""}</div>
-                    </button>
+                      <div className="account-actions row-account-actions">
+                        {currentUser ? (
+                          <>
+                            <button
+                              className={`account-action-button ${favorites.has(demon.id) ? "active" : ""}`}
+                              onClick={event => handleFavoriteClick(event, demon)}
+                              type="button"
+                              aria-label={favorites.has(demon.id) ? "Remove favorite" : "Add favorite"}
+                            >
+                              <Star size={16} />
+                            </button>
+                            <button
+                              className={`account-action-button ${progressById[demon.id]?.status === "Completed" ? "active complete" : ""}`}
+                              onClick={event => handleProgressClick(event, demon)}
+                              type="button"
+                              aria-label="Toggle completed"
+                            >
+                              {progressById[demon.id]?.status === "Completed" ? <CheckCircle2 size={16} /> : <Circle size={16} />}
+                            </button>
+                          </>
+                        ) : (
+                          <span className="account-action-placeholder">Login</span>
+                        )}
+                      </div>
+                    </div>
                   ))}
                 </div>
               ) : (
                 <div className="demon-grid">
                   {filtered.map(demon => (
-                    <button
+                    <article
                       className="grid-card"
                       key={`${demon.id}-${demon.name}`}
                       data-demon-id={demon.id}
                       onClick={() => setSelected(demon)}
-                      type="button"
+                      onKeyDown={event => handleOpenKey(event, demon)}
+                      role="button"
+                      tabIndex={0}
                     >
+                      {currentUser && (
+                        <span className="account-actions grid-account-actions">
+                          <button
+                            className={`account-action-button ${favorites.has(demon.id) ? "active" : ""}`}
+                            onClick={event => handleFavoriteClick(event, demon)}
+                            type="button"
+                            aria-label={favorites.has(demon.id) ? "Remove favorite" : "Add favorite"}
+                          >
+                            <Star size={16} />
+                          </button>
+                          <button
+                            className={`account-action-button ${progressById[demon.id]?.status === "Completed" ? "active complete" : ""}`}
+                            onClick={event => handleProgressClick(event, demon)}
+                            aria-label="Toggle completed"
+                            type="button"
+                          >
+                            {progressById[demon.id]?.status === "Completed" ? <CheckCircle2 size={16} /> : <Circle size={16} />}
+                          </button>
+                        </span>
+                      )}
                       <span className="grid-rank-badge">{demon.placement}</span>
                       <img
                         src={demon.thumbnail}
@@ -262,7 +340,7 @@ export function DemonListContent({
                           <span className="grid-chip">{demon.year || "Unknown"}</span>
                         </div>
                       </div>
-                    </button>
+                    </article>
                   ))}
                 </div>
               )}
