@@ -141,6 +141,25 @@ export default function App() {
     });
   }
 
+  async function loadSupabaseFavorites(user) {
+    if (!supabase || !user?.id) return;
+
+    const { data, error } = await supabase
+      .from("favorites")
+      .select("level_id")
+      .eq("user_id", user.id);
+
+    if (error) {
+      console.warn("Could not load Supabase favorites.", error);
+      return;
+    }
+
+    setAccountData(prev => ({
+      ...prev,
+      favorites: (data || []).map(row => String(row.level_id))
+    }));
+  }
+
   async function handleSupabaseLogin() {
     setLoginError("");
 
@@ -176,16 +195,47 @@ export default function App() {
     });
   }
 
-  function toggleFavorite(demon) {
-    updateAccountData(prev => {
-      const exists = prev.favorites.includes(demon.id);
-      return {
+  async function toggleFavorite(demon) {
+    if (!currentUser) {
+      navigateTo(ROUTES.profile);
+      setShowLogin(true);
+      return;
+    }
+
+    const levelId = String(demon.id);
+    const exists = accountData.favorites.includes(levelId);
+
+    updateAccountData(prev => ({
+      ...prev,
+      favorites: exists
+        ? prev.favorites.filter(id => id !== levelId)
+        : [...prev.favorites, levelId]
+    }));
+
+    if (!supabase || !currentUser.id) return;
+
+    const result = exists
+      ? await supabase
+          .from("favorites")
+          .delete()
+          .eq("user_id", currentUser.id)
+          .eq("level_id", levelId)
+      : await supabase
+          .from("favorites")
+          .insert({
+            user_id: currentUser.id,
+            level_id: levelId
+          });
+
+    if (result.error) {
+      console.warn("Could not update Supabase favorite.", result.error);
+      setAccountData(prev => ({
         ...prev,
         favorites: exists
-          ? prev.favorites.filter(id => id !== demon.id)
-          : [...prev.favorites, demon.id]
-      };
-    });
+          ? [...prev.favorites, levelId]
+          : prev.favorites.filter(id => id !== levelId)
+      }));
+    }
   }
 
   function setDemonProgress(demon, status) {
@@ -342,6 +392,7 @@ export default function App() {
         syncSupabaseProfile(user).catch(error => {
           console.warn("Could not sync Supabase profile.", error);
         });
+        loadSupabaseFavorites(user);
       }
     }
 
@@ -356,6 +407,7 @@ export default function App() {
         syncSupabaseProfile(user).catch(error => {
           console.warn("Could not sync Supabase profile.", error);
         });
+        loadSupabaseFavorites(user);
         if (event === "SIGNED_IN") {
           navigateTo(ROUTES.profile, { replace: true });
         }
@@ -378,7 +430,8 @@ export default function App() {
       const savedData = JSON.parse(localStorage.getItem(accountStorageKey(currentUser)) || "null");
       setAccountData({
         ...createEmptyAccountData(),
-        ...(savedData || {})
+        ...(savedData || {}),
+        favorites: supabase && currentUser.id ? [] : (savedData?.favorites || [])
       });
     } catch {
       setAccountData(createEmptyAccountData());
