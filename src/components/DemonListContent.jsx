@@ -28,8 +28,6 @@ export function DemonListContent({
   onLoadMore,
   apiLatestDemon,
   onLatestDemonClick,
-  apiNextDemon,
-  onNextDemonClick,
   currentUser,
   favoriteIds = [],
   progressById = {},
@@ -175,7 +173,8 @@ export function DemonListContent({
                   ["2022", "2022"],
                   ["2021", "2021"],
                   ["2020", "2020"],
-                  ["2019", "2019"]
+                  ["2019", "2019"],
+                  ["progress", "In Progress"]
                 ].map(([value, label]) => (
                   <button
                     key={value}
@@ -218,11 +217,6 @@ export function DemonListContent({
                   Latest: {apiLatestDemon}
                 </button>
               )}
-              {apiNextDemon?.name && (
-                <button className="next-demon-link" onClick={onNextDemonClick} type="button">
-                  Next Demon: {apiNextDemon.name} ({apiNextDemon.progressPercent}%)
-                </button>
-              )}
             </div>
           </div>
     
@@ -239,7 +233,11 @@ export function DemonListContent({
                     <div>Account</div>
                   </div>
     
-                  {filtered.map(demon => (
+                  {filtered.map(demon => {
+                    const isInProgress = String(demon.status || "").toUpperCase().trim() === "IN PROGRESS";
+                    const progressPercent = Math.max(0, Math.min(100, Number(demon.progressPercent || 0)));
+
+                    return (
                     <div
                       className="row demon-row"
                       key={`${demon.id}-${demon.name}`}
@@ -248,7 +246,7 @@ export function DemonListContent({
                       role="button"
                       tabIndex={0}
                     >
-                      <div className="placement">{demon.placement}</div>
+                      <div className="placement">{isInProgress ? `${progressPercent}%` : demon.placement}</div>
                       <div className="name-cell">
                         <span className="demon-name">{demon.name}</span>
                         <span className="mobile-meta">{demon.creator}</span>
@@ -287,13 +285,18 @@ export function DemonListContent({
                         )}
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="demon-grid">
-                  {filtered.map(demon => (
+                  {filtered.map(demon => {
+                    const isInProgress = String(demon.status || "").toUpperCase().trim() === "IN PROGRESS";
+                    const progressPercent = Math.max(0, Math.min(100, Number(demon.progressPercent || 0)));
+
+                    return (
                     <article
-                      className="grid-card"
+                      className={`grid-card ${isInProgress ? "in-progress-card" : ""}`}
                       key={`${demon.id}-${demon.name}`}
                       data-demon-id={demon.id}
                       onClick={() => setSelected(demon)}
@@ -321,7 +324,7 @@ export function DemonListContent({
                           </button>
                         </span>
                       )}
-                      <span className="grid-rank-badge">{demon.placement}</span>
+                      {!isInProgress && <span className="grid-rank-badge">{demon.placement}</span>}
                       <img
                         src={demon.thumbnail}
                         alt={demon.name}
@@ -338,17 +341,24 @@ export function DemonListContent({
                           <h3>{demon.name}</h3>
                           <p>by {demon.creator || "Unknown creator"}</p>
                         </div>
-    
-                        <div className="grid-meta">
-                          <span className="grid-chip tier-chip">Tier {formatTier(demon.tier)}</span>
-                          <span className={`grid-chip difficulty-chip ${difficultyClass(demon.difficulty)}`}>
-                            {demon.difficulty || "Unknown"}
-                          </span>
-                          <span className="grid-chip">{demon.year || "Unknown"}</span>
-                        </div>
+
+                        {isInProgress ? (
+                          <div className="progress-card-meter" aria-label={`Progress ${progressPercent}%`}>
+                            {progressPercent}%
+                          </div>
+                        ) : (
+                          <div className="grid-meta">
+                            <span className="grid-chip tier-chip">Tier {formatTier(demon.tier)}</span>
+                            <span className={`grid-chip difficulty-chip ${difficultyClass(demon.difficulty)}`}>
+                              {demon.difficulty || "Unknown"}
+                            </span>
+                            <span className="grid-chip">{demon.year || "Unknown"}</span>
+                          </div>
+                        )}
                       </div>
                     </article>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
               {hasMoreDemons && (
