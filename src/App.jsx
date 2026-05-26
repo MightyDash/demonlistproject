@@ -795,15 +795,26 @@ async function handleSaveRequestStatusChanges() {
         const matchesDifficulty =
           difficulty === "all" || demon.difficulty === difficulty;
 
+        const isInProgress = String(demon.status || "COMPLETED").toUpperCase().trim() === "IN PROGRESS";
+        const showingInProgress = yearView === "progress";
+
+        const matchesStatus = showingInProgress ? isInProgress : !isInProgress;
+
         const matchesSegment =
-          segment === "all" || segmentForPlacement(demon.placement) === segment;
+          showingInProgress || segment === "all" || segmentForPlacement(demon.placement) === segment;
 
         const matchesYearView =
-          yearView === "all" || Number(demon.year || 0) <= Number(yearView);
+          showingInProgress || yearView === "all" || Number(demon.year || 0) <= Number(yearView);
 
-        return matchesQuery && matchesDifficulty && matchesSegment && matchesYearView;
+        return matchesQuery && matchesDifficulty && matchesStatus && matchesSegment && matchesYearView;
       })
-      .sort((a, b) => placementNumber(a.placement) - placementNumber(b.placement));
+      .sort((a, b) => {
+        if (yearView === "progress") {
+          return Number(b.progressPercent || 0) - Number(a.progressPercent || 0);
+        }
+
+        return placementNumber(a.placement) - placementNumber(b.placement);
+      });
   }, [demons, query, difficulty, segment, yearView]);
 
   const currentIndex = useMemo(() => {
@@ -1147,8 +1158,6 @@ async function handleSaveRequestStatusChanges() {
           onLoadMore={() => setVisibleDemonCount(count => count + 60)}
           apiLatestDemon={apiLatestDemon}
           onLatestDemonClick={handleLatestDemonClick}
-          apiNextDemon={apiNextDemon}
-          onNextDemonClick={handleNextDemonClick}
           currentUser={currentUser}
           favoriteIds={accountData.favorites}
           progressById={accountData.progress}
