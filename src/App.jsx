@@ -72,6 +72,7 @@ export default function App() {
   const [selected, setSelected] = useState(null);
   const [yearView, setYearView] = useState("all");
   const [apiLatestDemon, setApiLatestDemon] = useState("");
+  const [apiNextDemon, setApiNextDemon] = useState(null);
   const [viewMode, setViewMode] = useState("grid");
   const [requestView, setRequestView] = useState(false);
   const [historyView, setHistoryView] = useState(false);
@@ -478,6 +479,7 @@ export default function App() {
         const rows = Array.isArray(json) ? json : json.demons || json.data || [];
 
         setApiLatestDemon(json.latestDemon || "");
+        setApiNextDemon(json.nextDemon || null);
         setDemons(rows.map(normalizeDemon));
         setSource("live");
       } catch (error) {
@@ -874,6 +876,35 @@ async function handleSaveRequestStatusChanges() {
     }, 80);
   }
 
+  function handleNextDemonClick() {
+    const nextLevelId = String(apiNextDemon?.levelId || "").trim();
+    const nextName = String(apiNextDemon?.name || "").trim();
+    if (!nextLevelId && !nextName) return;
+
+    const next = demons.find(demon =>
+      (nextLevelId && String(demon.id) === nextLevelId) ||
+      (nextName && demon.name.toLowerCase() === nextName.toLowerCase())
+    );
+
+    if (!next) return;
+
+    setQuery("");
+    setDifficulty("all");
+    setSegment("all");
+    setYearView("all");
+    setViewMode("grid");
+
+    window.setTimeout(() => {
+      const escapedId = window.CSS?.escape ? window.CSS.escape(next.id) : next.id;
+      const card = document.querySelector(`[data-demon-id="${escapedId}"]`);
+      if (!card) return;
+
+      card.scrollIntoView({ behavior: "smooth", block: "center" });
+      card.classList.add("grid-card-highlight");
+      window.setTimeout(() => card.classList.remove("grid-card-highlight"), 1800);
+    }, 80);
+  }
+
   function goToPrev() {
     if (currentIndex > 0) {
       setSelected(filtered[currentIndex - 1]);
@@ -1116,6 +1147,8 @@ async function handleSaveRequestStatusChanges() {
           onLoadMore={() => setVisibleDemonCount(count => count + 60)}
           apiLatestDemon={apiLatestDemon}
           onLatestDemonClick={handleLatestDemonClick}
+          apiNextDemon={apiNextDemon}
+          onNextDemonClick={handleNextDemonClick}
           currentUser={currentUser}
           favoriteIds={accountData.favorites}
           progressById={accountData.progress}
