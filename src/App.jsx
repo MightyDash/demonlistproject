@@ -527,6 +527,49 @@ export default function App() {
     }
   }
 
+  async function saveDemonNote(demon, note) {
+    const adminUrl = import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL;
+    const token = localStorage.getItem("admin_token");
+
+    if (!adminUrl || !token) {
+      return { success: false, message: "Admin connection is not configured." };
+    }
+
+    try {
+      const response = await fetch(adminUrl, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "updateDemonNote",
+          token,
+          levelId: demon.id,
+          note
+        })
+      });
+
+      const data = await response.json();
+      if (!data.success) {
+        return { success: false, message: data.message || "Could not save memory." };
+      }
+
+      const savedNote = data.note || "";
+
+      setDemons(previous =>
+        previous.map(item =>
+          String(item.id) === String(demon.id) ? { ...item, notes: savedNote } : item
+        )
+      );
+      setSelected(previous =>
+        previous && String(previous.id) === String(demon.id)
+          ? { ...previous, notes: savedNote }
+          : previous
+      );
+
+      return { success: true, message: data.message || "Memory saved." };
+    } catch {
+      return { success: false, message: "Kon geen verbinding maken." };
+    }
+  }
+
   function handleLogout() {
     localStorage.removeItem("admin_token");
     localStorage.removeItem("site_user");
@@ -1174,6 +1217,8 @@ async function handleSaveRequestStatusChanges() {
           onNext={goToNext}
           hasPrev={currentIndex > 0}
           hasNext={currentIndex < filtered.length - 1}
+          isAdmin={isAdmin}
+          onSaveNote={saveDemonNote}
         />
       )}
 
