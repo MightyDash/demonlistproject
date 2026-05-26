@@ -344,7 +344,8 @@ export function DemonListContent({
 
                         {isInProgress ? (
                           <div className="progress-card-meter" aria-label={`Progress ${progressPercent}%`}>
-                            {progressPercent}%
+                            <span>{progressPercent}%</span>
+                            {progressPercent === 67 && <small>(shut up)</small>}
                           </div>
                         ) : (
                           <div className="grid-meta">
