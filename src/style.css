@@ -371,31 +371,6 @@ h1 {
   cursor: pointer;
 }
 
-.progress-info-tooltip {
-  position: absolute;
-  left: 50%;
-  bottom: calc(100% + 10px);
-  z-index: 80;
-  width: min(360px, 78vw);
-  padding: 12px 14px;
-  border: 1px solid rgba(245, 158, 11, 0.28);
-  border-radius: 8px;
-  background: rgba(8, 13, 20, 0.96);
-  color: var(--text);
-  line-height: 1.45;
-  box-shadow: var(--shadow);
-  opacity: 0;
-  pointer-events: none;
-  transform: translate(-50%, 4px);
-  transition: opacity 0.16s ease, transform 0.16s ease;
-}
-
-.progress-info-wrap:hover .progress-info-tooltip,
-.progress-info-button:focus-visible + .progress-info-tooltip {
-  opacity: 1;
-  transform: translate(-50%, 0);
-}
-
 .progress-info-backdrop {
   position: fixed;
   inset: 0;
