@@ -58,7 +58,8 @@ export function AdminPanel({ onBack, onDataChanged }) {
     creator: "",
     year: "",
     attempts: "",
-    skillsets: ""
+    skillsets: "",
+    status: "COMPLETED"
   });
   const [editConfirm, setEditConfirm] = useState(false);
   const [draggingSkillset, setDraggingSkillset] = useState("");
@@ -144,7 +145,8 @@ export function AdminPanel({ onBack, onDataChanged }) {
         attempts: String(data.demon.attempts || ""),
         skillsets: Array.isArray(data.demon.skillsets)
           ? data.demon.skillsets.join(", ")
-          : (data.demon.skillsets || "")
+          : (data.demon.skillsets || ""),
+        status: data.demon.status || "COMPLETED"
       });
     } catch (error) {
       setAdminError(error.message || "Kon geen verbinding maken met Apps Script.");
@@ -172,6 +174,10 @@ export function AdminPanel({ onBack, onDataChanged }) {
       setAdminError("Attempts moet een geldig getal zijn.");
       return;
     }
+    if (editForm.status !== "COMPLETED" && editForm.status !== "IN PROGRESS") {
+      setAdminError("Status moet COMPLETED of IN PROGRESS zijn.");
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -183,7 +189,8 @@ export function AdminPanel({ onBack, onDataChanged }) {
         creator: editForm.creator.trim(),
         year,
         attempts,
-        skillsets: editForm.skillsets
+        skillsets: editForm.skillsets,
+        status: editForm.status
       });
 
       if (!data.success) {
@@ -754,6 +761,17 @@ export function AdminPanel({ onBack, onDataChanged }) {
                     onChange={e => setEditForm({ ...editForm, attempts: e.target.value })}
                     placeholder="Bijv. 5000"
                   />
+                </label>
+
+                <label>
+                  Status
+                  <select
+                    value={editForm.status}
+                    onChange={e => setEditForm({ ...editForm, status: e.target.value })}
+                  >
+                    <option value="COMPLETED">COMPLETED</option>
+                    <option value="IN PROGRESS">IN PROGRESS</option>
+                  </select>
                 </label>
 
                 <label className="edit-field-full skillset-hidden-field">
