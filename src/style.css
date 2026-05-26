@@ -350,9 +350,35 @@ h1 {
   transition: color 0.18s ease, transform 0.18s ease;
 }
 
-.latest-link:hover {
+.list-status-links {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.next-demon-link {
+  border: 1px solid rgba(99, 226, 143, 0.3);
+  border-radius: 8px;
+  background: rgba(99, 226, 143, 0.08);
+  color: var(--green);
+  cursor: pointer;
+  font-weight: 900;
+  padding: 6px 10px;
+  transition: color 0.18s ease, transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.latest-link:hover,
+.next-demon-link:hover {
   color: var(--blue);
   transform: translateY(-1px);
+}
+
+.next-demon-link:hover {
+  border-color: rgba(99, 226, 143, 0.52);
+  background: rgba(99, 226, 143, 0.13);
+  color: #b5f6cc;
 }
 
 .demon-table {
