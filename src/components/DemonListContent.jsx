@@ -28,6 +28,8 @@ export function DemonListContent({
   onLoadMore,
   apiLatestDemon,
   onLatestDemonClick,
+  apiNextDemon,
+  onNextDemonClick,
   currentUser,
   favoriteIds = [],
   progressById = {},
@@ -210,13 +212,18 @@ export function DemonListContent({
                 ? `${totalCount} demons shown`
                 : `${filtered.length} of ${totalCount} demons shown`}
             </span>
-            {apiLatestDemon ? (
-              <button className="latest-link" onClick={onLatestDemonClick} type="button">
-                Latest: {apiLatestDemon}
-              </button>
-            ) : (
-              <span />
-            )}
+            <div className="list-status-links">
+              {apiLatestDemon && (
+                <button className="latest-link" onClick={onLatestDemonClick} type="button">
+                  Latest: {apiLatestDemon}
+                </button>
+              )}
+              {apiNextDemon?.name && (
+                <button className="next-demon-link" onClick={onNextDemonClick} type="button">
+                  Next Demon: {apiNextDemon.name} ({apiNextDemon.progressPercent}%)
+                </button>
+              )}
+            </div>
           </div>
     
               {viewMode === "list" ? (
