@@ -1,5 +1,5 @@
-import React from "react";
-import { CheckCircle2, Circle, Search, Star, Trophy, Target, Film, BarChart3 } from "lucide-react";
+import React, { useState } from "react";
+import { BarChart3, CheckCircle2, Circle, Film, Info, Search, Star, Target, Trophy, X } from "lucide-react";
 import { StatCard } from "./StatCard.jsx";
 import { difficultyClass, formatNumber, formatTier } from "../demonUtils.js";
 
@@ -35,6 +35,9 @@ export function DemonListContent({
   onSetProgress
 }) {
   const favorites = new Set(favoriteIds.map(id => String(id)));
+  const [showProgressInfo, setShowProgressInfo] = useState(false);
+  const isProgressView = yearView === "progress";
+  const progressInfoText = "It is not yet clear whether these demons will get beaten in the future. I am certain that some will, but I still have my doubts about others. This is just a reminder to myself";
 
   function stopCardAction(event) {
     event.preventDefault();
@@ -206,10 +209,25 @@ export function DemonListContent({
     
             <main className="panel table-panel">
           <div className="table-header">
-            <span>
+            <span className="table-count">
               {filtered.length === totalCount
                 ? `${totalCount} demons shown`
                 : `${filtered.length} of ${totalCount} demons shown`}
+              {isProgressView && (
+                <span className="progress-info-wrap">
+                  <button
+                    className="progress-info-button"
+                    onClick={() => setShowProgressInfo(true)}
+                    type="button"
+                    aria-label="In progress info"
+                  >
+                    <Info size={15} />
+                  </button>
+                  <span className="progress-info-tooltip" role="tooltip">
+                    {progressInfoText}
+                  </span>
+                </span>
+              )}
             </span>
             <div className="list-status-links">
               {apiLatestDemon && (
@@ -219,6 +237,22 @@ export function DemonListContent({
               )}
             </div>
           </div>
+
+          {showProgressInfo && (
+            <div className="progress-info-backdrop" onClick={() => setShowProgressInfo(false)}>
+              <section className="progress-info-modal" onClick={event => event.stopPropagation()}>
+                <button
+                  className="progress-info-close"
+                  onClick={() => setShowProgressInfo(false)}
+                  type="button"
+                  aria-label="Close"
+                >
+                  <X size={20} />
+                </button>
+                <p>{progressInfoText}</p>
+              </section>
+            </div>
+          )}
     
               {viewMode === "list" ? (
                 <div className="demon-table">
