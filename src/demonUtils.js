@@ -19,6 +19,7 @@ export function normalizeDemon(row, index) {
       .map(s => s.trim())
       .filter(Boolean),
     status: row.status ?? row["Done/Progress?"] ?? "COMPLETED",
+    progressPercent: Number(row.progressPercent ?? row["Progress %"] ?? 0),
     thumbnail: id ? `https://levelthumbs.prevter.me/thumbnail/${id}` : "",
     notes: row.notes ?? ""
   };
@@ -65,3 +66,4 @@ const FORMER_TOP_1 = {
   "Acu": 2023,
   "Make It Drop": 2025
 };
+
