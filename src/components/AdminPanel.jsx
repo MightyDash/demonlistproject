@@ -60,6 +60,7 @@ export function AdminPanel({ onBack, onDataChanged }) {
     skillsets: ""
   });
   const [editConfirm, setEditConfirm] = useState(false);
+  const [draggingSkillset, setDraggingSkillset] = useState("");
 
   const [adminMessage, setAdminMessage] = useState("");
   const [adminError, setAdminError] = useState("");
@@ -98,6 +99,19 @@ export function AdminPanel({ onBack, onDataChanged }) {
     } else {
       addSkillset(skillset);
     }
+  }
+
+  function createSkillsetDragImage(skillset) {
+    const dragImage = document.createElement("div");
+    dragImage.textContent = skillset;
+    dragImage.className = "skillset-drag-preview";
+    document.body.appendChild(dragImage);
+
+    window.setTimeout(() => {
+      dragImage.remove();
+    }, 0);
+
+    return dragImage;
   }
 
   async function handleSearchEdit() {
@@ -593,6 +607,15 @@ export function AdminPanel({ onBack, onDataChanged }) {
                               onDragStart={event => {
                                 event.dataTransfer.setData("text/plain", skillset.name);
                                 event.dataTransfer.effectAllowed = "copy";
+                                event.dataTransfer.setDragImage(
+                                  createSkillsetDragImage(skillset.name),
+                                  12,
+                                  12
+                                );
+                                setDraggingSkillset(skillset.name);
+                              }}
+                              onDragEnd={() => {
+                                setDraggingSkillset("");
                               }}
                             >
                               {skillset.name}
@@ -603,14 +626,18 @@ export function AdminPanel({ onBack, onDataChanged }) {
                       </div>
 
                       <div
-                        className="skillset-drop-zone"
+                        className={`skillset-drop-zone ${draggingSkillset ? "dragging" : ""}`}
                         onDragOver={event => {
                           event.preventDefault();
                           event.dataTransfer.dropEffect = "copy";
                         }}
+                        onDragEnter={event => {
+                          event.preventDefault();
+                        }}
                         onDrop={event => {
                           event.preventDefault();
                           addSkillset(event.dataTransfer.getData("text/plain"));
+                          setDraggingSkillset("");
                         }}
                       >
                         <span className="skillset-picker-label">Selected for {editFound.name}</span>
