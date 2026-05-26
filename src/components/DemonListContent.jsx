@@ -223,9 +223,6 @@ export function DemonListContent({
                   >
                     <Info size={15} />
                   </button>
-                  <span className="progress-info-tooltip" role="tooltip">
-                    {progressInfoText}
-                  </span>
                 </span>
               )}
             </span>
