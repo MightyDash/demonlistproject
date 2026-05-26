@@ -2697,7 +2697,21 @@ h1 {
   }
 
   .modal-backdrop {
-    padding: 12px;
+    place-items: stretch;
+    padding: 10px;
+  }
+
+  .modal {
+    width: 100%;
+    max-height: calc(100dvh - 20px);
+    justify-self: stretch;
+    align-self: center;
+  }
+
+  .modal-cover,
+  .thumbnail-placeholder {
+    min-height: 260px;
+    max-height: 320px;
   }
 
   .nav-button {
@@ -2832,7 +2846,11 @@ h1 {
   }
 
   .modal-content {
-    padding: 26px;
+    padding: 22px;
+  }
+
+  .modal h2 {
+    font-size: clamp(2.1rem, 13vw, 3.6rem);
   }
 
   .modal-title-row {
