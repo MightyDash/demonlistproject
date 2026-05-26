@@ -33,7 +33,7 @@ export function DemonModal({
     if (result?.success) {
       setNoteState({ saving: false, message: result.message || "Saved.", error: "" });
     } else {
-      setNoteState({ saving: false, message: "", error: result?.message || "Could not save memory." });
+      setNoteState({ saving: false, message: "", error: result?.message || "Could not save note." });
     }
   }
 
@@ -120,13 +120,13 @@ export function DemonModal({
           )}
 
           <div className="memory-panel">
-            <h3>Memory</h3>
+            <h3>Note</h3>
             {isAdmin ? (
               <>
                 <textarea
                   value={noteDraft}
                   onChange={event => setNoteDraft(event.target.value)}
-                  placeholder="Write a memory for this demon..."
+                  placeholder="Write a note for this demon..."
                   rows={5}
                 />
                 <div className="memory-actions">
@@ -137,7 +137,7 @@ export function DemonModal({
                     type="button"
                   >
                     <Save size={16} />
-                    {noteState.saving ? "Saving..." : "Save memory"}
+                    {noteState.saving ? "Saving..." : "Save note"}
                   </button>
                   {noteState.message && <span className="memory-message">{noteState.message}</span>}
                   {noteState.error && <span className="memory-error">{noteState.error}</span>}
@@ -145,7 +145,7 @@ export function DemonModal({
               </>
             ) : (
               <p className="memory-text">
-                {demon.notes || "No memory added yet."}
+                {demon.notes || "No note added yet."}
               </p>
             )}
           </div>

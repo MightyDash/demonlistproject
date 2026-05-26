@@ -548,7 +548,7 @@ export default function App() {
 
       const data = await response.json();
       if (!data.success) {
-        return { success: false, message: data.message || "Could not save memory." };
+        return { success: false, message: data.message || "Could not save note." };
       }
 
       const savedNote = data.note || "";
@@ -564,7 +564,7 @@ export default function App() {
           : previous
       );
 
-      return { success: true, message: data.message || "Memory saved." };
+      return { success: true, message: data.message || "Note saved." };
     } catch {
       return { success: false, message: "Kon geen verbinding maken." };
     }
@@ -1239,4 +1239,3 @@ async function handleSaveRequestStatusChanges() {
     </div>
   );
 }
-
