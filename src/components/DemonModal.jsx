@@ -1,12 +1,41 @@
-import React from "react";
-import { ChevronLeft, ChevronRight, ExternalLink, X } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { ChevronLeft, ChevronRight, ExternalLink, Save, X } from "lucide-react";
 import { Detail } from "./Detail.jsx";
 import { formatNumber, formatTier } from "../demonUtils.js";
 
-export function DemonModal({ demon, onClose, onPrev, onNext, hasPrev, hasNext }) {
+export function DemonModal({
+  demon,
+  onClose,
+  onPrev,
+  onNext,
+  hasPrev,
+  hasNext,
+  isAdmin,
+  onSaveNote
+}) {
+  const [noteDraft, setNoteDraft] = useState(demon.notes || "");
+  const [noteState, setNoteState] = useState({ saving: false, message: "", error: "" });
   const thumbnailSrc = demon.id
     ? `https://levelthumbs.prevter.me/thumbnail/${demon.id}`
     : "";
+
+  useEffect(() => {
+    setNoteDraft(demon.notes || "");
+    setNoteState({ saving: false, message: "", error: "" });
+  }, [demon.id, demon.notes]);
+
+  async function handleSaveNote() {
+    if (!onSaveNote) return;
+
+    setNoteState({ saving: true, message: "", error: "" });
+    const result = await onSaveNote(demon, noteDraft);
+
+    if (result?.success) {
+      setNoteState({ saving: false, message: result.message || "Saved.", error: "" });
+    } else {
+      setNoteState({ saving: false, message: "", error: result?.message || "Could not save memory." });
+    }
+  }
 
   return (
     <div className="modal-backdrop" onMouseDown={onClose}>
@@ -38,7 +67,6 @@ export function DemonModal({ demon, onClose, onPrev, onNext, hasPrev, hasNext })
           />
           <div className="modal-cover-shade" />
           <div className="modal-cover-badges">
-            <span className="modal-placement">{demon.placement}</span>
             <span className="modal-tier">Tier {formatTier(demon.tier)}</span>
           </div>
         </div>
@@ -91,7 +119,36 @@ export function DemonModal({ demon, onClose, onPrev, onNext, hasPrev, hasNext })
             </div>
           )}
 
-          {demon.notes && <p className="notes">{demon.notes}</p>}
+          <div className="memory-panel">
+            <h3>Memory</h3>
+            {isAdmin ? (
+              <>
+                <textarea
+                  value={noteDraft}
+                  onChange={event => setNoteDraft(event.target.value)}
+                  placeholder="Write a memory for this demon..."
+                  rows={5}
+                />
+                <div className="memory-actions">
+                  <button
+                    className="login-button memory-save-button"
+                    onClick={handleSaveNote}
+                    disabled={noteState.saving}
+                    type="button"
+                  >
+                    <Save size={16} />
+                    {noteState.saving ? "Saving..." : "Save memory"}
+                  </button>
+                  {noteState.message && <span className="memory-message">{noteState.message}</span>}
+                  {noteState.error && <span className="memory-error">{noteState.error}</span>}
+                </div>
+              </>
+            ) : (
+              <p className="memory-text">
+                {demon.notes || "No memory added yet."}
+              </p>
+            )}
+          </div>
         </div>
       </article>
     </div>
