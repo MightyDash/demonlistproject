@@ -322,6 +322,13 @@ h1 {
   box-shadow: var(--glow);
 }
 
+.year-tabs button:last-child.active {
+  color: #ffe29a;
+  background: rgba(245, 158, 11, 0.18);
+  border-color: rgba(245, 158, 11, 0.58);
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.16), 0 16px 42px rgba(245, 158, 11, 0.14);
+}
+
 .table-panel {
   overflow: hidden;
   position: relative;
@@ -1304,6 +1311,35 @@ h1 {
   opacity: 0.96;
   filter: saturate(1.08) contrast(1.04);
   transform: scale(1.055);
+}
+
+.grid-card.in-progress-card {
+  border-color: rgba(245, 158, 11, 0.36);
+}
+
+.grid-card.in-progress-card .grid-thumb {
+  opacity: 0.76;
+  filter: saturate(1.08) contrast(1.06);
+}
+
+.grid-card.in-progress-card .grid-overlay {
+  padding-top: 20px;
+  background:
+    radial-gradient(circle at 50% 54%, rgba(245, 158, 11, 0.16), transparent 32%),
+    linear-gradient(to top, rgba(3, 7, 12, 0.95), rgba(3, 7, 12, 0.28) 56%, rgba(3, 7, 12, 0.12));
+}
+
+.progress-card-meter {
+  align-self: center;
+  justify-self: center;
+  margin: auto 0;
+  color: #ffd166;
+  font-size: clamp(48px, 7vw, 76px);
+  line-height: 1;
+  font-weight: 950;
+  text-shadow:
+    0 3px 18px rgba(0, 0, 0, 0.72),
+    0 0 24px rgba(245, 158, 11, 0.38);
 }
 
 .grid-rank-badge {
