@@ -41,7 +41,8 @@ export function AdminPanel({ onBack, onDataChanged }) {
     levelId: "",
     attempts: "",
     year: new Date().getFullYear(),
-    status: "COMPLETED"
+    status: "COMPLETED",
+    progressPercent: ""
   });
 
   const [removeLevelId, setRemoveLevelId] = useState("");
@@ -234,6 +235,7 @@ export function AdminPanel({ onBack, onDataChanged }) {
     const attempts = Number(addForm.attempts);
     const year = Number(addForm.year);
     const status = String(addForm.status || "COMPLETED").trim().toUpperCase();
+    const progressPercent = Number(addForm.progressPercent);
 
     if (!levelId) {
       setAdminError("Level ID is verplicht.");
@@ -250,6 +252,11 @@ export function AdminPanel({ onBack, onDataChanged }) {
       return;
     }
 
+    if (status === "IN PROGRESS" && (!Number.isInteger(progressPercent) || progressPercent < 0 || progressPercent > 100)) {
+      setAdminError("Progress moet een percentage tussen 0 en 100 zijn.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -258,7 +265,8 @@ export function AdminPanel({ onBack, onDataChanged }) {
         levelId,
         attempts,
         year,
-        status
+        status,
+        progressPercent: status === "IN PROGRESS" ? progressPercent : ""
       });
 
       if (!data.success) {
@@ -271,7 +279,8 @@ export function AdminPanel({ onBack, onDataChanged }) {
         levelId: "",
         attempts: "",
         year: new Date().getFullYear(),
-        status: "COMPLETED"
+        status: "COMPLETED",
+        progressPercent: ""
       });
       setShowAddForm(false);
 
@@ -434,12 +443,30 @@ export function AdminPanel({ onBack, onDataChanged }) {
             Status
             <select
               value={addForm.status}
-              onChange={e => setAddForm({ ...addForm, status: e.target.value })}
+              onChange={e => setAddForm({
+                ...addForm,
+                status: e.target.value,
+                progressPercent: e.target.value === "IN PROGRESS" ? addForm.progressPercent : ""
+              })}
             >
               <option value="COMPLETED">COMPLETED</option>
               <option value="IN PROGRESS">IN PROGRESS</option>
             </select>
           </label>
+
+          {addForm.status === "IN PROGRESS" && (
+            <label>
+              Progress %
+              <input
+                type="number"
+                min="0"
+                max="100"
+                value={addForm.progressPercent}
+                onChange={e => setAddForm({ ...addForm, progressPercent: e.target.value })}
+                placeholder="Bijv. 72"
+              />
+            </label>
+          )}
 
           <div className="admin-form-actions">
             <button
