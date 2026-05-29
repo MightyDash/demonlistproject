@@ -305,7 +305,6 @@ export function DemonListContent({
                       role="button"
                       tabIndex={0}
                     >
-                      {!isInProgress && <span className="grid-rank-badge">{demon.placement}</span>}
                       <img
                         src={demon.thumbnail}
                         alt={demon.name}
@@ -321,6 +320,7 @@ export function DemonListContent({
                         <div>
                           <h3>{demon.name}</h3>
                           <p>by {demon.creator || "Unknown creator"}</p>
+                          {!isInProgress && <span className="grid-rank-inline">{demon.placement}</span>}
                         </div>
 
                         {isInProgress ? (

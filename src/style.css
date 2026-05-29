@@ -3723,3 +3723,79 @@ h1 {
   }
 }
 
+@media (min-width: 981px) {
+  .request-panel .request-list {
+    display: none !important;
+  }
+
+  .desktop-list-shell.progress-shell {
+    gap: 16px;
+  }
+
+  .desktop-list-shell.progress-shell .controls {
+    position: static;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(360px, 1fr) 220px auto;
+    align-items: center;
+    gap: 12px;
+    margin: 0 44px 16px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+
+  .desktop-list-shell.progress-shell .searchbox,
+  .desktop-list-shell.progress-shell .custom-select-button,
+  .desktop-list-shell.progress-shell .tabs button {
+    background: rgba(9, 18, 31, 0.86);
+  }
+
+  .desktop-list-shell.progress-shell .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .desktop-list-shell.progress-shell .year-tabs {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+    margin-top: 8px;
+  }
+
+  .desktop-list-shell.progress-shell .view-tabs {
+    grid-column: auto;
+  }
+
+  .desktop-list-shell.progress-shell .table-panel {
+    position: relative;
+    z-index: 0;
+  }
+
+  .grid-rank-badge {
+    display: none;
+  }
+
+  .grid-rank-inline {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    min-height: 30px;
+    margin-top: 10px;
+    padding: 0 10px;
+    border-radius: 7px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(6, 10, 16, 0.78);
+    color: white;
+    font-size: 0.82rem;
+    font-weight: 900;
+    backdrop-filter: blur(10px);
+  }
+
+  .grid-overlay {
+    padding-top: 18px;
+  }
+}
+
