@@ -336,6 +336,37 @@ export function AdminPanel({ onBack, onDataChanged }) {
     }
   }
 
+  async function handleRefreshList() {
+    setAdminMessage("");
+    setAdminError("");
+    setShowAddForm(false);
+    setShowRemoveForm(false);
+    setShowEditForm(false);
+    setEditFound(null);
+    setEditNotFound(false);
+    setEditConfirm(false);
+    setRemoveConfirm(false);
+    setIsSubmitting(true);
+
+    try {
+      const data = await sendAdminRequest({
+        action: "refreshList"
+      });
+
+      if (!data.success) {
+        setAdminError(data.message || "List refresh mislukt.");
+        return;
+      }
+
+      setAdminMessage(data.message || "List refreshed.");
+      if (onDataChanged) onDataChanged();
+    } catch (error) {
+      setAdminError(error.message || "Kon geen verbinding maken met Apps Script.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <section className="panel admin-panel">
       <div className="admin-panel-header">
@@ -409,6 +440,16 @@ export function AdminPanel({ onBack, onDataChanged }) {
         >
           <strong>Edit Demon</strong>
           <span>Naam, difficulty, makers en meer aanpassen.</span>
+        </button>
+
+        <button
+          className="admin-action-card"
+          type="button"
+          onClick={handleRefreshList}
+          disabled={isSubmitting}
+        >
+          <strong>{isSubmitting ? "Refreshing..." : "Refresh List"}</strong>
+          <span>Haalt alle tiers opnieuw op en werkt placements/history bij.</span>
         </button>
       </div>
 
