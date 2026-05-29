@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { BarChart3, CheckCircle2, Circle, Film, Info, Search, Star, Target, Trophy, X } from "lucide-react";
+import { BarChart3, Film, Info, Search, Target, Trophy, X } from "lucide-react";
 import { StatCard } from "./StatCard.jsx";
 import { difficultyClass, formatNumber, formatTier } from "../demonUtils.js";
 
@@ -27,33 +27,11 @@ export function DemonListContent({
   hasMoreDemons,
   onLoadMore,
   apiLatestDemon,
-  onLatestDemonClick,
-  currentUser,
-  favoriteIds = [],
-  progressById = {},
-  onToggleFavorite,
-  onSetProgress
+  onLatestDemonClick
 }) {
-  const favorites = new Set(favoriteIds.map(id => String(id)));
   const [showProgressInfo, setShowProgressInfo] = useState(false);
   const isProgressView = yearView === "progress";
   const progressInfoText = "It is not yet clear whether these demons will get beaten in the future. I am certain that some will, but I still have my doubts about others. This is just a reminder to myself";
-
-  function stopCardAction(event) {
-    event.preventDefault();
-    event.stopPropagation();
-  }
-
-  function handleFavoriteClick(event, demon) {
-    stopCardAction(event);
-    onToggleFavorite(demon);
-  }
-
-  function handleProgressClick(event, demon) {
-    stopCardAction(event);
-    const currentStatus = progressById[demon.id]?.status || "";
-    onSetProgress(demon, currentStatus === "Completed" ? "" : "Completed");
-  }
 
   function handleOpenKey(event, demon) {
     if (event.key !== "Enter" && event.key !== " ") return;
@@ -261,7 +239,6 @@ export function DemonListContent({
                     <div>Difficulty</div>
                     <div>Attempts</div>
                     <div>Year</div>
-                    <div>Account</div>
                   </div>
     
                   {filtered.map(demon => {
@@ -291,30 +268,6 @@ export function DemonListContent({
                       </div>
                       <div>{formatNumber(demon.attempts)}</div>
                       <div>{demon.year || ""}</div>
-                      <div className="account-actions row-account-actions">
-                        {currentUser ? (
-                          <>
-                            <button
-                              className={`account-action-button ${favorites.has(String(demon.id)) ? "active" : ""}`}
-                              onClick={event => handleFavoriteClick(event, demon)}
-                              type="button"
-                              aria-label={favorites.has(String(demon.id)) ? "Remove favorite" : "Add favorite"}
-                            >
-                              <Star size={16} />
-                            </button>
-                            <button
-                              className={`account-action-button ${progressById[demon.id]?.status === "Completed" ? "active complete" : ""}`}
-                              onClick={event => handleProgressClick(event, demon)}
-                              type="button"
-                              aria-label="Toggle completed"
-                            >
-                              {progressById[demon.id]?.status === "Completed" ? <CheckCircle2 size={16} /> : <Circle size={16} />}
-                            </button>
-                          </>
-                        ) : (
-                          <span className="account-action-placeholder">Login</span>
-                        )}
-                      </div>
                     </div>
                     );
                   })}
@@ -335,26 +288,6 @@ export function DemonListContent({
                       role="button"
                       tabIndex={0}
                     >
-                      {currentUser && (
-                        <span className="account-actions grid-account-actions">
-                          <button
-                            className={`account-action-button ${favorites.has(String(demon.id)) ? "active" : ""}`}
-                            onClick={event => handleFavoriteClick(event, demon)}
-                            type="button"
-                            aria-label={favorites.has(String(demon.id)) ? "Remove favorite" : "Add favorite"}
-                          >
-                            <Star size={16} />
-                          </button>
-                          <button
-                            className={`account-action-button ${progressById[demon.id]?.status === "Completed" ? "active complete" : ""}`}
-                            onClick={event => handleProgressClick(event, demon)}
-                            aria-label="Toggle completed"
-                            type="button"
-                          >
-                            {progressById[demon.id]?.status === "Completed" ? <CheckCircle2 size={16} /> : <Circle size={16} />}
-                          </button>
-                        </span>
-                      )}
                       {!isInProgress && <span className="grid-rank-badge">{demon.placement}</span>}
                       <img
                         src={demon.thumbnail}

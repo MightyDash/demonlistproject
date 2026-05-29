@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { X } from "lucide-react";
 
 export function LoginModal({
@@ -6,12 +6,8 @@ export function LoginModal({
   setLoginData,
   loginError,
   handleLogin,
-  supabaseConfigured,
-  onSupabaseLogin,
   onClose
 }) {
-  const [adminOpen, setAdminOpen] = useState(false);
-
   return (
     <div className="modal-backdrop">
       <div className="login-panel">
@@ -25,33 +21,11 @@ export function LoginModal({
         </button>
 
         <div className="login-header">
-          <p className="login-eyebrow">Account</p>
-          <h2>Login</h2>
-          <p>Log in met je Google account om je profiel te openen.</p>
+          <p className="login-eyebrow">Admin</p>
+          <h2>Admin Login</h2>
+          <p>Log in om de admin tools te gebruiken.</p>
         </div>
 
-        <div className="google-login-box">
-          {supabaseConfigured ? (
-            <button className="google-auth-button" onClick={onSupabaseLogin} type="button">
-              <span className="google-mark">G</span>
-              Doorgaan met Google
-            </button>
-          ) : (
-            <p className="login-hint">
-              Supabase login is bijna klaar. Voeg `VITE_SUPABASE_URL` en `VITE_SUPABASE_ANON_KEY` toe in Render.
-            </p>
-          )}
-        </div>
-
-        <button
-          className="admin-access-toggle"
-          onClick={() => setAdminOpen(open => !open)}
-          type="button"
-        >
-          Admin access
-        </button>
-
-        {adminOpen && (
           <form
             className="login-form admin-login-form"
             autoComplete="on"
@@ -108,7 +82,6 @@ export function LoginModal({
               </button>
             </div>
           </form>
-        )}
       </div>
     </div>
   );

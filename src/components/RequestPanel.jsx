@@ -26,9 +26,7 @@ export function RequestPanel({
   requestSort,
   setRequestSort,
   requestStatusFilter,
-  setRequestStatusFilter,
-  currentUser,
-  onOpenLogin
+  setRequestStatusFilter
 }) {
   const filteredRequests = requests.filter(request => {
     if (requestStatusFilter === "all") return true;
@@ -74,57 +72,45 @@ export function RequestPanel({
       </div>
 
       <div className="request-form">
-        {currentUser ? (
-          <>
-            <div className="request-form-row">
-              <input
-                type="text"
-                inputMode="numeric"
-                autoComplete="off"
-                placeholder="Level ID"
-                value={requestForm.levelId}
-                onChange={e =>
-                  setRequestForm({ ...requestForm, levelId: e.target.value })
-                }
-              />
+        <div className="request-form-row">
+          <input
+            type="text"
+            inputMode="numeric"
+            autoComplete="off"
+            placeholder="Level ID"
+            value={requestForm.levelId}
+            onChange={e =>
+              setRequestForm({ ...requestForm, levelId: e.target.value })
+            }
+          />
 
-              <select
-                value={requestForm.type}
-                onChange={e =>
-                  setRequestForm({ ...requestForm, type: e.target.value })
-                }
-              >
-                <option value="Classic">Classic</option>
-                <option value="Platformer">Platformer</option>
-              </select>
-            </div>
+          <select
+            value={requestForm.type}
+            onChange={e =>
+              setRequestForm({ ...requestForm, type: e.target.value })
+            }
+          >
+            <option value="Classic">Classic</option>
+            <option value="Platformer">Platformer</option>
+          </select>
+        </div>
 
-            <textarea
-              placeholder="Describe this demon in terms of gameplay, decorations and skillsets"
-              value={requestForm.notes}
-              onChange={e =>
-                setRequestForm({ ...requestForm, notes: e.target.value })
-              }
-            />
+        <textarea
+          placeholder="Describe this demon in terms of gameplay, decorations and skillsets"
+          value={requestForm.notes}
+          onChange={e =>
+            setRequestForm({ ...requestForm, notes: e.target.value })
+          }
+        />
 
-            <button
-              className="login-button"
-              onClick={handleSubmitRequest}
-              disabled={requestLoading}
-              type="button"
-            >
-              {requestLoading ? "Submitting..." : "Submit Request"}
-            </button>
-          </>
-        ) : (
-          <div className="request-login-gate">
-            <strong>Log in to submit a demon.</strong>
-            <span>Guests can view submissions, but only accounts can recommend new demons.</span>
-            <button className="login-button" onClick={onOpenLogin} type="button">
-              Login
-            </button>
-          </div>
-        )}
+        <button
+          className="login-button"
+          onClick={handleSubmitRequest}
+          disabled={requestLoading}
+          type="button"
+        >
+          {requestLoading ? "Submitting..." : "Submit Request"}
+        </button>
 
         {requestMessage && <p className="admin-success">{requestMessage}</p>}
         {requestError && <p className="admin-error">{requestError}</p>}
@@ -295,7 +281,6 @@ export function RequestPanel({
             <div className="request-meta">
               <span>{request.type || "Classic"}</span>
               <span>Weight: {request.weight || 1}</span>
-              {isAdmin && request.submittedBy && <span>Submitted by: {request.submittedBy}</span>}
               {isAdmin && request.weightIncreaseAllowed && <span>Weight Increase open</span>}
             </div>
 

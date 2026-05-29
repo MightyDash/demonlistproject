@@ -7,55 +7,16 @@ import { DemonListContent } from "./components/DemonListContent.jsx";
 import { DemonModal } from "./components/DemonModal.jsx";
 import { LoginModal } from "./components/LoginModal.jsx";
 import { LogoutConfirm } from "./components/LogoutConfirm.jsx";
-import { ProfilePage } from "./components/ProfilePage.jsx";
 import { RecentChanges } from "./components/RecentChanges.jsx";
 import { RequestPanel } from "./components/RequestPanel.jsx";
 import { normalizeDemon, placementNumber, segmentForPlacement } from "./demonUtils.js";
-import { isSupabaseConfigured, supabase } from "./supabaseClient.js";
 
 const ROUTES = {
   home: "/",
   requests: "/demon-requests",
   history: "/recent-changes",
-  profile: "/profile",
   admin: "/admin-panel"
 };
-
-const ACCOUNT_PREVIEW_ITEMS = [
-  "Build your own demon list",
-  "Save favorites",
-  "Track personal progress"
-];
-
-function accountStorageKey(user) {
-  return user?.email ? `demon_account_${user.email.toLowerCase()}` : "";
-}
-
-function createEmptyAccountData() {
-  return {
-    favorites: [],
-    progress: {},
-    personalList: null
-  };
-}
-
-function userFromSupabaseUser(user) {
-  if (!user) return null;
-
-  const metadata = user.user_metadata || {};
-
-  return {
-    id: user.id,
-    name:
-      metadata.full_name ||
-      metadata.name ||
-      metadata.user_name ||
-      user.email ||
-      "User",
-    email: user.email || "",
-    picture: metadata.avatar_url || metadata.picture || ""
-  };
-}
 
 function normalizeRoute(pathname) {
   const path = pathname.replace(/\/+$/, "") || ROUTES.home;
@@ -76,7 +37,6 @@ export default function App() {
   const [viewMode, setViewMode] = useState("grid");
   const [requestView, setRequestView] = useState(false);
   const [historyView, setHistoryView] = useState(false);
-  const [profileView, setProfileView] = useState(false);
   const [requestForm, setRequestForm] = useState({
   levelId: "",
   type: "Classic",
@@ -93,8 +53,6 @@ export default function App() {
   const [requestMessage, setRequestMessage] = useState("");
   const [requestError, setRequestError] = useState("");
   const [showLogin, setShowLogin] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
-  const [accountData, setAccountData] = useState(createEmptyAccountData);
   const [historyChanges, setHistoryChanges] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState("");
@@ -112,7 +70,6 @@ export default function App() {
 
     setRequestView(route === ROUTES.requests);
     setHistoryView(route === ROUTES.history);
-    setProfileView(route === ROUTES.profile);
     setAdminView(route === ROUTES.admin);
   }
 
@@ -129,150 +86,6 @@ export default function App() {
     }
 
     applyRoute(route);
-  }
-
-  async function syncSupabaseProfile(user) {
-    if (!supabase || !user) return;
-
-    await supabase.from("profiles").upsert({
-      id: user.id,
-      display_name: user.name,
-      avatar_url: user.picture,
-      updated_at: new Date().toISOString()
-    });
-  }
-
-  async function loadSupabaseFavorites(user) {
-    if (!supabase || !user?.id) return;
-
-    const { data, error } = await supabase
-      .from("favorites")
-      .select("level_id")
-      .eq("user_id", user.id);
-
-    if (error) {
-      console.warn("Could not load Supabase favorites.", error);
-      return;
-    }
-
-    setAccountData(prev => ({
-      ...prev,
-      favorites: (data || []).map(row => String(row.level_id))
-    }));
-  }
-
-  async function handleSupabaseLogin() {
-    setLoginError("");
-
-    if (!supabase) {
-      setLoginError("Supabase login is nog niet geconfigureerd.");
-      return;
-    }
-
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}${ROUTES.profile}`
-      }
-    });
-
-    if (error) {
-      setLoginError(error.message || "Google login kon niet worden gestart.");
-    }
-  }
-
-  function updateAccountData(updater) {
-    if (!currentUser) {
-      navigateTo(ROUTES.profile);
-      setShowLogin(true);
-      return;
-    }
-
-    setAccountData(prev => {
-      const nextData = updater(prev);
-      const key = accountStorageKey(currentUser);
-      if (key) localStorage.setItem(key, JSON.stringify(nextData));
-      return nextData;
-    });
-  }
-
-  async function toggleFavorite(demon) {
-    if (!currentUser) {
-      navigateTo(ROUTES.profile);
-      setShowLogin(true);
-      return;
-    }
-
-    const levelId = String(demon.id);
-    const exists = accountData.favorites.map(id => String(id)).includes(levelId);
-
-    updateAccountData(prev => ({
-      ...prev,
-      favorites: exists
-        ? prev.favorites.filter(id => String(id) !== levelId)
-        : Array.from(new Set([...prev.favorites.map(id => String(id)), levelId]))
-    }));
-
-    if (!supabase || !currentUser.id) return;
-
-    const result = exists
-      ? await supabase
-          .from("favorites")
-          .delete()
-          .eq("user_id", currentUser.id)
-          .eq("level_id", levelId)
-      : await supabase
-          .from("favorites")
-          .insert({
-            user_id: currentUser.id,
-            level_id: levelId
-          });
-
-    if (result.error) {
-      console.warn("Could not update Supabase favorite.", result.error);
-      setAccountData(prev => ({
-        ...prev,
-        favorites: exists
-          ? Array.from(new Set([...prev.favorites.map(id => String(id)), levelId]))
-          : prev.favorites.filter(id => String(id) !== levelId)
-      }));
-    }
-  }
-
-  function setDemonProgress(demon, status) {
-    updateAccountData(prev => {
-      const progress = { ...prev.progress };
-
-      if (!status) {
-        delete progress[demon.id];
-      } else {
-        progress[demon.id] = {
-          status,
-          updatedAt: new Date().toISOString()
-        };
-      }
-
-      return { ...prev, progress };
-    });
-  }
-
-  function createPersonalList() {
-    updateAccountData(prev => {
-      if (prev.personalList) return prev;
-
-      return {
-        ...prev,
-        personalList: {
-          id: `personal-${Date.now()}`,
-          name: `${currentUser?.name || "My"}'s Demon List`,
-          createdAt: new Date().toISOString()
-        }
-      };
-    });
-  }
-
-  function openPersonalList() {
-    window.alert("Your personal Demon List page is coming next.");
   }
 
   async function loadRequests({ silent = false } = {}) {
@@ -336,12 +149,6 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (profileView && !currentUser) {
-      setShowLogin(true);
-    }
-  }, [profileView, currentUser]);
-
-  useEffect(() => {
     if (!requestView) return;
 
     loadRequests();
@@ -376,70 +183,6 @@ export default function App() {
   useEffect(() => {
     setVisibleDemonCount(60);
   }, [query, difficulty, segment, yearView, viewMode, isMobileView]);
-
-  useEffect(() => {
-    if (!supabase) return;
-
-    let mounted = true;
-
-    async function loadSupabaseSession() {
-      const { data } = await supabase.auth.getSession();
-      const user = userFromSupabaseUser(data.session?.user);
-
-      if (!mounted) return;
-
-      setCurrentUser(user);
-      if (user) {
-        syncSupabaseProfile(user).catch(error => {
-          console.warn("Could not sync Supabase profile.", error);
-        });
-        loadSupabaseFavorites(user);
-      }
-    }
-
-    loadSupabaseSession();
-
-    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
-      const user = userFromSupabaseUser(session?.user);
-      setCurrentUser(user);
-      setShowLogin(false);
-
-      if (user) {
-        syncSupabaseProfile(user).catch(error => {
-          console.warn("Could not sync Supabase profile.", error);
-        });
-        loadSupabaseFavorites(user);
-        if (event === "SIGNED_IN") {
-          navigateTo(ROUTES.profile, { replace: true });
-        }
-      }
-    });
-
-    return () => {
-      mounted = false;
-      listener.subscription.unsubscribe();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!currentUser) {
-      setAccountData(createEmptyAccountData());
-      return;
-    }
-
-    try {
-      const savedData = JSON.parse(localStorage.getItem(accountStorageKey(currentUser)) || "null");
-      setAccountData({
-        ...createEmptyAccountData(),
-        ...(savedData || {}),
-        favorites: supabase && currentUser.id
-          ? []
-          : (savedData?.favorites || []).map(id => String(id))
-      });
-    } catch {
-      setAccountData(createEmptyAccountData());
-    }
-  }, [currentUser]);
 
   useEffect(() => {
     const savedToken = localStorage.getItem("admin_token");
@@ -572,15 +315,8 @@ export default function App() {
 
   function handleLogout() {
     localStorage.removeItem("admin_token");
-    localStorage.removeItem("site_user");
-    if (supabase) {
-      supabase.auth.signOut();
-    }
     setIsAdmin(false);
-    setCurrentUser(null);
-    setAccountData(createEmptyAccountData());
     setAdminView(false);
-    setProfileView(false);
     setShowLogoutConfirm(false);
     navigateTo(ROUTES.home);
   }
@@ -590,13 +326,6 @@ export default function App() {
   setRequestMessage("");
   setRequestError("");
 
-  if (!currentUser) {
-    setRequestLoading(false);
-    setRequestError("Log in met je account om een demon te submitten.");
-    setShowLogin(true);
-    return;
-  }
-
   try {
     const response = await fetch(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
       method: "POST",
@@ -604,9 +333,7 @@ export default function App() {
         action: "submitRequest",
         levelId: requestForm.levelId,
         type: requestForm.type,
-        notes: requestForm.notes,
-        submittedBy: currentUser.name,
-        submittedEmail: currentUser.email
+        notes: requestForm.notes
       })
     });
 
@@ -875,23 +602,6 @@ async function handleSaveRequestStatusChanges() {
   const hasMoreMobileDemons =
     isMobileView && viewMode === "grid" && visibleDemonCount < filtered.length;
 
-  const favoriteDemons = useMemo(() => {
-    const favoriteSet = new Set(accountData.favorites.map(id => String(id)));
-    return demons
-      .filter(demon => favoriteSet.has(String(demon.id)))
-      .sort((a, b) => placementNumber(a.placement) - placementNumber(b.placement));
-  }, [demons, accountData.favorites]);
-
-  const progressDemons = useMemo(() => {
-    return Object.entries(accountData.progress)
-      .map(([id, progress]) => {
-        const demon = demons.find(item => item.id === id);
-        return demon ? { demon, progress } : null;
-      })
-      .filter(Boolean)
-      .sort((a, b) => placementNumber(a.demon.placement) - placementNumber(b.demon.placement));
-  }, [demons, accountData.progress]);
-
   function handleLatestDemonClick() {
     const latestName = String(apiLatestDemon || "").trim();
     if (!latestName) return;
@@ -1056,7 +766,6 @@ async function handleSaveRequestStatusChanges() {
         adminView={adminView}
         source={source}
         isAdmin={isAdmin}
-        currentUser={currentUser}
         historyView={historyView}
         onOpenRequests={() => {
           navigateTo(ROUTES.requests);
@@ -1064,13 +773,7 @@ async function handleSaveRequestStatusChanges() {
         onOpenHistory={() => {
           navigateTo(historyView ? ROUTES.home : ROUTES.history);
         }}
-        onOpenProfile={() => {
-          navigateTo(ROUTES.profile);
-        }}
-        onOpenLogin={() => {
-          navigateTo(ROUTES.profile);
-          setShowLogin(true);
-        }}
+        onOpenLogin={() => setShowLogin(true)}
         onOpenAdmin={() => navigateTo(ROUTES.admin)}
         onCloseAdmin={() => navigateTo(ROUTES.home)}
         onOpenLogout={() => setShowLogoutConfirm(true)}
@@ -1088,56 +791,6 @@ async function handleSaveRequestStatusChanges() {
           onBack={() => navigateTo(ROUTES.home)}
           onDataChanged={() => window.location.reload()}
         />
-      ) : profileView && currentUser ? (
-        <ProfilePage
-          user={currentUser}
-          favoriteDemons={favoriteDemons}
-          progressDemons={progressDemons}
-          personalList={accountData.personalList}
-          onCreatePersonalList={createPersonalList}
-          onOpenPersonalList={openPersonalList}
-          onOpenDemon={setSelected}
-          onBack={() => navigateTo(ROUTES.home)}
-        />
-      ) : profileView ? (
-        <section className="panel profile-panel account-gate-panel">
-          <div className="profile-hero">
-            <div>
-              <p className="eyebrow">Account</p>
-              <h2>Login</h2>
-              <p className="subtitle">
-                Log in met je Google account om je profiel en toekomstige accountfuncties te gebruiken.
-              </p>
-            </div>
-
-            <button className="admin-button" onClick={() => navigateTo(ROUTES.home)} type="button">
-              Back to list
-            </button>
-          </div>
-
-          <div className="build-list-panel">
-            <div>
-              <p className="eyebrow">Coming next</p>
-              <h3>Your account hub</h3>
-              <p>
-                Je profiel wordt de plek waar persoonlijke demon lists en extra accountfuncties komen.
-              </p>
-            </div>
-
-            <button className="login-button build-list-button" onClick={() => setShowLogin(true)} type="button">
-              Login with Google
-            </button>
-          </div>
-
-          <div className="profile-feature-grid">
-            {ACCOUNT_PREVIEW_ITEMS.map(item => (
-              <article className="profile-feature-card" key={item}>
-                <strong>{item}</strong>
-                <span>Available after account setup.</span>
-              </article>
-            ))}
-          </div>
-        </section>
       ) : requestView ? (
         <RequestPanel
           onBack={() => navigateTo(ROUTES.home)}
@@ -1165,8 +818,6 @@ async function handleSaveRequestStatusChanges() {
           setRequestSort={setRequestSort}
           requestStatusFilter={requestStatusFilter}
           setRequestStatusFilter={setRequestStatusFilter}
-          currentUser={currentUser}
-          onOpenLogin={() => setShowLogin(true)}
         />
       ) : historyView ? (
         <RecentChanges
@@ -1201,11 +852,6 @@ async function handleSaveRequestStatusChanges() {
           onLoadMore={() => setVisibleDemonCount(count => count + 60)}
           apiLatestDemon={apiLatestDemon}
           onLatestDemonClick={handleLatestDemonClick}
-          currentUser={currentUser}
-          favoriteIds={accountData.favorites}
-          progressById={accountData.progress}
-          onToggleFavorite={toggleFavorite}
-          onSetProgress={setDemonProgress}
         />
       )}
 
@@ -1228,8 +874,6 @@ async function handleSaveRequestStatusChanges() {
           setLoginData={setLoginData}
           loginError={loginError}
           handleLogin={handleLogin}
-          supabaseConfigured={isSupabaseConfigured}
-          onSupabaseLogin={handleSupabaseLogin}
           onClose={() => {
             setShowLogin(false);
             setLoginError("");
