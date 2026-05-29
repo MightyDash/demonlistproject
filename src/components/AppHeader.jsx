@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { Info, X } from "lucide-react";
+import { FileClock, Info, LogIn, LogOut, Radio, Shield, X } from "lucide-react";
 
 export function AppHeader({
   adminView,
   source,
   isAdmin,
   historyView,
+  requestView,
   onOpenRequests,
   onOpenHistory,
   onOpenLogin,
@@ -15,14 +16,28 @@ export function AppHeader({
 }) {
   const [showListInfo, setShowListInfo] = useState(false);
   const listInfoText = "This is my demon list with all the demons I have beaten over the years. It won't look like most of you hoped or expected. To me, some demons meant something, whether it was the moments surrounding them or a goal I wanted to achieve. From 2019 to the summer of 2021, I didn't beat any harder demons except some medium demons because I found it too challenging, but it was precisely in the summer of 2021 that I started taking things a step further and attempting to defeat Nine Circles. Since defeating this level, I wanted to go for the harder ones. Every demon had something to offer, which you will discover in this list.";
+  const pageTitle = adminView
+    ? "Admin Panel"
+    : requestView
+      ? "Demon Requests"
+      : historyView
+        ? "List Changes"
+        : "Demon List";
+  const pageSubtitle = adminView
+    ? "Manage your demon list tools and admin actions."
+    : requestView
+      ? "Community requests to add new demons to the list."
+      : historyView
+        ? "Browse all changes made to the demon list."
+        : "A clean, searchable demon list powered by my Google Spreadsheet.";
 
   return (
         <header className="hero">
           <div>
             <p className="eyebrow">Moik's Geometry Dash Demon Archive</p>
             <div className="hero-title-row">
-              <h1>{adminView ? "Admin Panel" : "Demon List"}</h1>
-              {!adminView && (
+              <h1>{pageTitle}</h1>
+              {!adminView && !requestView && !historyView && (
                 <button
                   className="hero-info-button"
                   onClick={() => setShowListInfo(true)}
@@ -34,9 +49,7 @@ export function AppHeader({
               )}
             </div>
             <p className="subtitle">
-              {adminView
-                ? "Manage your demon list tools and admin actions."
-                : "A clean, searchable demon list powered by my Google Spreadsheet."}
+              {pageSubtitle}
             </p>
           </div>
 
@@ -58,12 +71,14 @@ export function AppHeader({
     
           <div>
             <div className={`source-pill ${source}`}>
+              {source === "live" && <Radio size={15} />}
               {source === "live" ? "Live Sheet Data" : source === "mock" ? "Mock Data" : "Loading"}
             </div>
     
             {!adminView && (
               <button className="admin-button panel-button" onClick={onOpenHistory} type="button">
-                {historyView ? "Back to list" : "Recent Changes"}
+                <FileClock size={16} />
+                {historyView ? "Back to list" : "List Changes"}
               </button>
             )}
 
@@ -75,12 +90,14 @@ export function AppHeader({
     
             {!isAdmin && (
               <button className="admin-button" onClick={onOpenLogin} type="button">
+                <LogIn size={16} />
                 Admin Login
               </button>
             )}
     
             {isAdmin && !adminView && (
               <button className="admin-button panel-button" onClick={onOpenAdmin} type="button">
+                <Shield size={16} />
                 Go to panel
               </button>
             )}
@@ -93,6 +110,7 @@ export function AppHeader({
     
             {isAdmin && (
               <button className="admin-button logout-button" onClick={onOpenLogout} type="button">
+                <LogOut size={16} />
                 Logout
               </button>
             )}

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { BarChart3, Film, Info, Search, Target, Trophy, X } from "lucide-react";
+import { BarChart3, Bookmark, Grid3X3, Info, List, MoreHorizontal, Search, Target, Trophy, X } from "lucide-react";
 import { StatCard } from "./StatCard.jsx";
 import { difficultyClass, formatNumber, formatTier } from "../demonUtils.js";
 
@@ -32,6 +32,25 @@ export function DemonListContent({
   const [showProgressInfo, setShowProgressInfo] = useState(false);
   const isProgressView = yearView === "progress";
   const progressInfoText = "It is not yet clear whether these demons will get beaten in the future. I am certain that some will, but I still have my doubts about others. This is just a reminder to myself";
+  const yearOptions = [
+    ["all", "2026"],
+    ["2025", "2025"],
+    ["2024", "2024"],
+    ["2023", "2023"],
+    ["2022", "2022"],
+    ["2021", "2021"],
+    ["2020", "2020"],
+    ["2019", "2019"],
+    ["progress", "In Progress"]
+  ];
+
+  function resetFilters() {
+    setQuery("");
+    setDifficulty("all");
+    setSegment("all");
+    setYearView("all");
+    setViewMode("grid");
+  }
 
   function handleOpenKey(event, demon) {
     if (event.key !== "Enter" && event.key !== " ") return;
@@ -45,7 +64,7 @@ export function DemonListContent({
               <StatCard icon={<Trophy />} label="Total Demons" value={formatNumber(stats.total)} />
               <StatCard icon={<Target />} label="Total Attempts" value={formatNumber(stats.attempts)} />
               <StatCard icon={<BarChart3 />} label="Avg Attempts" value={formatNumber(stats.avgAttempts)} />
-              <StatCard icon={<Film />} label="Hardest Demon" value={stats.hardest?.name || "Unknown"} highlight />
+              <StatCard icon={<BarChart3 />} label="Hardest Demon" value={stats.hardest?.name || "Unknown"} detail={stats.hardest?.difficulty || ""} highlight />
             </section>
     
             {Object.keys(hardestBySkillset).length > 0 && (
@@ -80,7 +99,12 @@ export function DemonListContent({
               </section>
             )}
     
+            <div className={`desktop-list-shell ${isProgressView ? "progress-shell" : ""}`}>
             <section className="panel controls">
+              <div className="filter-title-row">
+                <strong>Filters</strong>
+                <button type="button" onClick={resetFilters}>Reset all</button>
+              </div>
               <div className="searchbox">
                 <Search size={18} />
                 <input
@@ -145,18 +169,9 @@ export function DemonListContent({
                 ))}
               </div>
     
+              <span className="filter-section-label">Year</span>
               <div className="tabs year-tabs">
-                {[
-                  ["all", "2026"],
-                  ["2025", "2025"],
-                  ["2024", "2024"],
-                  ["2023", "2023"],
-                  ["2022", "2022"],
-                  ["2021", "2021"],
-                  ["2020", "2020"],
-                  ["2019", "2019"],
-                  ["progress", "In Progress"]
-                ].map(([value, label]) => (
+                {yearOptions.map(([value, label]) => (
                   <button
                     key={value}
                     className={yearView === value ? "active" : ""}
@@ -168,17 +183,19 @@ export function DemonListContent({
                 ))}
               </div>
     
+              <span className="filter-section-label">View</span>
               <div className="tabs view-tabs">
                 {[
-                  ["list", "List"],
-                  ["grid", "Grid"]
-                ].map(([value, label]) => (
+                  ["grid", "Grid", <Grid3X3 size={15} />],
+                  ["list", "List", <List size={15} />]
+                ].map(([value, label, icon]) => (
                   <button
                     key={value}
                     className={viewMode === value ? "active" : ""}
                     onClick={() => setViewMode(value)}
                     type="button"
                   >
+                    {icon}
                     {label}
                   </button>
                 ))}
@@ -307,10 +324,16 @@ export function DemonListContent({
                         </div>
 
                         {isInProgress ? (
-                          <div className="progress-card-meter" aria-label={`Progress ${progressPercent}%`}>
-                            <span>{progressPercent}%</span>
-                            {progressPercent === 67 && <small>(shut up)</small>}
-                          </div>
+                          <>
+                            <span className={`difficulty ${difficultyClass(demon.difficulty)}`}>
+                              {demon.difficulty || "Unknown"}
+                            </span>
+                            <div className="progress-card-meter" aria-label={`Progress ${progressPercent}%`}>
+                              <span>{progressPercent}%</span>
+                              {progressPercent === 67 && <small>(shut up)</small>}
+                            </div>
+                            <div className="progress-bar"><span style={{ width: `${progressPercent}%` }} /></div>
+                          </>
                         ) : (
                           <div className="grid-meta">
                             <span className="grid-chip tier-chip">Tier {formatTier(demon.tier)}</span>
@@ -320,6 +343,11 @@ export function DemonListContent({
                             <span className="grid-chip">{demon.year || "Unknown"}</span>
                           </div>
                         )}
+                      </div>
+                      <div className="grid-actions" aria-hidden="true">
+                        <button type="button" onClick={event => event.stopPropagation()}><Bookmark size={18} /></button>
+                        <button type="button" onClick={event => event.stopPropagation()}><BarChart3 size={18} /></button>
+                        <button type="button" onClick={event => event.stopPropagation()}><MoreHorizontal size={18} /></button>
                       </div>
                     </article>
                     );
@@ -334,6 +362,12 @@ export function DemonListContent({
                 </div>
               )}
             </main>
+            </div>
+            <div className="desktop-footer-status" aria-hidden="true">
+              <span>Tip: Click a demon card to view more details and stats.</span>
+              <span>Data powered by Google Sheets</span>
+              <span>Last updated: live</span>
+            </div>
           </>
   );
 }

@@ -1,5 +1,5 @@
 import React from "react";
-import { CheckSquare, Layers, Trash2 } from "lucide-react";
+import { CheckSquare, Megaphone, Send, Trash2, Unlock } from "lucide-react";
 
 export function RequestPanel({
   onBack,
@@ -61,9 +61,9 @@ export function RequestPanel({
     <section className="panel request-panel">
       <div className="admin-panel-header">
         <div>
-          <p className="eyebrow">Requests</p>
-          <h2>Recommend Demon</h2>
-          <p>Recommend me a demon I haven't played yet! Platformers are usually rejected.</p>
+          <p className="eyebrow">Moik's Geometry Dash Demon Archive</p>
+          <h2>Demon Requests</h2>
+          <p>Community requests to add new demons to the list.</p>
         </div>
 
         <button className="admin-button" onClick={onBack} type="button">
@@ -72,7 +72,16 @@ export function RequestPanel({
       </div>
 
       <div className="request-form">
+        <div className="request-form-heading">
+          <Megaphone size={22} />
+          <div>
+            <h3>Submit a Demon Request</h3>
+            <p>Recommend a demon you think deserves to be on the list. Please provide accurate information.</p>
+          </div>
+        </div>
         <div className="request-form-row">
+          <label>
+            Level ID
           <input
             type="text"
             inputMode="numeric"
@@ -83,7 +92,10 @@ export function RequestPanel({
               setRequestForm({ ...requestForm, levelId: e.target.value })
             }
           />
+          </label>
 
+          <label>
+            Difficulty
           <select
             value={requestForm.type}
             onChange={e =>
@@ -93,8 +105,11 @@ export function RequestPanel({
             <option value="Classic">Classic</option>
             <option value="Platformer">Platformer</option>
           </select>
+          </label>
         </div>
 
+        <label className="request-description-field">
+          Description
         <textarea
           placeholder="Describe this demon in terms of gameplay, decorations and skillsets"
           value={requestForm.notes}
@@ -102,6 +117,7 @@ export function RequestPanel({
             setRequestForm({ ...requestForm, notes: e.target.value })
           }
         />
+        </label>
 
         <button
           className="login-button"
@@ -109,6 +125,7 @@ export function RequestPanel({
           disabled={requestLoading}
           type="button"
         >
+          <Send size={16} />
           {requestLoading ? "Submitting..." : "Submit Request"}
         </button>
 
@@ -183,7 +200,7 @@ export function RequestPanel({
           type="button"
           onClick={handleAllowWeightIncreaseForAll}
         >
-          <Layers size={16} />
+          <Unlock size={16} />
           Open All Weight Increase
         </button>
 
@@ -208,6 +225,94 @@ export function RequestPanel({
         </button>
       </div>
     )}
+
+    <div className="request-table-shell">
+      <div className="request-table-row request-table-head">
+        <div></div>
+        <div>Demon</div>
+        <div>Info</div>
+        <div>Status</div>
+        <div>Weight</div>
+        <div>Requested</div>
+        <div></div>
+      </div>
+      {sortedRequests.map((request, index) => (
+        <div className="request-table-row" key={`table-${request.levelId}-${index}`}>
+          <div>
+            {isAdmin && String(request.status || "").toLowerCase() === "rejected" && (
+              <input
+                type="checkbox"
+                checked={selectedRejectedRequests.includes(request.rowNumber)}
+                onChange={() => handleToggleRejectedRequest(request.rowNumber)}
+              />
+            )}
+          </div>
+          <div className="request-table-demon">
+            <img
+              src={`https://levelthumbs.prevter.me/thumbnail/${request.levelId}`}
+              alt={request.demon || request.levelId}
+              onError={e => {
+                e.currentTarget.style.display = "none";
+              }}
+            />
+            <span>
+              <strong>{request.demon || `Level ${request.levelId}`}</strong>
+              <small>ID: {request.levelId}</small>
+            </span>
+          </div>
+          <div className="request-table-info">
+            <span>{request.type || "Classic"}</span>
+            <span>{request.weight || 1}x</span>
+          </div>
+          <div>
+            {isAdmin ? (
+              <select
+                className={`request-status-select ${String(
+                  requestStatusDrafts[request.rowNumber] || request.status || "Pending"
+                ).toLowerCase()}`}
+                value={requestStatusDrafts[request.rowNumber] || request.status || "Pending"}
+                onChange={e => handleRequestStatusDraft(request.rowNumber, e.target.value)}
+              >
+                <option value="Pending">Pending</option>
+                <option value="Approved">Approved</option>
+                <option value="Dropped">Dropped</option>
+                <option value="Rejected">Rejected</option>
+                <option value="Completed">Completed</option>
+              </select>
+            ) : (
+              <span className={`request-status ${String(request.status || "Pending").toLowerCase()}`}>
+                {request.status || "Pending"}
+              </span>
+            )}
+          </div>
+          <div className="request-table-weight">
+            <strong>{request.weight || 1}</strong>
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => handleAllowWeightIncrease(request.rowNumber)}
+                disabled={request.weightIncreaseAllowed}
+              >
+                {request.weightIncreaseAllowed ? "Open" : "Increase"}
+              </button>
+            )}
+          </div>
+          <div>{request.timestamp ? new Date(request.timestamp).toLocaleDateString("en-GB") : "-"}</div>
+          <div>
+            {isAdmin && String(request.status || "").toLowerCase() === "rejected" && (
+              <button
+                className="request-delete-button"
+                type="button"
+                onClick={() => handleDeleteRequest(request.rowNumber)}
+                title="Delete request"
+              >
+                <Trash2 size={16} />
+              </button>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
 
     <div className="request-list">
       {sortedRequests.map((request, index) => (

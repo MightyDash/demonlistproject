@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { ArrowRight, Paintbrush, Pencil, Plus, RefreshCw, Trash2 } from "lucide-react";
 
 const SKILLSET_CATALOG = [
   ["Cube", "This level has cube sections that make up a large portion of its difficulty."],
@@ -401,9 +402,9 @@ export function AdminPanel({ onBack, onDataChanged, siteTheme = "Basic", onTheme
     <section className="panel admin-panel">
       <div className="admin-panel-header">
         <div>
-          <p className="eyebrow">Admin Area</p>
+          <p className="eyebrow">Moik's Geometry Dash Demon Archive</p>
           <h2>Admin Panel</h2>
-          <p>Beheer hier je demon list acties.</p>
+          <p>Manage your demon list tools and admin actions.</p>
         </div>
 
         <button className="admin-button" onClick={onBack} type="button">
@@ -431,8 +432,10 @@ export function AdminPanel({ onBack, onDataChanged, siteTheme = "Basic", onTheme
             setAdminError("");
           }}
         >
+          <span className="admin-action-icon add"><Plus size={28} /></span>
           <strong>Add Demon</strong>
           <span>Nieuwe demon toevoegen aan je sheet.</span>
+          <ArrowRight className="admin-action-arrow" size={22} />
         </button>
 
         <button
@@ -451,8 +454,10 @@ export function AdminPanel({ onBack, onDataChanged, siteTheme = "Basic", onTheme
             setAdminError("");
           }}
         >
+          <span className="admin-action-icon remove"><Trash2 size={24} /></span>
           <strong>Remove Demon</strong>
           <span>Demon verwijderen via Level ID.</span>
+          <ArrowRight className="admin-action-arrow" size={22} />
         </button>
 
         <button
@@ -471,8 +476,10 @@ export function AdminPanel({ onBack, onDataChanged, siteTheme = "Basic", onTheme
             setAdminError("");
           }}
         >
+          <span className="admin-action-icon edit"><Pencil size={24} /></span>
           <strong>Edit Demon</strong>
           <span>Naam, difficulty, makers en meer aanpassen.</span>
+          <ArrowRight className="admin-action-arrow" size={22} />
         </button>
 
         <button
@@ -492,8 +499,10 @@ export function AdminPanel({ onBack, onDataChanged, siteTheme = "Basic", onTheme
             setAdminError("");
           }}
         >
+          <span className="admin-action-icon theme"><Paintbrush size={24} /></span>
           <strong>Site Theme</strong>
           <span>Stel het thema voor alle bezoekers in.</span>
+          <ArrowRight className="admin-action-arrow" size={22} />
         </button>
 
         <button
@@ -502,8 +511,10 @@ export function AdminPanel({ onBack, onDataChanged, siteTheme = "Basic", onTheme
           onClick={handleRefreshList}
           disabled={isSubmitting}
         >
+          <span className="admin-action-icon refresh"><RefreshCw size={24} /></span>
           <strong>{isSubmitting ? "Refreshing..." : "Refresh List"}</strong>
           <span>Haalt alle tiers opnieuw op en werkt placements/history bij.</span>
+          <ArrowRight className="admin-action-arrow" size={22} />
         </button>
       </div>
 

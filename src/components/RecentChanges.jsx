@@ -194,8 +194,8 @@ export function RecentChanges({ changes, loading, error, onBack }) {
       <div className="admin-panel-header">
         <div>
           <p className="eyebrow">History</p>
-          <h2>Recent Changes</h2>
-          <p>Browse list history by year, month and day.</p>
+          <h2>List Changes</h2>
+          <p>Browse all changes made to the demon list.</p>
         </div>
 
         <button className="admin-button" onClick={onBack} type="button">

@@ -778,6 +778,7 @@ async function handleSaveRequestStatusChanges() {
         source={source}
         isAdmin={isAdmin}
         historyView={historyView}
+        requestView={requestView}
         onOpenRequests={() => {
           navigateTo(ROUTES.requests);
         }}
