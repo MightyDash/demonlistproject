@@ -3109,6 +3109,12 @@ h1 {
   font-size: 26px;
 }
 
+.admin-form-note {
+  margin: -6px 0 16px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
 /* ✅ flex + column zodat label boven input staat, niet naast */
 .admin-form label {
   display: flex;

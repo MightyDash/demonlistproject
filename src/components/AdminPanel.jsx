@@ -39,6 +39,7 @@ export function AdminPanel({ onBack, onDataChanged, siteTheme = "Basic", onTheme
   const [showRemoveForm, setShowRemoveForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [showThemeForm, setShowThemeForm] = useState(false);
+  const [showRefreshTokenForm, setShowRefreshTokenForm] = useState(false);
 
   const [addForm, setAddForm] = useState({
     levelId: "",
@@ -71,6 +72,7 @@ export function AdminPanel({ onBack, onDataChanged, siteTheme = "Basic", onTheme
   const [adminError, setAdminError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [themeDraft, setThemeDraft] = useState(siteTheme);
+  const [refreshListToken, setRefreshListToken] = useState("");
 
   function selectedSkillsets() {
     return parseSkillsets(editForm.skillsets);
@@ -343,10 +345,13 @@ export function AdminPanel({ onBack, onDataChanged, siteTheme = "Basic", onTheme
   async function handleRefreshList() {
     setAdminMessage("");
     setAdminError("");
-      setShowAddForm(false);
-      setShowRemoveForm(false);
-      setShowEditForm(false);
-      setShowThemeForm(false);
+
+    const cleanRefreshToken = String(refreshListToken || "").trim();
+    if (!cleanRefreshToken) {
+      setAdminError("Refresh List token is verplicht.");
+      return;
+    }
+
     setEditFound(null);
     setEditNotFound(false);
     setEditConfirm(false);
@@ -355,7 +360,8 @@ export function AdminPanel({ onBack, onDataChanged, siteTheme = "Basic", onTheme
 
     try {
       const data = await sendAdminRequest({
-        action: "refreshList"
+        action: "refreshList",
+        refreshToken: cleanRefreshToken
       });
 
       if (!data.success) {
@@ -364,6 +370,8 @@ export function AdminPanel({ onBack, onDataChanged, siteTheme = "Basic", onTheme
       }
 
       setAdminMessage(data.message || "List refreshed.");
+      setRefreshListToken("");
+      setShowRefreshTokenForm(false);
       if (onDataChanged) onDataChanged();
     } catch (error) {
       setAdminError(error.message || "Kon geen verbinding maken met Apps Script.");
@@ -424,6 +432,7 @@ export function AdminPanel({ onBack, onDataChanged, siteTheme = "Basic", onTheme
             setShowRemoveForm(false);
             setShowEditForm(false);
             setShowThemeForm(false);
+            setShowRefreshTokenForm(false);
             setEditFound(null);
             setEditNotFound(false);
             setEditConfirm(false);
@@ -446,6 +455,7 @@ export function AdminPanel({ onBack, onDataChanged, siteTheme = "Basic", onTheme
             setShowAddForm(false);
             setShowEditForm(false);
             setShowThemeForm(false);
+            setShowRefreshTokenForm(false);
             setEditFound(null);
             setEditNotFound(false);
             setEditConfirm(false);
@@ -468,6 +478,7 @@ export function AdminPanel({ onBack, onDataChanged, siteTheme = "Basic", onTheme
             setShowAddForm(false);
             setShowRemoveForm(false);
             setShowThemeForm(false);
+            setShowRefreshTokenForm(false);
             setEditFound(null);
             setEditNotFound(false);
             setEditConfirm(false);
@@ -491,6 +502,7 @@ export function AdminPanel({ onBack, onDataChanged, siteTheme = "Basic", onTheme
             setShowAddForm(false);
             setShowRemoveForm(false);
             setShowEditForm(false);
+            setShowRefreshTokenForm(false);
             setEditFound(null);
             setEditNotFound(false);
             setEditConfirm(false);
@@ -508,7 +520,19 @@ export function AdminPanel({ onBack, onDataChanged, siteTheme = "Basic", onTheme
         <button
           className="admin-action-card"
           type="button"
-          onClick={handleRefreshList}
+          onClick={() => {
+            setShowRefreshTokenForm(open => !open);
+            setShowAddForm(false);
+            setShowRemoveForm(false);
+            setShowEditForm(false);
+            setShowThemeForm(false);
+            setEditFound(null);
+            setEditNotFound(false);
+            setEditConfirm(false);
+            setRemoveConfirm(false);
+            setAdminMessage("");
+            setAdminError("");
+          }}
           disabled={isSubmitting}
         >
           <span className="admin-action-icon refresh"><RefreshCw size={24} /></span>
@@ -517,6 +541,49 @@ export function AdminPanel({ onBack, onDataChanged, siteTheme = "Basic", onTheme
           <ArrowRight className="admin-action-arrow" size={22} />
         </button>
       </div>
+
+      {showRefreshTokenForm && (
+        <div className="admin-form danger-form refresh-token-form">
+          <h3>Refresh List Token</h3>
+          <p className="admin-form-note">
+            This tool updates tiers, placements and history. Enter the extra refresh token before it runs.
+          </p>
+
+          <label>
+            Token
+            <input
+              type="password"
+              value={refreshListToken}
+              onChange={event => setRefreshListToken(event.target.value)}
+              placeholder="Refresh List token"
+              autoComplete="off"
+            />
+          </label>
+
+          <div className="admin-form-actions">
+            <button
+              className="logout-confirm-button"
+              onClick={handleRefreshList}
+              disabled={isSubmitting}
+              type="button"
+            >
+              {isSubmitting ? "Refreshing..." : "Run Refresh List"}
+            </button>
+
+            <button
+              className="close-button"
+              onClick={() => {
+                setShowRefreshTokenForm(false);
+                setRefreshListToken("");
+                setAdminError("");
+              }}
+              type="button"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       {showThemeForm && (
         <div className="admin-form">
