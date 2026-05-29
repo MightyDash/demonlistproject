@@ -24,7 +24,7 @@ const SKILLSET_CATALOG = [
 ].map(([name, description]) => ({ name, description }));
 
 const SKILLSET_NAMES = SKILLSET_CATALOG.map(skillset => skillset.name);
-const SITE_THEMES = ["Basic", "Hell", "Liquid Pink", "Geometry", "Terminal"];
+const SITE_THEMES = ["Basic"];
 
 function parseSkillsets(value) {
   return String(value || "")
