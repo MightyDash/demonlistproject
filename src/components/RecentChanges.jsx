@@ -72,6 +72,17 @@ function buildCalendar(changes) {
   return calendar;
 }
 
+function buildMonthDayKeys(year, month) {
+  if (year === undefined || month === undefined) return [];
+
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  return Array.from({ length: daysInMonth }, (_, index) => {
+    const day = String(index + 1).padStart(2, "0");
+    const monthNumber = String(month + 1).padStart(2, "0");
+    return `${year}-${monthNumber}-${day}`;
+  });
+}
+
 function splitDayChanges(changes) {
   const newPlacements = [];
   const drops = [];
@@ -157,10 +168,13 @@ export function RecentChanges({ changes, loading, error, onBack }) {
   const activeMonth = selectedMonth !== null && calendar[activeYear]?.[selectedMonth]
     ? selectedMonth
     : months[months.length - 1];
-  const dayKeys = activeYear !== undefined && activeMonth !== undefined
+  const changedDayKeys = activeYear !== undefined && activeMonth !== undefined
     ? Object.keys(calendar[activeYear]?.[activeMonth] || {}).sort((a, b) => a.localeCompare(b))
     : [];
-  const activeDay = selectedDay && dayKeys.includes(selectedDay) ? selectedDay : dayKeys[0];
+  const dayKeys = buildMonthDayKeys(activeYear, activeMonth);
+  const activeDay = selectedDay && dayKeys.includes(selectedDay)
+    ? selectedDay
+    : changedDayKeys[0] || dayKeys[0];
   const dayChanges = activeDay ? calendar[activeYear]?.[activeMonth]?.[activeDay] || [] : [];
   const groupedChanges = splitDayChanges(dayChanges);
 
@@ -237,17 +251,17 @@ export function RecentChanges({ changes, loading, error, onBack }) {
             <div className="calendar-day-tabs">
               {dayKeys.map(dayKey => {
                 const dayNumber = Number(dayKey.split("-")[2]);
-                const count = calendar[activeYear][activeMonth][dayKey].length;
+                const count = calendar[activeYear]?.[activeMonth]?.[dayKey]?.length || 0;
 
                 return (
                   <button
                     key={dayKey}
-                    className={activeDay === dayKey ? "active" : ""}
+                    className={`${activeDay === dayKey ? "active" : ""} ${count === 0 ? "empty" : ""}`}
                     onClick={() => setSelectedDay(dayKey)}
                     type="button"
                   >
                     <strong>{dayNumber}</strong>
-                    <span>{count} changes</span>
+                    <span>{count === 1 ? "1 change" : `${count} changes`}</span>
                   </button>
                 );
               })}

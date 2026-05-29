@@ -1717,6 +1717,14 @@ h1 {
   text-align: left;
 }
 
+.calendar-day-tabs button.empty {
+  opacity: 0.58;
+}
+
+.calendar-day-tabs button.empty strong {
+  color: var(--muted);
+}
+
 .calendar-day-tabs strong {
   color: var(--text);
   font-size: 1.25rem;
