@@ -158,7 +158,7 @@ export function RecentChanges({ changes, loading, error, onBack }) {
     ? selectedMonth
     : months[months.length - 1];
   const dayKeys = activeYear !== undefined && activeMonth !== undefined
-    ? Object.keys(calendar[activeYear]?.[activeMonth] || {}).sort((a, b) => b.localeCompare(a))
+    ? Object.keys(calendar[activeYear]?.[activeMonth] || {}).sort((a, b) => a.localeCompare(b))
     : [];
   const activeDay = selectedDay && dayKeys.includes(selectedDay) ? selectedDay : dayKeys[0];
   const dayChanges = activeDay ? calendar[activeYear]?.[activeMonth]?.[activeDay] || [] : [];
