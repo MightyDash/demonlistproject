@@ -25,8 +25,9 @@ body {
   margin: 0;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background:
-    radial-gradient(circle at 50% 42%, rgba(0, 183, 255, 0.12), transparent 36%),
-    linear-gradient(180deg, #02050a 0%, #050b13 48%, #020409 100%),
+    radial-gradient(circle at 58% 46%, rgba(0, 152, 255, 0.12), transparent 34%),
+    radial-gradient(circle at 28% 76%, rgba(0, 210, 255, 0.08), transparent 28%),
+    linear-gradient(180deg, #020409 0%, #050914 48%, #010205 100%),
     var(--bg);
   color: var(--text);
   min-height: 100vh;
@@ -45,19 +46,42 @@ body::after {
 
 body::before {
   background:
-    linear-gradient(90deg, rgba(2, 5, 10, 0.86), rgba(2, 5, 10, 0.28), rgba(2, 5, 10, 0.9)),
-    linear-gradient(180deg, rgba(2, 5, 10, 0.54), rgba(2, 5, 10, 0.08) 42%, rgba(2, 5, 10, 0.82)),
-    url("/circuit-background.gif") center center / cover repeat;
-  opacity: 0.72;
-  filter: saturate(1.22) contrast(1.1);
+    linear-gradient(90deg, transparent 0 5%, rgba(0, 92, 255, 0.62) 5% 5.16%, transparent 5.16% 17%, rgba(0, 193, 255, 0.42) 17% 17.12%, transparent 17.12% 100%) 0 7% / 520px 96px repeat-x,
+    linear-gradient(90deg, transparent 0 22%, rgba(0, 118, 255, 0.44) 22% 22.13%, transparent 22.13% 48%, rgba(0, 203, 255, 0.5) 48% 48.14%, transparent 48.14% 100%) 0 21% / 620px 112px repeat-x,
+    linear-gradient(90deg, transparent 0 12%, rgba(0, 86, 255, 0.38) 12% 12.16%, transparent 12.16% 61%, rgba(0, 203, 255, 0.42) 61% 61.12%, transparent 61.12% 100%) 0 39% / 560px 90px repeat-x,
+    linear-gradient(90deg, transparent 0 34%, rgba(0, 118, 255, 0.42) 34% 34.14%, transparent 34.14% 76%, rgba(0, 203, 255, 0.46) 76% 76.12%, transparent 76.12% 100%) 0 56% / 700px 118px repeat-x,
+    linear-gradient(90deg, transparent 0 8%, rgba(0, 86, 255, 0.42) 8% 8.13%, transparent 8.13% 45%, rgba(0, 203, 255, 0.34) 45% 45.12%, transparent 45.12% 100%) 0 76% / 580px 104px repeat-x,
+    linear-gradient(0deg, transparent 0 15%, rgba(0, 118, 255, 0.42) 15% 15.14%, transparent 15.14% 62%, rgba(0, 203, 255, 0.28) 62% 62.13%, transparent 62.13% 100%) 9% 0 / 96px 430px repeat-y,
+    linear-gradient(0deg, transparent 0 28%, rgba(0, 203, 255, 0.3) 28% 28.14%, transparent 28.14% 72%, rgba(0, 86, 255, 0.36) 72% 72.14%, transparent 72.14% 100%) 31% 0 / 108px 520px repeat-y,
+    linear-gradient(0deg, transparent 0 44%, rgba(0, 118, 255, 0.34) 44% 44.13%, transparent 44.13% 82%, rgba(0, 203, 255, 0.38) 82% 82.12%, transparent 82.12% 100%) 58% 0 / 104px 470px repeat-y,
+    linear-gradient(0deg, transparent 0 18%, rgba(0, 203, 255, 0.3) 18% 18.14%, transparent 18.14% 55%, rgba(0, 86, 255, 0.32) 55% 55.14%, transparent 55.14% 100%) 86% 0 / 116px 530px repeat-y;
+  opacity: 0.58;
+  filter: drop-shadow(0 0 8px rgba(0, 137, 255, 0.36));
+  mask-image: radial-gradient(ellipse at center, black 0 68%, transparent 98%);
+  animation: circuit-drift 38s linear infinite;
 }
 
 body::after {
   background:
-    radial-gradient(circle at 16% 28%, rgba(0, 180, 255, 0.22), transparent 17%),
-    radial-gradient(circle at 72% 43%, rgba(0, 97, 255, 0.18), transparent 20%),
-    linear-gradient(180deg, rgba(2, 5, 10, 0.16), rgba(2, 5, 10, 0.58));
-  opacity: 0.9;
+    linear-gradient(rgba(0, 205, 255, 0.82), rgba(0, 91, 255, 0.82)) 7% 28% / 8px 8px no-repeat,
+    linear-gradient(rgba(0, 205, 255, 0.88), rgba(0, 91, 255, 0.88)) 15% 42% / 18px 18px no-repeat,
+    linear-gradient(90deg, rgba(0, 205, 255, 0.92) 0 2px, transparent 2px 100%, rgba(0, 205, 255, 0.92) calc(100% - 2px) 100%),
+    linear-gradient(rgba(0, 205, 255, 0.92) 0 2px, transparent 2px calc(100% - 2px), rgba(0, 205, 255, 0.92) calc(100% - 2px) 100%) 26% 18% / 18px 18px no-repeat,
+    linear-gradient(rgba(0, 205, 255, 0.72), rgba(0, 91, 255, 0.72)) 34% 54% / 10px 10px no-repeat,
+    linear-gradient(90deg, rgba(0, 205, 255, 0.72) 0 2px, transparent 2px calc(100% - 2px), rgba(0, 205, 255, 0.72) calc(100% - 2px) 100%),
+    linear-gradient(rgba(0, 205, 255, 0.72) 0 2px, transparent 2px calc(100% - 2px), rgba(0, 205, 255, 0.72) calc(100% - 2px) 100%) 47% 36% / 13px 13px no-repeat,
+    linear-gradient(rgba(0, 205, 255, 0.96), rgba(0, 91, 255, 0.96)) 58% 68% / 22px 22px no-repeat,
+    linear-gradient(rgba(0, 205, 255, 0.72), rgba(0, 91, 255, 0.72)) 68% 24% / 12px 12px no-repeat,
+    linear-gradient(rgba(0, 205, 255, 0.82), rgba(0, 91, 255, 0.82)) 78% 48% / 16px 16px no-repeat,
+    linear-gradient(90deg, rgba(0, 205, 255, 0.78) 0 2px, transparent 2px calc(100% - 2px), rgba(0, 205, 255, 0.78) calc(100% - 2px) 100%),
+    linear-gradient(rgba(0, 205, 255, 0.78) 0 2px, transparent 2px calc(100% - 2px), rgba(0, 205, 255, 0.78) calc(100% - 2px) 100%) 86% 60% / 20px 20px no-repeat,
+    radial-gradient(circle at 16% 42%, rgba(0, 221, 255, 0.72) 0 0.32rem, transparent 1.15rem),
+    radial-gradient(circle at 58% 68%, rgba(0, 221, 255, 0.78) 0 0.52rem, transparent 1.55rem),
+    radial-gradient(circle at 78% 48%, rgba(0, 147, 255, 0.72) 0 0.4rem, transparent 1.25rem),
+    linear-gradient(180deg, rgba(1, 4, 9, 0.08), rgba(1, 4, 9, 0.62));
+  opacity: 0.78;
+  filter: drop-shadow(0 0 12px rgba(0, 174, 255, 0.48));
+  animation: node-pulse 8s ease-in-out infinite, pixel-drift 32s linear infinite;
 }
 
 button,
@@ -2276,22 +2300,24 @@ h1 {
   }
 }
 
-@keyframes grid-drift {
+@keyframes circuit-drift {
   from {
     transform: translate3d(0, 0, 0);
   }
   to {
-    transform: translate3d(-44px, 28px, 0);
+    transform: translate3d(-30px, 18px, 0);
   }
 }
 
-@keyframes scanline-sweep {
+@keyframes node-pulse {
   0%,
   100% {
     opacity: 0.58;
+    filter: drop-shadow(0 0 8px rgba(0, 174, 255, 0.36));
   }
   50% {
-    opacity: 0.86;
+    opacity: 0.92;
+    filter: drop-shadow(0 0 16px rgba(0, 209, 255, 0.68));
   }
 }
 
