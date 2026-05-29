@@ -24,6 +24,7 @@ const SKILLSET_CATALOG = [
 ].map(([name, description]) => ({ name, description }));
 
 const SKILLSET_NAMES = SKILLSET_CATALOG.map(skillset => skillset.name);
+const SITE_THEMES = ["Basic", "Hell", "Liquid Pink", "Geometry", "Terminal"];
 
 function parseSkillsets(value) {
   return String(value || "")
@@ -516,7 +517,9 @@ export function AdminPanel({ onBack, onDataChanged, siteTheme = "Basic", onTheme
               value={themeDraft}
               onChange={e => setThemeDraft(e.target.value)}
             >
-              <option value="Basic">Basic</option>
+              {SITE_THEMES.map(theme => (
+                <option value={theme} key={theme}>{theme}</option>
+              ))}
             </select>
           </label>
 

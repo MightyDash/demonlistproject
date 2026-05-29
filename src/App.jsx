@@ -23,6 +23,10 @@ function normalizeRoute(pathname) {
   return Object.values(ROUTES).includes(path) ? path : ROUTES.home;
 }
 
+function themeSlug(theme) {
+  return String(theme || "Basic").trim().toLowerCase().replace(/\s+/g, "-");
+}
+
 export default function App() {
   const [demons, setDemons] = useState([]);
   const [source, setSource] = useState("loading");
@@ -185,6 +189,10 @@ export default function App() {
   useEffect(() => {
     setVisibleDemonCount(60);
   }, [query, difficulty, segment, yearView, viewMode, isMobileView]);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = themeSlug(siteTheme);
+  }, [siteTheme]);
 
   useEffect(() => {
     const savedToken = localStorage.getItem("admin_token");
@@ -764,7 +772,7 @@ async function handleSaveRequestStatusChanges() {
   }, [demons]);
 
   return (
-    <div className="app" data-theme={siteTheme.toLowerCase()}>
+    <div className="app" data-theme={themeSlug(siteTheme)}>
       <AppHeader
         adminView={adminView}
         source={source}
