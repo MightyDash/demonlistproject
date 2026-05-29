@@ -2301,11 +2301,12 @@ h1 {
 }
 
 @keyframes circuit-drift {
-  from {
+  0%,
+  100% {
     transform: translate3d(0, 0, 0);
   }
-  to {
-    transform: translate3d(-30px, 18px, 0);
+  50% {
+    transform: translate3d(-18px, 12px, 0);
   }
 }
 
@@ -2322,11 +2323,12 @@ h1 {
 }
 
 @keyframes pixel-drift {
-  from {
+  0%,
+  100% {
     transform: translate3d(0, 0, 0) scale(1);
   }
-  to {
-    transform: translate3d(18px, -14px, 0) scale(1.02);
+  50% {
+    transform: translate3d(12px, -9px, 0) scale(1.015);
   }
 }
 
