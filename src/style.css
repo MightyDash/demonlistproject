@@ -1645,6 +1645,197 @@ h1 {
   font-weight: 800;
 }
 
+.history-calendar {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.calendar-year-rail,
+.calendar-main,
+.calendar-day-detail,
+.calendar-change-section {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.calendar-year-rail {
+  padding: 18px;
+}
+
+.calendar-label {
+  display: block;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.calendar-year-number {
+  margin: 6px 0 18px;
+  color: var(--text);
+  font-size: clamp(3.4rem, 8vw, 5.4rem);
+  font-weight: 950;
+  line-height: 0.9;
+}
+
+.calendar-year-tabs,
+.calendar-month-tabs,
+.calendar-day-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.calendar-year-tabs button,
+.calendar-month-tabs button,
+.calendar-day-tabs button {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--muted);
+  font-weight: 900;
+  cursor: pointer;
+  transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.calendar-year-tabs button,
+.calendar-month-tabs button {
+  min-height: 42px;
+  padding: 0 14px;
+}
+
+.calendar-day-tabs button {
+  display: grid;
+  gap: 4px;
+  min-width: 92px;
+  min-height: 64px;
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.calendar-day-tabs strong {
+  color: var(--text);
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.calendar-day-tabs span {
+  font-size: 0.78rem;
+}
+
+.calendar-year-tabs button:hover,
+.calendar-month-tabs button:hover,
+.calendar-day-tabs button:hover,
+.calendar-year-tabs button.active,
+.calendar-month-tabs button.active,
+.calendar-day-tabs button.active {
+  border-color: rgba(73, 163, 255, 0.58);
+  background: rgba(73, 163, 255, 0.16);
+  color: var(--text);
+  transform: translateY(-1px);
+}
+
+.calendar-main {
+  padding: 18px;
+}
+
+.calendar-month-tabs {
+  margin-bottom: 16px;
+}
+
+.calendar-day-tabs {
+  padding-top: 16px;
+  border-top: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.calendar-day-detail {
+  margin-top: 18px;
+  padding: 18px;
+}
+
+.calendar-day-title h3 {
+  margin: 6px 0 16px;
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+}
+
+.calendar-sections-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.calendar-change-section {
+  padding: 14px;
+}
+
+.calendar-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.calendar-section-header h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.calendar-section-header span {
+  display: inline-grid;
+  place-items: center;
+  min-width: 30px;
+  height: 28px;
+  border: 1px solid rgba(73, 163, 255, 0.36);
+  border-radius: 8px;
+  color: #b8dcff;
+  font-weight: 900;
+}
+
+.calendar-change-list {
+  display: grid;
+  gap: 8px;
+}
+
+.calendar-change-card {
+  padding: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 8px;
+  background: rgba(5, 10, 17, 0.45);
+}
+
+.calendar-change-card strong {
+  display: block;
+  color: var(--text);
+}
+
+.calendar-change-card p,
+.calendar-empty-line {
+  margin: 8px 0 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.calendar-change-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.calendar-change-meta span {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 5px 8px;
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
 .request-form {
   display: flex;
   flex-direction: column;
@@ -2529,6 +2720,14 @@ h1 {
     display: grid;
   }
 
+  .history-calendar {
+    grid-template-columns: 1fr;
+  }
+
+  .calendar-sections-grid {
+    grid-template-columns: 1fr;
+  }
+
   .edit-search-row {
     display: grid;
     grid-template-columns: 1fr;
@@ -2700,6 +2899,20 @@ h1 {
   .grid-card:hover .grid-thumb {
     transform: scale(1.01);
     filter: none;
+  }
+
+  .calendar-year-rail,
+  .calendar-main,
+  .calendar-day-detail {
+    padding: 14px;
+  }
+
+  .calendar-year-number {
+    font-size: 3.6rem;
+  }
+
+  .calendar-day-tabs button {
+    min-width: 78px;
   }
 
   .row {

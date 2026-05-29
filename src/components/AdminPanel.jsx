@@ -32,10 +32,11 @@ function parseSkillsets(value) {
     .filter(Boolean);
 }
 
-export function AdminPanel({ onBack, onDataChanged }) {
+export function AdminPanel({ onBack, onDataChanged, siteTheme = "Basic", onThemeChanged }) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showRemoveForm, setShowRemoveForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
+  const [showThemeForm, setShowThemeForm] = useState(false);
 
   const [addForm, setAddForm] = useState({
     levelId: "",
@@ -67,6 +68,7 @@ export function AdminPanel({ onBack, onDataChanged }) {
   const [adminMessage, setAdminMessage] = useState("");
   const [adminError, setAdminError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [themeDraft, setThemeDraft] = useState(siteTheme);
 
   function selectedSkillsets() {
     return parseSkillsets(editForm.skillsets);
@@ -339,9 +341,10 @@ export function AdminPanel({ onBack, onDataChanged }) {
   async function handleRefreshList() {
     setAdminMessage("");
     setAdminError("");
-    setShowAddForm(false);
-    setShowRemoveForm(false);
-    setShowEditForm(false);
+      setShowAddForm(false);
+      setShowRemoveForm(false);
+      setShowEditForm(false);
+      setShowThemeForm(false);
     setEditFound(null);
     setEditNotFound(false);
     setEditConfirm(false);
@@ -360,6 +363,32 @@ export function AdminPanel({ onBack, onDataChanged }) {
 
       setAdminMessage(data.message || "List refreshed.");
       if (onDataChanged) onDataChanged();
+    } catch (error) {
+      setAdminError(error.message || "Kon geen verbinding maken met Apps Script.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleSaveTheme() {
+    setAdminMessage("");
+    setAdminError("");
+    setIsSubmitting(true);
+
+    try {
+      const data = await sendAdminRequest({
+        action: "setSiteTheme",
+        theme: themeDraft
+      });
+
+      if (!data.success) {
+        setAdminError(data.message || "Theme wijzigen mislukt.");
+        return;
+      }
+
+      setAdminMessage(data.message || "Theme updated.");
+      if (onThemeChanged) onThemeChanged(data.theme || themeDraft);
+      setShowThemeForm(false);
     } catch (error) {
       setAdminError(error.message || "Kon geen verbinding maken met Apps Script.");
     } finally {
@@ -392,6 +421,7 @@ export function AdminPanel({ onBack, onDataChanged }) {
             setShowAddForm(open => !open);
             setShowRemoveForm(false);
             setShowEditForm(false);
+            setShowThemeForm(false);
             setEditFound(null);
             setEditNotFound(false);
             setEditConfirm(false);
@@ -411,6 +441,7 @@ export function AdminPanel({ onBack, onDataChanged }) {
             setShowRemoveForm(open => !open);
             setShowAddForm(false);
             setShowEditForm(false);
+            setShowThemeForm(false);
             setEditFound(null);
             setEditNotFound(false);
             setEditConfirm(false);
@@ -430,6 +461,7 @@ export function AdminPanel({ onBack, onDataChanged }) {
             setShowEditForm(open => !open);
             setShowAddForm(false);
             setShowRemoveForm(false);
+            setShowThemeForm(false);
             setEditFound(null);
             setEditNotFound(false);
             setEditConfirm(false);
@@ -445,6 +477,27 @@ export function AdminPanel({ onBack, onDataChanged }) {
         <button
           className="admin-action-card"
           type="button"
+          onClick={() => {
+            setShowThemeForm(open => !open);
+            setThemeDraft(siteTheme);
+            setShowAddForm(false);
+            setShowRemoveForm(false);
+            setShowEditForm(false);
+            setEditFound(null);
+            setEditNotFound(false);
+            setEditConfirm(false);
+            setRemoveConfirm(false);
+            setAdminMessage("");
+            setAdminError("");
+          }}
+        >
+          <strong>Site Theme</strong>
+          <span>Stel het thema voor alle bezoekers in.</span>
+        </button>
+
+        <button
+          className="admin-action-card"
+          type="button"
           onClick={handleRefreshList}
           disabled={isSubmitting}
         >
@@ -452,6 +505,37 @@ export function AdminPanel({ onBack, onDataChanged }) {
           <span>Haalt alle tiers opnieuw op en werkt placements/history bij.</span>
         </button>
       </div>
+
+      {showThemeForm && (
+        <div className="admin-form">
+          <h3>Site Theme</h3>
+
+          <label>
+            Theme
+            <select
+              value={themeDraft}
+              onChange={e => setThemeDraft(e.target.value)}
+            >
+              <option value="Basic">Basic</option>
+            </select>
+          </label>
+
+          <div className="admin-form-actions">
+            <button
+              className="login-button"
+              onClick={handleSaveTheme}
+              disabled={isSubmitting}
+              type="button"
+            >
+              {isSubmitting ? "Saving..." : "Save Theme"}
+            </button>
+
+            <button className="close-button" onClick={() => setShowThemeForm(false)} type="button">
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       {showAddForm && (
         <div className="admin-form">

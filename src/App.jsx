@@ -34,6 +34,7 @@ export default function App() {
   const [yearView, setYearView] = useState("all");
   const [apiLatestDemon, setApiLatestDemon] = useState("");
   const [apiNextDemon, setApiNextDemon] = useState(null);
+  const [siteTheme, setSiteTheme] = useState("Basic");
   const [viewMode, setViewMode] = useState("grid");
   const [requestView, setRequestView] = useState(false);
   const [historyView, setHistoryView] = useState(false);
@@ -125,10 +126,11 @@ export default function App() {
 
     try {
       const separator = SHEET_API_URL.includes("?") ? "&" : "?";
-      const response = await fetch(`${SHEET_API_URL}${separator}view=history&limit=60`);
+      const response = await fetch(`${SHEET_API_URL}${separator}view=history&limit=1000`);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
       const data = await response.json();
+      if (data.siteTheme) setSiteTheme(data.siteTheme);
       setHistoryChanges(data.changes || []);
     } catch (error) {
       setHistoryError("Could not load recent changes.");
@@ -223,6 +225,7 @@ export default function App() {
 
         setApiLatestDemon(json.latestDemon || "");
         setApiNextDemon(json.nextDemon || null);
+        setSiteTheme(json.siteTheme || "Basic");
         setDemons(rows.map(normalizeDemon));
         setSource("live");
       } catch (error) {
@@ -761,7 +764,7 @@ async function handleSaveRequestStatusChanges() {
   }, [demons]);
 
   return (
-    <div className="app">
+    <div className="app" data-theme={siteTheme.toLowerCase()}>
       <AppHeader
         adminView={adminView}
         source={source}
@@ -790,6 +793,8 @@ async function handleSaveRequestStatusChanges() {
         <AdminPanel
           onBack={() => navigateTo(ROUTES.home)}
           onDataChanged={() => window.location.reload()}
+          siteTheme={siteTheme}
+          onThemeChanged={setSiteTheme}
         />
       ) : requestView ? (
         <RequestPanel
