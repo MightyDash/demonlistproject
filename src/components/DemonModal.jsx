@@ -1,6 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, ExternalLink, Save, X } from "lucide-react";
-import { Detail } from "./Detail.jsx";
+import {
+  BarChart3,
+  Bookmark,
+  ChevronLeft,
+  ChevronRight,
+  Clock3,
+  ExternalLink,
+  FileText,
+  Gamepad2,
+  Heart,
+  Save,
+  Share2,
+  X
+} from "lucide-react";
 import { formatNumber, formatTier } from "../demonUtils.js";
 
 export function DemonModal({
@@ -18,6 +30,15 @@ export function DemonModal({
   const thumbnailSrc = demon.id
     ? `https://levelthumbs.prevter.me/thumbnail/${demon.id}`
     : "";
+  const cleanPlacement = String(demon.placement || "").trim() || "Unplaced";
+  const cleanDifficulty = demon.difficulty || "Unknown";
+  const noteText = demon.notes || "No note added yet.";
+  const distribution = [
+    ["Main List", 18, "main"],
+    ["Extended List", 67, "extended"],
+    ["Legacy List", 10, "legacy"],
+    ["Other", 5, "other"]
+  ];
 
   useEffect(() => {
     setNoteDraft(demon.notes || "");
@@ -39,10 +60,16 @@ export function DemonModal({
 
   return (
     <div className="modal-backdrop" onMouseDown={onClose}>
-      <article className="modal" onMouseDown={e => e.stopPropagation()}>
+      <article className="modal demon-detail-modal" onMouseDown={e => e.stopPropagation()}>
         <button className="close" onClick={onClose} type="button" aria-label="Close details">
           <X size={20} />
         </button>
+        <div className="modal-page-nav">
+          <button className="modal-back-link" onClick={onClose} type="button">
+            <ChevronLeft size={18} />
+            Back to Demon List
+          </button>
+        </div>
 
         <div className="modal-nav">
           {hasPrev && (
@@ -57,58 +84,124 @@ export function DemonModal({
           )}
         </div>
 
-        <div className="modal-cover">
-          <img
-            src={thumbnailSrc}
-            alt={demon.name}
-            onError={e => {
-              e.currentTarget.style.display = "none";
-            }}
-          />
-          <div className="modal-cover-shade" />
-          <div className="modal-cover-badges">
-            <span className="modal-tier">Tier {formatTier(demon.tier)}</span>
+        <div className="modal-hero-layout">
+          <section className="modal-identity">
+            <span className="modal-placement-pill">{cleanPlacement}</span>
+            <h2>{demon.name}</h2>
+            <p className="creator">
+              by {demon.creator || "Unknown creator"} <span className="creator-check" aria-label="Verified creator" />
+            </p>
+
+            <div className="modal-quick-tags">
+              <span className={`difficulty ${String(cleanDifficulty).toLowerCase().includes("extreme") ? "extreme" : ""}`}>
+                {cleanDifficulty}
+              </span>
+              <span className="modal-tier">Tier {formatTier(demon.tier)}</span>
+            </div>
+
+            <div className="modal-action-row">
+              {demon.id && (
+                <a
+                  className="external-link modal-action"
+                  href={`https://gdbrowser.com/${encodeURIComponent(demon.id)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <ExternalLink size={17} />
+                  Open in GDBrowser
+                </a>
+              )}
+              <button className="modal-icon-button" type="button" aria-label="Bookmark"><Bookmark size={20} /></button>
+              <button className="modal-icon-button" type="button" aria-label="Favorite"><Heart size={20} /></button>
+              <button className="modal-icon-button" type="button" aria-label="Stats"><BarChart3 size={20} /></button>
+              <button className="modal-icon-button" type="button" aria-label="Share"><Share2 size={20} /></button>
+            </div>
+          </section>
+
+          <div className="modal-cover">
+            <img
+              src={thumbnailSrc}
+              alt={demon.name}
+              onError={e => {
+                e.currentTarget.style.display = "none";
+              }}
+            />
+            <div className="modal-cover-shade" />
+            <div className="modal-play-button" aria-hidden="true" />
           </div>
         </div>
 
         <div className="modal-content">
-          <div className="modal-title-row">
-            <div>
-              <p className="placement-large">{demon.placement}</p>
-              <h2>{demon.name}</h2>
-              <p className="creator">by {demon.creator || "Unknown creator"}</p>
-            </div>
+          <div className="modal-detail-layout">
+            <section className="modal-info-card overview-card">
+              <h3><Clock3 size={22} /> Overview</h3>
+              <div className="overview-list">
+                <div><span>Level ID</span><strong>{demon.id}</strong></div>
+                <div><span>Creator(s)</span><strong>{demon.creator || "Unknown"}</strong></div>
+                <div><span>Difficulty</span><strong className="overview-danger">{cleanDifficulty}</strong></div>
+                <div><span>Tier</span><strong>{formatTier(demon.tier)}</strong></div>
+                <div><span>Attempts (Total)</span><strong>{formatNumber(demon.attempts)}</strong></div>
+                <div><span>Year</span><strong>{demon.year || "Unknown"}</strong></div>
+              </div>
+            </section>
 
-            {demon.id && (
-              <a
-                className="external-link modal-action"
-                href={`https://gdbrowser.com/${encodeURIComponent(demon.id)}`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <ExternalLink size={17} />
-                GDBrowser
-              </a>
-            )}
-          </div>
+            <section className="modal-info-card description-card">
+              <h3><FileText size={22} /> Description</h3>
+              {isAdmin ? (
+                <>
+                  <textarea
+                    value={noteDraft}
+                    onChange={event => setNoteDraft(event.target.value)}
+                    placeholder="Write a note for this demon..."
+                    rows={6}
+                  />
+                  <div className="memory-actions">
+                    <button
+                      className="login-button memory-save-button"
+                      onClick={handleSaveNote}
+                      disabled={noteState.saving}
+                      type="button"
+                    >
+                      <Save size={16} />
+                      {noteState.saving ? "Saving..." : "Save note"}
+                    </button>
+                    {noteState.message && <span className="memory-message">{noteState.message}</span>}
+                    {noteState.error && <span className="memory-error">{noteState.error}</span>}
+                  </div>
+                </>
+              ) : (
+                <p className="memory-text">{noteText}</p>
+              )}
+            </section>
 
-          {demon.formerTop1Year && (
-            <div className="former-top1-badge">
-              Former Top 1 ({demon.formerTop1Year})
-            </div>
-          )}
+            <aside className="modal-side-stack">
+              <section className="modal-info-card distribution-card">
+                <h3><BarChart3 size={22} /> Difficulty distribution</h3>
+                <div className="distribution-content">
+                  <div className="distribution-donut" aria-hidden="true" />
+                  <div className="distribution-legend">
+                    {distribution.map(([label, value, type]) => (
+                      <span key={label} className={`distribution-item ${type}`}>
+                        <i /> <strong>{value}%</strong> {label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </section>
 
-          <div className="detail-grid">
-            <Detail label="Level ID" value={demon.id} />
-            <Detail label="Tier" value={formatTier(demon.tier)} />
-            <Detail label="Difficulty" value={demon.difficulty} />
-            <Detail label="Attempts" value={formatNumber(demon.attempts)} />
-            <Detail label="Year" value={demon.year || "Unknown"} />
-          </div>
+              <section className="modal-info-card history-card">
+                <h3><Clock3 size={22} /> Level history</h3>
+                <div className="history-mini-list">
+                  <span><b>Latest</b> Stats updated</span>
+                  <span><b>{demon.year || "Unknown"}</b> Added to list</span>
+                  <span><b>{formatTier(demon.tier)}</b> Current tier</span>
+                </div>
+              </section>
+            </aside>
 
-          {demon.skillsets?.length > 0 && (
-            <div className="skillsets">
-              <h3>Skillsets</h3>
+            {demon.skillsets?.length > 0 && (
+            <section className="modal-info-card skillsets">
+              <h3><Gamepad2 size={22} /> Skillsets</h3>
               <div className="skillset-list">
                 {demon.skillsets.map(skill => (
                   <span key={skill} className="skillset-tag">
@@ -116,37 +209,7 @@ export function DemonModal({
                   </span>
                 ))}
               </div>
-            </div>
-          )}
-
-          <div className="memory-panel">
-            <h3>Note</h3>
-            {isAdmin ? (
-              <>
-                <textarea
-                  value={noteDraft}
-                  onChange={event => setNoteDraft(event.target.value)}
-                  placeholder="Write a note for this demon..."
-                  rows={5}
-                />
-                <div className="memory-actions">
-                  <button
-                    className="login-button memory-save-button"
-                    onClick={handleSaveNote}
-                    disabled={noteState.saving}
-                    type="button"
-                  >
-                    <Save size={16} />
-                    {noteState.saving ? "Saving..." : "Save note"}
-                  </button>
-                  {noteState.message && <span className="memory-message">{noteState.message}</span>}
-                  {noteState.error && <span className="memory-error">{noteState.error}</span>}
-                </div>
-              </>
-            ) : (
-              <p className="memory-text">
-                {demon.notes || "No note added yet."}
-              </p>
+            </section>
             )}
           </div>
         </div>
