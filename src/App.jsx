@@ -5,6 +5,7 @@ import { AdminPanel } from "./components/AdminPanel.jsx";
 import { AppHeader } from "./components/AppHeader.jsx";
 import { DemonListContent } from "./components/DemonListContent.jsx";
 import { DemonModal } from "./components/DemonModal.jsx";
+import { LimboGame } from "./components/LimboGame.jsx";
 import { LoginModal } from "./components/LoginModal.jsx";
 import { LogoutConfirm } from "./components/LogoutConfirm.jsx";
 import { RecentChanges } from "./components/RecentChanges.jsx";
@@ -15,7 +16,8 @@ const ROUTES = {
   home: "/",
   requests: "/demon-requests",
   history: "/recent-changes",
-  admin: "/admin-panel"
+  admin: "/admin-panel",
+  limbo: "/limbo"
 };
 
 function normalizeRoute(pathname) {
@@ -76,6 +78,7 @@ export default function App() {
   const [loginError, setLoginError] = useState("");
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [adminView, setAdminView] = useState(false);
+  const [limboView, setLimboView] = useState(false);
   const [skillsetOpen, setSkillsetOpen] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
   const [visibleDemonCount, setVisibleDemonCount] = useState(60);
@@ -86,6 +89,7 @@ export default function App() {
     setRequestView(route === ROUTES.requests);
     setHistoryView(route === ROUTES.history);
     setAdminView(route === ROUTES.admin);
+    setLimboView(route === ROUTES.limbo);
   }
 
   function navigateTo(pathname, { replace = false } = {}) {
@@ -790,23 +794,25 @@ async function handleSaveRequestStatusChanges() {
 
   return (
     <div className="app" data-theme={themeSlug(siteTheme)}>
-      <AppHeader
-        adminView={adminView}
-        source={source}
-        isAdmin={isAdmin}
-        historyView={historyView}
-        requestView={requestView}
-        onOpenRequests={() => {
-          navigateTo(ROUTES.requests);
-        }}
-        onOpenHistory={() => {
-          navigateTo(historyView ? ROUTES.home : ROUTES.history);
-        }}
-        onOpenLogin={() => setShowLogin(true)}
-        onOpenAdmin={() => navigateTo(ROUTES.admin)}
-        onCloseAdmin={() => navigateTo(ROUTES.home)}
-        onOpenLogout={() => setShowLogoutConfirm(true)}
-      />
+      {!limboView && (
+        <AppHeader
+          adminView={adminView}
+          source={source}
+          isAdmin={isAdmin}
+          historyView={historyView}
+          requestView={requestView}
+          onOpenRequests={() => {
+            navigateTo(ROUTES.requests);
+          }}
+          onOpenHistory={() => {
+            navigateTo(historyView ? ROUTES.home : ROUTES.history);
+          }}
+          onOpenLogin={() => setShowLogin(true)}
+          onOpenAdmin={() => navigateTo(ROUTES.admin)}
+          onCloseAdmin={() => navigateTo(ROUTES.home)}
+          onOpenLogout={() => setShowLogoutConfirm(true)}
+        />
+      )}
 
       {showLogoutConfirm && (
         <LogoutConfirm
@@ -815,7 +821,9 @@ async function handleSaveRequestStatusChanges() {
         />
       )}
 
-      {adminView ? (
+      {limboView ? (
+        <LimboGame onBack={() => navigateTo(ROUTES.home)} />
+      ) : adminView ? (
         <AdminPanel
           onBack={() => navigateTo(ROUTES.home)}
           onDataChanged={() => window.location.reload()}

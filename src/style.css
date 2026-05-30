@@ -3664,6 +3664,267 @@ h1 {
   min-height: 44px;
 }
 
+.limbo-page {
+  min-height: calc(100vh - 80px);
+  display: grid;
+  gap: 18px;
+}
+
+.limbo-topbar {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.limbo-shell {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 209, 102, 0.12), transparent 32%),
+    radial-gradient(circle at 80% 30%, rgba(94, 161, 255, 0.11), transparent 34%),
+    var(--panel-strong);
+  box-shadow: var(--shadow);
+  padding: clamp(20px, 3vw, 38px);
+}
+
+.limbo-shell::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background:
+    linear-gradient(90deg, transparent 0 48%, rgba(255, 209, 102, 0.08) 49% 51%, transparent 52% 100%),
+    linear-gradient(0deg, transparent 0 48%, rgba(94, 161, 255, 0.06) 49% 51%, transparent 52% 100%);
+  background-size: 92px 92px;
+  opacity: 0.35;
+  animation: limbo-grid-drift 14s linear infinite;
+  pointer-events: none;
+}
+
+.limbo-header,
+.limbo-status-grid,
+.limbo-stage,
+.limbo-controls {
+  position: relative;
+  z-index: 1;
+}
+
+.limbo-header {
+  max-width: 760px;
+  margin-bottom: 24px;
+}
+
+.limbo-header h1 {
+  margin-bottom: 8px;
+  font-size: clamp(42px, 6vw, 78px);
+}
+
+.limbo-header p:not(.eyebrow) {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+
+.limbo-status-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.limbo-status-grid div {
+  min-height: 86px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.limbo-status-grid span,
+.limbo-status-grid strong {
+  display: block;
+}
+
+.limbo-status-grid span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.limbo-status-grid strong {
+  margin-top: 8px;
+  font-size: 2rem;
+}
+
+.limbo-stage {
+  min-height: 390px;
+  display: grid;
+  align-content: center;
+  gap: 26px;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.38)),
+    rgba(255, 255, 255, 0.03);
+}
+
+.limbo-message {
+  justify-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 209, 102, 0.34);
+  border-radius: 999px;
+  background: rgba(255, 209, 102, 0.1);
+  color: #ffe09a;
+  font-weight: 900;
+}
+
+.limbo-message.result-correct {
+  border-color: rgba(67, 209, 122, 0.42);
+  background: rgba(67, 209, 122, 0.12);
+  color: var(--green);
+}
+
+.limbo-message.result-wrong {
+  border-color: rgba(255, 91, 91, 0.42);
+  background: rgba(255, 91, 91, 0.12);
+  color: #ff9aa6;
+}
+
+.limbo-key-grid {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(80px, 1fr));
+  gap: 12px;
+}
+
+.limbo-key {
+  position: relative;
+  min-height: 132px;
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  border: 1px solid rgba(255, 209, 102, 0.25);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 50% 30%, rgba(255, 209, 102, 0.18), transparent 46%),
+    rgba(7, 12, 20, 0.72);
+  color: #ffce50;
+  cursor: pointer;
+  transition: transform 0.28s cubic-bezier(.2,.9,.2,1), border-color 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  transform: translateY(calc((var(--key-index) % 2) * 8px));
+}
+
+.limbo-key span {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.limbo-key:disabled {
+  cursor: default;
+}
+
+.limbo-key-grid.shuffle .limbo-key {
+  filter: blur(0.2px) saturate(1.25);
+  animation: limbo-key-pulse 0.28s ease;
+}
+
+.limbo-key-grid.pick .limbo-key:not(:disabled):hover {
+  transform: translateY(-8px) scale(1.03);
+  border-color: rgba(255, 209, 102, 0.68);
+  box-shadow: 0 0 28px rgba(255, 209, 102, 0.2);
+}
+
+.limbo-key.target {
+  border-color: rgba(255, 209, 102, 0.9);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.15),
+    0 0 30px rgba(255, 209, 102, 0.42);
+  animation: limbo-target-glow 0.7s ease infinite alternate;
+}
+
+.limbo-key.missed {
+  border-color: rgba(255, 91, 91, 0.7);
+  color: #ff8a9a;
+}
+
+.limbo-controls {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  margin-top: 18px;
+}
+
+.limbo-difficulty-tabs,
+.limbo-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.limbo-difficulty-tabs button {
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--text);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.limbo-difficulty-tabs button.active {
+  border-color: rgba(255, 209, 102, 0.62);
+  background: rgba(255, 209, 102, 0.14);
+  color: #ffe09a;
+}
+
+.limbo-difficulty-tabs button:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.limbo-action-row .login-button,
+.limbo-action-row .admin-button {
+  min-width: 130px;
+  margin-top: 0;
+}
+
+.limbo-action-row .admin-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+@keyframes limbo-grid-drift {
+  to {
+    transform: translate3d(92px, 92px, 0);
+  }
+}
+
+@keyframes limbo-key-pulse {
+  50% {
+    transform: translateY(calc((var(--key-index) % 2) * 8px - 8px)) scale(1.04);
+  }
+}
+
+@keyframes limbo-target-glow {
+  from {
+    filter: brightness(1);
+  }
+  to {
+    filter: brightness(1.35);
+  }
+}
+
 /* ── Edit Demon form ── */
 .edit-search-row {
   display: flex;
@@ -4123,6 +4384,37 @@ h1 {
 
   .note-manager-save {
     width: 100%;
+  }
+
+  .limbo-page {
+    min-height: auto;
+  }
+
+  .limbo-status-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .limbo-stage {
+    min-height: auto;
+    padding: 14px;
+  }
+
+  .limbo-key-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .limbo-key {
+    min-height: 104px;
+  }
+
+  .limbo-controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .limbo-action-row .login-button,
+  .limbo-action-row .admin-button {
+    flex: 1;
   }
 
   .demon-grid {
@@ -4643,7 +4935,10 @@ h1 {
 }
 
 :root[data-theme="cyber-neon"] .modal-info-card,
-:root[data-theme="cyber-neon"] .modal-icon-button {
+:root[data-theme="cyber-neon"] .modal-icon-button,
+:root[data-theme="cyber-neon"] .limbo-shell,
+:root[data-theme="cyber-neon"] .limbo-stage,
+:root[data-theme="cyber-neon"] .limbo-status-grid div {
   background: rgba(9, 7, 31, 0.78);
   border-color: rgba(145, 83, 255, 0.36);
   color: #eadcff;
@@ -4675,8 +4970,27 @@ h1 {
   background: #09071f;
 }
 
+:root[data-theme="cyber-neon"] .limbo-key,
+:root[data-theme="cyber-neon"] .limbo-difficulty-tabs button {
+  border-color: rgba(196, 76, 255, 0.36);
+  background:
+    radial-gradient(circle at 50% 30%, rgba(196, 76, 255, 0.18), transparent 46%),
+    rgba(9, 7, 31, 0.82);
+  color: #d489ff;
+}
+
+:root[data-theme="cyber-neon"] .limbo-key.target,
+:root[data-theme="cyber-neon"] .limbo-difficulty-tabs button.active {
+  border-color: rgba(0, 255, 188, 0.72);
+  box-shadow: 0 0 28px rgba(0, 255, 188, 0.24);
+  color: #8dffd9;
+}
+
 :root[data-theme="dark-ember"] .modal-info-card,
-:root[data-theme="dark-ember"] .modal-icon-button {
+:root[data-theme="dark-ember"] .modal-icon-button,
+:root[data-theme="dark-ember"] .limbo-shell,
+:root[data-theme="dark-ember"] .limbo-stage,
+:root[data-theme="dark-ember"] .limbo-status-grid div {
   background: rgba(19, 14, 10, 0.84);
   border-color: rgba(255, 101, 31, 0.28);
   color: #f7dfcc;
@@ -4706,5 +5020,21 @@ h1 {
 
 :root[data-theme="dark-ember"] .distribution-donut::after {
   background: #130e0a;
+}
+
+:root[data-theme="dark-ember"] .limbo-key,
+:root[data-theme="dark-ember"] .limbo-difficulty-tabs button {
+  border-color: rgba(255, 101, 31, 0.34);
+  background:
+    radial-gradient(circle at 50% 30%, rgba(255, 101, 31, 0.18), transparent 46%),
+    rgba(19, 14, 10, 0.86);
+  color: #ff8d58;
+}
+
+:root[data-theme="dark-ember"] .limbo-key.target,
+:root[data-theme="dark-ember"] .limbo-difficulty-tabs button.active {
+  border-color: rgba(255, 209, 102, 0.72);
+  box-shadow: 0 0 26px rgba(255, 101, 31, 0.2);
+  color: #ffd166;
 }
 
