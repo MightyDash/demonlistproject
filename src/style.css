@@ -2469,6 +2469,21 @@ h1 {
     color: #59efa0;
   }
 
+  .admin-action-icon.notes {
+    background: rgba(94, 161, 255, 0.14);
+    color: #89c2ff;
+  }
+
+  .admin-action-icon.backup {
+    background: rgba(255, 209, 102, 0.13);
+    color: #ffd166;
+  }
+
+  .admin-action-icon.requests {
+    background: rgba(116, 92, 255, 0.16);
+    color: #9e8cff;
+  }
+
   .admin-action-arrow {
     grid-column: 3;
     grid-row: 1 / span 2;
@@ -3511,7 +3526,8 @@ h1 {
 }
 
 .admin-form input,
-.admin-form select {
+.admin-form select,
+.admin-form textarea {
   min-height: 46px;
   padding: 0 14px;
   border-radius: 8px;
@@ -3522,8 +3538,18 @@ h1 {
 }
 
 .admin-form input:focus,
-.admin-form select:focus {
+.admin-form select:focus,
+.admin-form textarea:focus {
   border-color: rgba(94, 161, 255, 0.65);
+}
+
+.admin-form textarea {
+  min-height: 120px;
+  padding: 12px 14px;
+  resize: vertical;
+  font: inherit;
+  line-height: 1.5;
+  outline: 0;
 }
 
 .admin-form-actions {
@@ -3551,6 +3577,91 @@ h1 {
 
 .remove-confirm-box strong {
   color: #ffb0b0;
+}
+
+.note-manager-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.note-manager-header h3 {
+  margin-bottom: 8px;
+}
+
+.note-manager-header span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(94, 161, 255, 0.34);
+  background: rgba(94, 161, 255, 0.1);
+  color: #b8dcff;
+  font-weight: 900;
+}
+
+.note-manager-list {
+  display: grid;
+  gap: 12px;
+  max-height: min(62vh, 720px);
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.note-manager-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.82fr) minmax(280px, 1.5fr) 120px;
+  gap: 14px;
+  align-items: stretch;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.note-manager-demon {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  min-width: 0;
+}
+
+.note-manager-demon img {
+  width: 86px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 7px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  flex: 0 0 auto;
+}
+
+.note-manager-demon strong,
+.note-manager-demon span {
+  display: block;
+}
+
+.note-manager-demon strong {
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.note-manager-demon span {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.note-manager-row textarea {
+  min-height: 92px;
+  margin: 0;
+}
+
+.note-manager-save {
+  align-self: center;
+  min-height: 44px;
 }
 
 /* ── Edit Demon form ── */
@@ -3996,6 +4107,22 @@ h1 {
 
   .admin-form-actions {
     grid-template-columns: 1fr;
+  }
+
+  .note-manager-header {
+    display: block;
+  }
+
+  .note-manager-header span {
+    margin-bottom: 12px;
+  }
+
+  .note-manager-row {
+    grid-template-columns: 1fr;
+  }
+
+  .note-manager-save {
+    width: 100%;
   }
 
   .demon-grid {

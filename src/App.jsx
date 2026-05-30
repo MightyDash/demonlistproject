@@ -821,6 +821,10 @@ async function handleSaveRequestStatusChanges() {
           onDataChanged={() => window.location.reload()}
           siteTheme={siteTheme}
           onThemeChanged={setSiteTheme}
+          demons={demons}
+          requests={requests}
+          onOpenRequests={() => navigateTo(ROUTES.requests)}
+          onSaveNote={saveDemonNote}
         />
       ) : requestView ? (
         <RequestPanel

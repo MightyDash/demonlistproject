@@ -1,5 +1,15 @@
-import React, { useState } from "react";
-import { ArrowRight, Paintbrush, Pencil, Plus, RefreshCw, Trash2 } from "lucide-react";
+import React, { useMemo, useState } from "react";
+import {
+  ArrowRight,
+  Download,
+  FileText,
+  Inbox,
+  Paintbrush,
+  Pencil,
+  Plus,
+  RefreshCw,
+  Trash2
+} from "lucide-react";
 
 const SKILLSET_CATALOG = [
   ["Cube", "This level has cube sections that make up a large portion of its difficulty."],
@@ -34,12 +44,25 @@ function parseSkillsets(value) {
     .filter(Boolean);
 }
 
-export function AdminPanel({ onBack, onDataChanged, siteTheme = "Basic", onThemeChanged }) {
+export function AdminPanel({
+  onBack,
+  onDataChanged,
+  siteTheme = "Basic",
+  onThemeChanged,
+  demons = [],
+  requests = [],
+  onOpenRequests,
+  onSaveNote
+}) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showRemoveForm, setShowRemoveForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [showThemeForm, setShowThemeForm] = useState(false);
   const [showRefreshTokenForm, setShowRefreshTokenForm] = useState(false);
+  const [showNoteManager, setShowNoteManager] = useState(false);
+  const [noteSearch, setNoteSearch] = useState("");
+  const [noteDrafts, setNoteDrafts] = useState({});
+  const [noteSavingId, setNoteSavingId] = useState("");
 
   const [addForm, setAddForm] = useState({
     levelId: "",
@@ -73,6 +96,117 @@ export function AdminPanel({ onBack, onDataChanged, siteTheme = "Basic", onTheme
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [themeDraft, setThemeDraft] = useState(siteTheme);
   const [refreshListToken, setRefreshListToken] = useState("");
+
+  const noteManagerDemons = useMemo(() => {
+    const query = noteSearch.trim().toLowerCase();
+
+    return demons.filter(demon => {
+      if (!query) return true;
+      return (
+        String(demon.name || "").toLowerCase().includes(query) ||
+        String(demon.creator || "").toLowerCase().includes(query) ||
+        String(demon.id || "").toLowerCase().includes(query)
+      );
+    });
+  }, [demons, noteSearch]);
+
+  function resetOpenTools() {
+    setShowAddForm(false);
+    setShowRemoveForm(false);
+    setShowEditForm(false);
+    setShowThemeForm(false);
+    setShowRefreshTokenForm(false);
+    setShowNoteManager(false);
+    setEditFound(null);
+    setEditNotFound(false);
+    setEditConfirm(false);
+    setRemoveConfirm(false);
+    setAdminMessage("");
+    setAdminError("");
+  }
+
+  function openNoteManager() {
+    const drafts = {};
+    demons.forEach(demon => {
+      drafts[demon.id] = demon.notes || "";
+    });
+
+    resetOpenTools();
+    setNoteDrafts(drafts);
+    setNoteSearch("");
+    setShowNoteManager(true);
+  }
+
+  async function handleSaveManagedNote(demon) {
+    if (!onSaveNote) {
+      setAdminError("Note Manager is niet gekoppeld.");
+      return;
+    }
+
+    setAdminMessage("");
+    setAdminError("");
+    setNoteSavingId(String(demon.id));
+
+    try {
+      const result = await onSaveNote(demon, noteDrafts[demon.id] || "");
+      if (!result?.success) {
+        setAdminError(result?.message || "Note opslaan mislukt.");
+        return;
+      }
+
+      setAdminMessage(result.message || `Note voor ${demon.name} opgeslagen.`);
+    } finally {
+      setNoteSavingId("");
+    }
+  }
+
+  async function handleBackupExport() {
+    setAdminMessage("");
+    setAdminError("");
+
+    try {
+      let requestBackup = requests;
+
+      try {
+        const requestData = await sendAdminRequest({ action: "getRequests" });
+        if (requestData.success && Array.isArray(requestData.requests)) {
+          requestBackup = requestData.requests;
+        }
+      } catch {
+        // Keep current in-memory requests if the extra fetch is unavailable.
+      }
+
+      const backup = {
+        exportedAt: new Date().toISOString(),
+        siteTheme,
+        counts: {
+          demons: demons.length,
+          requests: requestBackup.length,
+          notes: demons.filter(demon => String(demon.notes || "").trim()).length
+        },
+        demons,
+        requests: requestBackup
+      };
+
+      const blob = new Blob([JSON.stringify(backup, null, 2)], {
+        type: "application/json"
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const date = new Date().toISOString().slice(0, 10);
+
+      link.href = url;
+      link.download = `moiks-demon-list-backup-${date}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+
+      setAdminMessage("Backup export gemaakt.");
+    } catch (error) {
+      setAdminError(error.message || "Backup export mislukt.");
+    }
+  }
 
   function selectedSkillsets() {
     return parseSkillsets(editForm.skillsets);
@@ -433,6 +567,7 @@ export function AdminPanel({ onBack, onDataChanged, siteTheme = "Basic", onTheme
             setShowEditForm(false);
             setShowThemeForm(false);
             setShowRefreshTokenForm(false);
+            setShowNoteManager(false);
             setEditFound(null);
             setEditNotFound(false);
             setEditConfirm(false);
@@ -456,6 +591,7 @@ export function AdminPanel({ onBack, onDataChanged, siteTheme = "Basic", onTheme
             setShowEditForm(false);
             setShowThemeForm(false);
             setShowRefreshTokenForm(false);
+            setShowNoteManager(false);
             setEditFound(null);
             setEditNotFound(false);
             setEditConfirm(false);
@@ -479,6 +615,7 @@ export function AdminPanel({ onBack, onDataChanged, siteTheme = "Basic", onTheme
             setShowRemoveForm(false);
             setShowThemeForm(false);
             setShowRefreshTokenForm(false);
+            setShowNoteManager(false);
             setEditFound(null);
             setEditNotFound(false);
             setEditConfirm(false);
@@ -503,6 +640,7 @@ export function AdminPanel({ onBack, onDataChanged, siteTheme = "Basic", onTheme
             setShowRemoveForm(false);
             setShowEditForm(false);
             setShowRefreshTokenForm(false);
+            setShowNoteManager(false);
             setEditFound(null);
             setEditNotFound(false);
             setEditConfirm(false);
@@ -526,6 +664,7 @@ export function AdminPanel({ onBack, onDataChanged, siteTheme = "Basic", onTheme
             setShowRemoveForm(false);
             setShowEditForm(false);
             setShowThemeForm(false);
+            setShowNoteManager(false);
             setEditFound(null);
             setEditNotFound(false);
             setEditConfirm(false);
@@ -540,7 +679,122 @@ export function AdminPanel({ onBack, onDataChanged, siteTheme = "Basic", onTheme
           <span>Haalt alle tiers opnieuw op en werkt placements/history bij.</span>
           <ArrowRight className="admin-action-arrow" size={22} />
         </button>
+
+        <button
+          className="admin-action-card"
+          type="button"
+          onClick={openNoteManager}
+        >
+          <span className="admin-action-icon notes"><FileText size={24} /></span>
+          <strong>Note Manager</strong>
+          <span>Alle demon notes snel bekijken en bewerken.</span>
+          <ArrowRight className="admin-action-arrow" size={22} />
+        </button>
+
+        <button
+          className="admin-action-card"
+          type="button"
+          onClick={handleBackupExport}
+          disabled={isSubmitting}
+        >
+          <span className="admin-action-icon backup"><Download size={24} /></span>
+          <strong>Backup Export</strong>
+          <span>Download demons, notes, requests en settings als JSON.</span>
+          <ArrowRight className="admin-action-arrow" size={22} />
+        </button>
+
+        <button
+          className="admin-action-card"
+          type="button"
+          onClick={onOpenRequests}
+        >
+          <span className="admin-action-icon requests"><Inbox size={24} /></span>
+          <strong>Demon Requests</strong>
+          <span>Ga direct naar de request pagina.</span>
+          <ArrowRight className="admin-action-arrow" size={22} />
+        </button>
       </div>
+
+      {showNoteManager && (
+        <div className="admin-form note-manager-form">
+          <div className="note-manager-header">
+            <div>
+              <h3>Note Manager</h3>
+              <p className="admin-form-note">
+                Bewerk je persoonlijke demon notes zonder elke demonkaart los te openen.
+              </p>
+            </div>
+            <span>{noteManagerDemons.length} demons</span>
+          </div>
+
+          <label>
+            Search
+            <input
+              value={noteSearch}
+              onChange={event => setNoteSearch(event.target.value)}
+              placeholder="Search demon, creator or ID..."
+            />
+          </label>
+
+          <div className="note-manager-list">
+            {noteManagerDemons.map(demon => (
+              <article className="note-manager-row" key={demon.id || demon.name}>
+                <div className="note-manager-demon">
+                  <img
+                    src={`https://levelthumbs.prevter.me/thumbnail/${demon.id}`}
+                    alt={demon.name}
+                    onError={event => {
+                      event.currentTarget.style.display = "none";
+                    }}
+                  />
+                  <div>
+                    <strong>{demon.name}</strong>
+                    <span>{demon.placement || "Unplaced"} · ID: {demon.id}</span>
+                  </div>
+                </div>
+
+                <textarea
+                  value={noteDrafts[demon.id] ?? demon.notes ?? ""}
+                  onChange={event =>
+                    setNoteDrafts(previous => ({
+                      ...previous,
+                      [demon.id]: event.target.value
+                    }))
+                  }
+                  placeholder="Write a note for this demon..."
+                  rows={4}
+                />
+
+                <button
+                  className="login-button note-manager-save"
+                  onClick={() => handleSaveManagedNote(demon)}
+                  disabled={noteSavingId === String(demon.id)}
+                  type="button"
+                >
+                  {noteSavingId === String(demon.id) ? "Saving..." : "Save"}
+                </button>
+              </article>
+            ))}
+
+            {noteManagerDemons.length === 0 && (
+              <p className="request-empty">
+                <strong>No demons found.</strong>
+                <span>Try a different search.</span>
+              </p>
+            )}
+          </div>
+
+          <div className="admin-form-actions">
+            <button
+              className="close-button"
+              onClick={() => setShowNoteManager(false)}
+              type="button"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
 
       {showRefreshTokenForm && (
         <div className="admin-form danger-form refresh-token-form">
