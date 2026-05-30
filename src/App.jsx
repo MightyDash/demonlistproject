@@ -27,6 +27,16 @@ function themeSlug(theme) {
   return String(theme || "Basic").trim().toLowerCase().replace(/\s+/g, "-");
 }
 
+function getInitialSiteTheme() {
+  if (typeof window === "undefined") return "Basic";
+
+  try {
+    return localStorage.getItem("site_theme") || "Basic";
+  } catch {
+    return "Basic";
+  }
+}
+
 export default function App() {
   const [demons, setDemons] = useState([]);
   const [source, setSource] = useState("loading");
@@ -38,7 +48,7 @@ export default function App() {
   const [yearView, setYearView] = useState("all");
   const [apiLatestDemon, setApiLatestDemon] = useState("");
   const [apiNextDemon, setApiNextDemon] = useState(null);
-  const [siteTheme, setSiteTheme] = useState("Basic");
+  const [siteTheme, setSiteTheme] = useState(getInitialSiteTheme);
   const [viewMode, setViewMode] = useState("grid");
   const [requestView, setRequestView] = useState(false);
   const [historyView, setHistoryView] = useState(false);
@@ -191,7 +201,14 @@ export default function App() {
   }, [query, difficulty, segment, yearView, viewMode, isMobileView]);
 
   useEffect(() => {
-    document.documentElement.dataset.theme = themeSlug(siteTheme);
+    const theme = siteTheme || "Basic";
+    document.documentElement.dataset.theme = themeSlug(theme);
+
+    try {
+      localStorage.setItem("site_theme", theme);
+    } catch {
+      // Ignore storage failures; backend theme still wins after loading.
+    }
   }, [siteTheme]);
 
   useEffect(() => {

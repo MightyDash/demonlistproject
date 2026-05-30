@@ -4,6 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Moik's Demon List</title>
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem("site_theme") || "Basic";
+          document.documentElement.dataset.theme = String(theme || "Basic")
+            .trim()
+            .toLowerCase()
+            .replace(/\s+/g, "-");
+        } catch (error) {
+          document.documentElement.dataset.theme = "basic";
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
