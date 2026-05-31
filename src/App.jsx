@@ -5,7 +5,6 @@ import { AdminPanel } from "./components/AdminPanel.jsx";
 import { AppHeader } from "./components/AppHeader.jsx";
 import { DemonListContent } from "./components/DemonListContent.jsx";
 import { DemonModal } from "./components/DemonModal.jsx";
-import { LimboGame } from "./components/LimboGame.jsx";
 import { LoginModal } from "./components/LoginModal.jsx";
 import { LogoutConfirm } from "./components/LogoutConfirm.jsx";
 import { RecentChanges } from "./components/RecentChanges.jsx";
@@ -16,8 +15,7 @@ const ROUTES = {
   home: "/",
   requests: "/demon-requests",
   history: "/recent-changes",
-  admin: "/admin-panel",
-  limbo: "/limbo"
+  admin: "/admin-panel"
 };
 
 function normalizeRoute(pathname) {
@@ -78,7 +76,6 @@ export default function App() {
   const [loginError, setLoginError] = useState("");
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [adminView, setAdminView] = useState(false);
-  const [limboView, setLimboView] = useState(false);
   const [skillsetOpen, setSkillsetOpen] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
   const [visibleDemonCount, setVisibleDemonCount] = useState(60);
@@ -89,7 +86,6 @@ export default function App() {
     setRequestView(route === ROUTES.requests);
     setHistoryView(route === ROUTES.history);
     setAdminView(route === ROUTES.admin);
-    setLimboView(route === ROUTES.limbo);
   }
 
   function navigateTo(pathname, { replace = false } = {}) {
@@ -794,8 +790,7 @@ async function handleSaveRequestStatusChanges() {
 
   return (
     <div className="app" data-theme={themeSlug(siteTheme)}>
-      {!limboView && (
-        <AppHeader
+      <AppHeader
           adminView={adminView}
           source={source}
           isAdmin={isAdmin}
@@ -812,7 +807,6 @@ async function handleSaveRequestStatusChanges() {
           onCloseAdmin={() => navigateTo(ROUTES.home)}
           onOpenLogout={() => setShowLogoutConfirm(true)}
         />
-      )}
 
       {showLogoutConfirm && (
         <LogoutConfirm
@@ -821,9 +815,7 @@ async function handleSaveRequestStatusChanges() {
         />
       )}
 
-      {limboView ? (
-        <LimboGame onBack={() => navigateTo(ROUTES.home)} />
-      ) : adminView ? (
+      {adminView ? (
         <AdminPanel
           onBack={() => navigateTo(ROUTES.home)}
           onDataChanged={() => window.location.reload()}
