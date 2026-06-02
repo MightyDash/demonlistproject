@@ -86,7 +86,8 @@ export function AdminPanel({
     year: "",
     attempts: "",
     skillsets: "",
-    status: "COMPLETED"
+    status: "COMPLETED",
+    progressPercent: ""
   });
   const [editConfirm, setEditConfirm] = useState(false);
   const [draggingSkillset, setDraggingSkillset] = useState("");
@@ -286,7 +287,10 @@ export function AdminPanel({
         skillsets: Array.isArray(data.demon.skillsets)
           ? data.demon.skillsets.join(", ")
           : (data.demon.skillsets || ""),
-        status: data.demon.status || "COMPLETED"
+        status: data.demon.status || "COMPLETED",
+        progressPercent: data.demon.progressPercent === undefined || data.demon.progressPercent === null
+          ? ""
+          : String(data.demon.progressPercent)
       });
     } catch (error) {
       setAdminError(error.message || "Kon geen verbinding maken met Apps Script.");
@@ -301,6 +305,7 @@ export function AdminPanel({
 
     const year = Number(editForm.year);
     const attempts = Number(editForm.attempts);
+    const progressPercent = Number(editForm.progressPercent);
 
     if (!editForm.name.trim()) {
       setAdminError("Naam is verplicht.");
@@ -318,6 +323,10 @@ export function AdminPanel({
       setAdminError("Status moet COMPLETED of IN PROGRESS zijn.");
       return;
     }
+    if (editForm.status === "IN PROGRESS" && (!Number.isInteger(progressPercent) || progressPercent < 0 || progressPercent > 100)) {
+      setAdminError("Progress moet een percentage tussen 0 en 100 zijn.");
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -330,7 +339,8 @@ export function AdminPanel({
         year,
         attempts,
         skillsets: editForm.skillsets,
-        status: editForm.status
+        status: editForm.status,
+        progressPercent: editForm.status === "IN PROGRESS" ? progressPercent : ""
       });
 
       if (!data.success) {
@@ -1227,12 +1237,32 @@ export function AdminPanel({
                   Status
                   <select
                     value={editForm.status}
-                    onChange={e => setEditForm({ ...editForm, status: e.target.value })}
+                    onChange={e =>
+                      setEditForm({
+                        ...editForm,
+                        status: e.target.value,
+                        progressPercent: e.target.value === "IN PROGRESS" ? editForm.progressPercent : ""
+                      })
+                    }
                   >
                     <option value="COMPLETED">COMPLETED</option>
                     <option value="IN PROGRESS">IN PROGRESS</option>
                   </select>
                 </label>
+
+                {editForm.status === "IN PROGRESS" && (
+                  <label>
+                    Progress %
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={editForm.progressPercent}
+                      onChange={e => setEditForm({ ...editForm, progressPercent: e.target.value })}
+                      placeholder="Bijv. 67"
+                    />
+                  </label>
+                )}
 
                 <label className="edit-field-full skillset-hidden-field">
                   Skillsets
