@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   BarChart3,
   Bookmark,
@@ -14,6 +14,22 @@ import {
   X
 } from "lucide-react";
 import { formatNumber, formatTier } from "../demonUtils.js";
+import { SHEET_API_URL } from "../config.js";
+
+const SKILLSET_COLORS = [
+  "#1495df",
+  "#7d3fe1",
+  "#ff4168",
+  "#ffc148",
+  "#2ce5a7",
+  "#ff7a1a",
+  "#33d7ff",
+  "#b55cff",
+  "#7dd957",
+  "#ff5ea8",
+  "#8ea7ff",
+  "#f5d76e"
+];
 
 export function DemonModal({
   demon,
@@ -33,17 +49,78 @@ export function DemonModal({
   const cleanPlacement = String(demon.placement || "").trim() || "Unplaced";
   const cleanDifficulty = demon.difficulty || "Unknown";
   const noteText = demon.notes || "No note added yet.";
-  const distribution = [
-    ["Main List", 18, "main"],
-    ["Extended List", 67, "extended"],
-    ["Legacy List", 10, "legacy"],
-    ["Other", 5, "other"]
-  ];
+  const [skillsetDistribution, setSkillsetDistribution] = useState(
+    Array.isArray(demon.skillsetDistribution) ? demon.skillsetDistribution : []
+  );
+  const [distributionLoading, setDistributionLoading] = useState(false);
+
+  const distribution = useMemo(() => {
+    return skillsetDistribution
+      .map((item, index) => ({
+        ...item,
+        percentage: Number(item.percentage || 0),
+        count: Number(item.count || 0),
+        color: SKILLSET_COLORS[index % SKILLSET_COLORS.length]
+      }))
+      .filter(item => item.name && item.percentage > 0);
+  }, [skillsetDistribution]);
+
+  const donutBackground = useMemo(() => {
+    if (distribution.length === 0) {
+      return "conic-gradient(rgba(255,255,255,0.1) 0 100%)";
+    }
+
+    let start = 0;
+    const stops = distribution.map(item => {
+      const end = Math.min(100, start + item.percentage);
+      const segment = `${item.color} ${start}% ${end}%`;
+      start = end;
+      return segment;
+    });
+
+    if (start < 100) {
+      stops.push(`rgba(255,255,255,0.08) ${start}% 100%`);
+    }
+
+    return `conic-gradient(${stops.join(", ")})`;
+  }, [distribution]);
 
   useEffect(() => {
     setNoteDraft(demon.notes || "");
     setNoteState({ saving: false, message: "", error: "" });
   }, [demon.id, demon.notes]);
+
+  useEffect(() => {
+    setSkillsetDistribution(Array.isArray(demon.skillsetDistribution) ? demon.skillsetDistribution : []);
+
+    if (!SHEET_API_URL || !demon.id) return;
+
+    let cancelled = false;
+    async function loadSkillsetDistribution() {
+      setDistributionLoading(true);
+
+      try {
+        const separator = SHEET_API_URL.includes("?") ? "&" : "?";
+        const response = await fetch(
+          `${SHEET_API_URL}${separator}view=skillsets&levelId=${encodeURIComponent(demon.id)}`
+        );
+        const data = await response.json();
+
+        if (!cancelled && Array.isArray(data.skillsetDistribution)) {
+          setSkillsetDistribution(data.skillsetDistribution);
+        }
+      } catch {
+        if (!cancelled) setSkillsetDistribution([]);
+      } finally {
+        if (!cancelled) setDistributionLoading(false);
+      }
+    }
+
+    loadSkillsetDistribution();
+    return () => {
+      cancelled = true;
+    };
+  }, [demon.id, demon.skillsetDistribution]);
 
   async function handleSaveNote() {
     if (!onSaveNote) return;
@@ -176,16 +253,25 @@ export function DemonModal({
 
             <aside className="modal-side-stack">
               <section className="modal-info-card distribution-card">
-                <h3><BarChart3 size={22} /> Difficulty distribution</h3>
+                <h3><BarChart3 size={22} /> Skillset distribution</h3>
                 <div className="distribution-content">
-                  <div className="distribution-donut" aria-hidden="true" />
-                  <div className="distribution-legend">
-                    {distribution.map(([label, value, type]) => (
-                      <span key={label} className={`distribution-item ${type}`}>
-                        <i /> <strong>{value}%</strong> {label}
-                      </span>
-                    ))}
-                  </div>
+                  <div className="distribution-donut" style={{ background: donutBackground }} aria-hidden="true" />
+                  {distribution.length > 0 ? (
+                    <div className="distribution-legend">
+                      {distribution.map(item => (
+                        <span key={item.name} className="distribution-item" title={item.description || ""}>
+                          <i style={{ backgroundColor: item.color }} />
+                          <strong>{item.percentage}%</strong>
+                          {item.name}
+                          <small>{item.count} votes</small>
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="distribution-empty">
+                      {distributionLoading ? "Loading GDDL skillsets..." : "No GDDL skillset votes found yet."}
+                    </p>
+                  )}
                 </div>
               </section>
 

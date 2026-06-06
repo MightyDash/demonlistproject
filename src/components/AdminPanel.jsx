@@ -3,6 +3,7 @@ import {
   ArrowRight,
   Download,
   FileText,
+  Gamepad2,
   Inbox,
   Paintbrush,
   Pencil,
@@ -59,6 +60,7 @@ export function AdminPanel({
   const [showEditForm, setShowEditForm] = useState(false);
   const [showThemeForm, setShowThemeForm] = useState(false);
   const [showRefreshTokenForm, setShowRefreshTokenForm] = useState(false);
+  const [showSkillsetSyncForm, setShowSkillsetSyncForm] = useState(false);
   const [showNoteManager, setShowNoteManager] = useState(false);
   const [noteSearch, setNoteSearch] = useState("");
   const [noteDrafts, setNoteDrafts] = useState({});
@@ -97,6 +99,7 @@ export function AdminPanel({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [themeDraft, setThemeDraft] = useState(siteTheme);
   const [refreshListToken, setRefreshListToken] = useState("");
+  const [skillsetSyncLimit, setSkillsetSyncLimit] = useState(80);
 
   const noteManagerDemons = useMemo(() => {
     const query = noteSearch.trim().toLowerCase();
@@ -117,6 +120,7 @@ export function AdminPanel({
     setShowEditForm(false);
     setShowThemeForm(false);
     setShowRefreshTokenForm(false);
+    setShowSkillsetSyncForm(false);
     setShowNoteManager(false);
     setEditFound(null);
     setEditNotFound(false);
@@ -550,6 +554,44 @@ export function AdminPanel({
     }
   }
 
+  async function handleSyncGDDLSkillsets() {
+    setAdminMessage("");
+    setAdminError("");
+
+    const limit = Number(skillsetSyncLimit);
+    if (!Number.isInteger(limit) || limit < 1 || limit > 200) {
+      setAdminError("Limit moet tussen 1 en 200 liggen.");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `GDDL skillsets syncen voor maximaal ${limit} demons met lege skillsets?`
+    );
+    if (!confirmed) return;
+
+    setIsSubmitting(true);
+
+    try {
+      const data = await sendAdminRequest({
+        action: "syncGDDLSkillsets",
+        limit
+      });
+
+      if (!data.success) {
+        setAdminError(data.message || "GDDL skillsets syncen mislukt.");
+        return;
+      }
+
+      setAdminMessage(data.message || "GDDL skillsets synced.");
+      setShowSkillsetSyncForm(false);
+      if (onDataChanged) onDataChanged();
+    } catch (error) {
+      setAdminError(error.message || "Kon geen verbinding maken met Apps Script.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <section className="panel admin-panel">
       <div className="admin-panel-header">
@@ -577,6 +619,7 @@ export function AdminPanel({
             setShowEditForm(false);
             setShowThemeForm(false);
             setShowRefreshTokenForm(false);
+            setShowSkillsetSyncForm(false);
             setShowNoteManager(false);
             setEditFound(null);
             setEditNotFound(false);
@@ -601,6 +644,7 @@ export function AdminPanel({
             setShowEditForm(false);
             setShowThemeForm(false);
             setShowRefreshTokenForm(false);
+            setShowSkillsetSyncForm(false);
             setShowNoteManager(false);
             setEditFound(null);
             setEditNotFound(false);
@@ -625,6 +669,7 @@ export function AdminPanel({
             setShowRemoveForm(false);
             setShowThemeForm(false);
             setShowRefreshTokenForm(false);
+            setShowSkillsetSyncForm(false);
             setShowNoteManager(false);
             setEditFound(null);
             setEditNotFound(false);
@@ -650,6 +695,7 @@ export function AdminPanel({
             setShowRemoveForm(false);
             setShowEditForm(false);
             setShowRefreshTokenForm(false);
+            setShowSkillsetSyncForm(false);
             setShowNoteManager(false);
             setEditFound(null);
             setEditNotFound(false);
@@ -674,6 +720,7 @@ export function AdminPanel({
             setShowRemoveForm(false);
             setShowEditForm(false);
             setShowThemeForm(false);
+            setShowSkillsetSyncForm(false);
             setShowNoteManager(false);
             setEditFound(null);
             setEditNotFound(false);
@@ -687,6 +734,32 @@ export function AdminPanel({
           <span className="admin-action-icon refresh"><RefreshCw size={24} /></span>
           <strong>{isSubmitting ? "Refreshing..." : "Refresh List"}</strong>
           <span>Haalt alle tiers opnieuw op en werkt placements/history bij.</span>
+          <ArrowRight className="admin-action-arrow" size={22} />
+        </button>
+
+        <button
+          className="admin-action-card"
+          type="button"
+          onClick={() => {
+            setShowSkillsetSyncForm(open => !open);
+            setShowAddForm(false);
+            setShowRemoveForm(false);
+            setShowEditForm(false);
+            setShowThemeForm(false);
+            setShowRefreshTokenForm(false);
+            setShowNoteManager(false);
+            setEditFound(null);
+            setEditNotFound(false);
+            setEditConfirm(false);
+            setRemoveConfirm(false);
+            setAdminMessage("");
+            setAdminError("");
+          }}
+          disabled={isSubmitting}
+        >
+          <span className="admin-action-icon skillsets"><Gamepad2 size={24} /></span>
+          <strong>Sync GDDL Skillsets</strong>
+          <span>Vul lege skillsets automatisch aan met GDDL tags.</span>
           <ArrowRight className="admin-action-arrow" size={22} />
         </button>
 
@@ -839,6 +912,49 @@ export function AdminPanel({
               onClick={() => {
                 setShowRefreshTokenForm(false);
                 setRefreshListToken("");
+                setAdminError("");
+              }}
+              type="button"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showSkillsetSyncForm && (
+        <div className="admin-form">
+          <h3>Sync GDDL Skillsets</h3>
+          <p className="admin-form-note">
+            Fills only demons that currently have no skillsets. GDDL votes are cached, and the sheet is backed up before changes are written.
+          </p>
+
+          <label>
+            Max demons to check
+            <input
+              type="number"
+              min="1"
+              max="200"
+              value={skillsetSyncLimit}
+              onChange={event => setSkillsetSyncLimit(event.target.value)}
+              placeholder="Bijv. 80"
+            />
+          </label>
+
+          <div className="admin-form-actions">
+            <button
+              className="login-button"
+              onClick={handleSyncGDDLSkillsets}
+              disabled={isSubmitting}
+              type="button"
+            >
+              {isSubmitting ? "Syncing..." : "Sync Skillsets"}
+            </button>
+
+            <button
+              className="close-button"
+              onClick={() => {
+                setShowSkillsetSyncForm(false);
                 setAdminError("");
               }}
               type="button"

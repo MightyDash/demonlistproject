@@ -1224,7 +1224,7 @@ h1 {
 }
 
 .distribution-legend {
-  gap: 13px;
+  gap: 10px;
 }
 
 .distribution-item {
@@ -1233,6 +1233,7 @@ h1 {
   gap: 10px;
   color: var(--muted);
   font-size: 0.9rem;
+  flex-wrap: wrap;
 }
 
 .distribution-item i {
@@ -1242,16 +1243,16 @@ h1 {
   background: var(--blue);
 }
 
-.distribution-item.extended i {
-  background: #7d3fe1;
+.distribution-item small {
+  color: var(--muted-soft);
+  font-size: 0.78rem;
+  margin-left: auto;
 }
 
-.distribution-item.legacy i {
-  background: #ff4168;
-}
-
-.distribution-item.other i {
-  background: #ffc148;
+.distribution-empty {
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0;
 }
 
 .history-mini-list {
@@ -2482,6 +2483,11 @@ h1 {
   .admin-action-icon.requests {
     background: rgba(116, 92, 255, 0.16);
     color: #9e8cff;
+  }
+
+  .admin-action-icon.skillsets {
+    background: rgba(44, 229, 167, 0.14);
+    color: #2ce5a7;
   }
 
   .admin-action-arrow {

@@ -18,6 +18,9 @@ export function normalizeDemon(row, index) {
       .split(",")
       .map(s => s.trim())
       .filter(Boolean),
+    skillsetDistribution: Array.isArray(row.skillsetDistribution)
+      ? row.skillsetDistribution
+      : [],
     status: row.status ?? row["Done/Progress?"] ?? "COMPLETED",
     progressPercent: Number(row.progressPercent ?? row["Progress %"] ?? 0),
     thumbnail: id ? `https://levelthumbs.prevter.me/thumbnail/${id}` : "",
