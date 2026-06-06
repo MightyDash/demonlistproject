@@ -62,7 +62,9 @@ export function DemonModal({
         count: Number(item.count || 0),
         color: SKILLSET_COLORS[index % SKILLSET_COLORS.length]
       }))
-      .filter(item => item.name && item.percentage > 0);
+      .filter(item => item.name && item.percentage > 0)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
   }, [skillsetDistribution]);
 
   const donutBackground = useMemo(() => {
