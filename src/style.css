@@ -71,6 +71,198 @@
   --circuit-hue: 164deg;
 }
 
+:root[data-theme="crystal-void"] {
+  --bg: #030913;
+  --bg-soft: #091522;
+  --panel: rgba(9, 19, 31, 0.84);
+  --panel-strong: rgba(11, 26, 42, 0.96);
+  --line: rgba(144, 213, 255, 0.3);
+  --line-strong: rgba(183, 235, 255, 0.52);
+  --text: #f1fbff;
+  --muted: #a7c4d6;
+  --blue: #7ddcff;
+  --green: #82f7d6;
+  --red: #ff6f9d;
+  --orange: #b9e7ff;
+  --yellow: #e4fbff;
+  --shadow: 0 22px 62px rgba(0, 22, 48, 0.48);
+  --glow: 0 0 0 1px rgba(126, 220, 255, 0.38), 0 18px 58px rgba(117, 221, 255, 0.18);
+  --page-glow-1: rgba(125, 220, 255, 0.16);
+  --page-glow-2: rgba(191, 245, 255, 0.1);
+  --page-start: #020813;
+  --page-mid: #071524;
+  --page-end: #01050b;
+  --circuit-hue: 12deg;
+}
+
+:root[data-theme="rusted-machine"] {
+  --bg: #080909;
+  --bg-soft: #111312;
+  --panel: rgba(20, 22, 21, 0.88);
+  --panel-strong: rgba(24, 27, 25, 0.97);
+  --line: rgba(176, 129, 61, 0.3);
+  --line-strong: rgba(232, 167, 76, 0.55);
+  --text: #f5efe2;
+  --muted: #a99c87;
+  --blue: #d29b47;
+  --green: #9ad06d;
+  --red: #e85b42;
+  --orange: #c8782c;
+  --yellow: #f0c060;
+  --shadow: 0 24px 66px rgba(0, 0, 0, 0.58);
+  --glow: 0 0 0 1px rgba(210, 155, 71, 0.34), 0 18px 54px rgba(200, 112, 44, 0.13);
+  --page-glow-1: rgba(210, 125, 44, 0.12);
+  --page-glow-2: rgba(230, 190, 90, 0.08);
+  --page-start: #070807;
+  --page-mid: #111311;
+  --page-end: #030403;
+  --circuit-hue: 154deg;
+}
+
+:root[data-theme="solar-flare"] {
+  --bg: #070510;
+  --bg-soft: #13091a;
+  --panel: rgba(21, 11, 24, 0.86);
+  --panel-strong: rgba(31, 13, 25, 0.97);
+  --line: rgba(255, 178, 64, 0.3);
+  --line-strong: rgba(255, 206, 82, 0.58);
+  --text: #fff7e8;
+  --muted: #c4a8a0;
+  --blue: #ffb340;
+  --green: #ffdf6b;
+  --red: #ff405f;
+  --orange: #ff7a1a;
+  --yellow: #ffd84f;
+  --shadow: 0 24px 68px rgba(31, 5, 18, 0.58);
+  --glow: 0 0 0 1px rgba(255, 178, 64, 0.4), 0 20px 62px rgba(255, 93, 24, 0.2);
+  --page-glow-1: rgba(255, 85, 24, 0.16);
+  --page-glow-2: rgba(255, 211, 70, 0.11);
+  --page-start: #07040b;
+  --page-mid: #160817;
+  --page-end: #050207;
+  --circuit-hue: 146deg;
+}
+
+:root[data-theme="toxic-core"] {
+  --bg: #030904;
+  --bg-soft: #07140b;
+  --panel: rgba(7, 22, 12, 0.86);
+  --panel-strong: rgba(8, 31, 14, 0.97);
+  --line: rgba(126, 255, 83, 0.28);
+  --line-strong: rgba(163, 255, 88, 0.54);
+  --text: #efffe8;
+  --muted: #a2c79b;
+  --blue: #7dff53;
+  --green: #34f280;
+  --red: #ff4c68;
+  --orange: #c4ff3d;
+  --yellow: #e7ff5c;
+  --shadow: 0 24px 64px rgba(0, 34, 6, 0.52);
+  --glow: 0 0 0 1px rgba(125, 255, 83, 0.36), 0 18px 56px rgba(57, 255, 117, 0.14);
+  --page-glow-1: rgba(87, 255, 74, 0.14);
+  --page-glow-2: rgba(196, 255, 61, 0.09);
+  --page-start: #020702;
+  --page-mid: #061306;
+  --page-end: #010301;
+  --circuit-hue: 248deg;
+}
+
+:root[data-theme="dreamscape"] {
+  --bg: #050817;
+  --bg-soft: #0b1024;
+  --panel: rgba(12, 16, 38, 0.84);
+  --panel-strong: rgba(14, 20, 44, 0.96);
+  --line: rgba(143, 171, 255, 0.28);
+  --line-strong: rgba(255, 150, 227, 0.48);
+  --text: #f6f4ff;
+  --muted: #b2add1;
+  --blue: #83b7ff;
+  --green: #8ef5df;
+  --red: #ff80c8;
+  --orange: #c89bff;
+  --yellow: #f7d9ff;
+  --shadow: 0 22px 62px rgba(5, 8, 31, 0.5);
+  --glow: 0 0 0 1px rgba(131, 183, 255, 0.34), 0 18px 58px rgba(255, 128, 200, 0.12);
+  --page-glow-1: rgba(131, 183, 255, 0.15);
+  --page-glow-2: rgba(255, 128, 200, 0.1);
+  --page-start: #030611;
+  --page-mid: #0a0d22;
+  --page-end: #03020b;
+  --circuit-hue: 62deg;
+}
+
+:root[data-theme="monochrome-legacy"] {
+  --bg: #050607;
+  --bg-soft: #0c0d0f;
+  --panel: rgba(16, 17, 19, 0.88);
+  --panel-strong: rgba(22, 23, 26, 0.97);
+  --line: rgba(220, 228, 240, 0.22);
+  --line-strong: rgba(245, 248, 255, 0.4);
+  --text: #f5f7fb;
+  --muted: #a3aab5;
+  --blue: #d8e4f2;
+  --green: #c9d7e3;
+  --red: #e36f78;
+  --orange: #b9c1ca;
+  --yellow: #ffffff;
+  --shadow: 0 24px 66px rgba(0, 0, 0, 0.62);
+  --glow: 0 0 0 1px rgba(220, 228, 240, 0.24), 0 18px 54px rgba(220, 228, 240, 0.08);
+  --page-glow-1: rgba(220, 228, 240, 0.08);
+  --page-glow-2: rgba(255, 255, 255, 0.05);
+  --page-start: #050607;
+  --page-mid: #0b0d10;
+  --page-end: #020303;
+  --circuit-hue: 188deg;
+}
+
+:root[data-theme="golden-trophy"] {
+  --bg: #060812;
+  --bg-soft: #11131b;
+  --panel: rgba(18, 19, 25, 0.87);
+  --panel-strong: rgba(25, 23, 22, 0.97);
+  --line: rgba(255, 202, 83, 0.28);
+  --line-strong: rgba(255, 219, 107, 0.54);
+  --text: #fff8e7;
+  --muted: #bfb29a;
+  --blue: #f2c55c;
+  --green: #76e0a0;
+  --red: #ff6d78;
+  --orange: #d99c35;
+  --yellow: #ffdc73;
+  --shadow: 0 24px 66px rgba(0, 0, 0, 0.56);
+  --glow: 0 0 0 1px rgba(255, 202, 83, 0.36), 0 18px 58px rgba(255, 201, 83, 0.16);
+  --page-glow-1: rgba(255, 202, 83, 0.14);
+  --page-glow-2: rgba(255, 229, 133, 0.08);
+  --page-start: #050711;
+  --page-mid: #101119;
+  --page-end: #030405;
+  --circuit-hue: 148deg;
+}
+
+:root[data-theme="blood-moon"] {
+  --bg: #070407;
+  --bg-soft: #120710;
+  --panel: rgba(20, 8, 16, 0.87);
+  --panel-strong: rgba(27, 9, 18, 0.97);
+  --line: rgba(219, 42, 78, 0.3);
+  --line-strong: rgba(255, 67, 103, 0.58);
+  --text: #fff1f5;
+  --muted: #bea1ab;
+  --blue: #ff4f73;
+  --green: #ff8c9e;
+  --red: #ff294f;
+  --orange: #b51f52;
+  --yellow: #ffc4d0;
+  --shadow: 0 24px 68px rgba(27, 0, 10, 0.64);
+  --glow: 0 0 0 1px rgba(255, 67, 103, 0.4), 0 18px 60px rgba(255, 41, 79, 0.18);
+  --page-glow-1: rgba(255, 41, 79, 0.14);
+  --page-glow-2: rgba(146, 19, 69, 0.11);
+  --page-start: #060306;
+  --page-mid: #130711;
+  --page-end: #030102;
+  --circuit-hue: 126deg;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -4414,6 +4606,397 @@ h1 {
 :root[data-theme="dark-ember"] .placement-large,
 :root[data-theme="dark-ember"] .demon-name {
   color: #ff7a1a;
+}
+
+:root[data-theme="crystal-void"] body,
+:root[data-theme="rusted-machine"] body,
+:root[data-theme="solar-flare"] body,
+:root[data-theme="toxic-core"] body,
+:root[data-theme="dreamscape"] body,
+:root[data-theme="monochrome-legacy"] body,
+:root[data-theme="golden-trophy"] body,
+:root[data-theme="blood-moon"] body {
+  background:
+    radial-gradient(circle at 78% 16%, var(--page-glow-1), transparent 25%),
+    radial-gradient(circle at 18% 78%, var(--page-glow-2), transparent 29%),
+    radial-gradient(circle at 50% 48%, color-mix(in srgb, var(--blue) 10%, transparent), transparent 38%),
+    linear-gradient(180deg, var(--page-start) 0%, var(--page-mid) 48%, var(--page-end) 100%),
+    var(--bg);
+}
+
+:root[data-theme="crystal-void"] body::before,
+:root[data-theme="rusted-machine"] body::before,
+:root[data-theme="solar-flare"] body::before,
+:root[data-theme="toxic-core"] body::before,
+:root[data-theme="dreamscape"] body::before,
+:root[data-theme="monochrome-legacy"] body::before,
+:root[data-theme="golden-trophy"] body::before,
+:root[data-theme="blood-moon"] body::before {
+  opacity: 0.44;
+  filter: hue-rotate(var(--circuit-hue)) drop-shadow(0 0 10px color-mix(in srgb, var(--blue) 38%, transparent));
+}
+
+:root[data-theme="crystal-void"] body::after,
+:root[data-theme="rusted-machine"] body::after,
+:root[data-theme="solar-flare"] body::after,
+:root[data-theme="toxic-core"] body::after,
+:root[data-theme="dreamscape"] body::after,
+:root[data-theme="monochrome-legacy"] body::after,
+:root[data-theme="golden-trophy"] body::after,
+:root[data-theme="blood-moon"] body::after {
+  opacity: 0.62;
+  filter: hue-rotate(var(--circuit-hue)) drop-shadow(0 0 14px color-mix(in srgb, var(--blue) 45%, transparent));
+}
+
+:root[data-theme="crystal-void"] .panel,
+:root[data-theme="crystal-void"] .stat-card,
+:root[data-theme="crystal-void"] .admin-form,
+:root[data-theme="crystal-void"] .request-table-shell,
+:root[data-theme="crystal-void"] .calendar-year-rail,
+:root[data-theme="crystal-void"] .calendar-main,
+:root[data-theme="crystal-void"] .calendar-day-detail,
+:root[data-theme="crystal-void"] .calendar-change-section,
+:root[data-theme="crystal-void"] .modal,
+:root[data-theme="rusted-machine"] .panel,
+:root[data-theme="rusted-machine"] .stat-card,
+:root[data-theme="rusted-machine"] .admin-form,
+:root[data-theme="rusted-machine"] .request-table-shell,
+:root[data-theme="rusted-machine"] .calendar-year-rail,
+:root[data-theme="rusted-machine"] .calendar-main,
+:root[data-theme="rusted-machine"] .calendar-day-detail,
+:root[data-theme="rusted-machine"] .calendar-change-section,
+:root[data-theme="rusted-machine"] .modal,
+:root[data-theme="solar-flare"] .panel,
+:root[data-theme="solar-flare"] .stat-card,
+:root[data-theme="solar-flare"] .admin-form,
+:root[data-theme="solar-flare"] .request-table-shell,
+:root[data-theme="solar-flare"] .calendar-year-rail,
+:root[data-theme="solar-flare"] .calendar-main,
+:root[data-theme="solar-flare"] .calendar-day-detail,
+:root[data-theme="solar-flare"] .calendar-change-section,
+:root[data-theme="solar-flare"] .modal,
+:root[data-theme="toxic-core"] .panel,
+:root[data-theme="toxic-core"] .stat-card,
+:root[data-theme="toxic-core"] .admin-form,
+:root[data-theme="toxic-core"] .request-table-shell,
+:root[data-theme="toxic-core"] .calendar-year-rail,
+:root[data-theme="toxic-core"] .calendar-main,
+:root[data-theme="toxic-core"] .calendar-day-detail,
+:root[data-theme="toxic-core"] .calendar-change-section,
+:root[data-theme="toxic-core"] .modal,
+:root[data-theme="dreamscape"] .panel,
+:root[data-theme="dreamscape"] .stat-card,
+:root[data-theme="dreamscape"] .admin-form,
+:root[data-theme="dreamscape"] .request-table-shell,
+:root[data-theme="dreamscape"] .calendar-year-rail,
+:root[data-theme="dreamscape"] .calendar-main,
+:root[data-theme="dreamscape"] .calendar-day-detail,
+:root[data-theme="dreamscape"] .calendar-change-section,
+:root[data-theme="dreamscape"] .modal,
+:root[data-theme="monochrome-legacy"] .panel,
+:root[data-theme="monochrome-legacy"] .stat-card,
+:root[data-theme="monochrome-legacy"] .admin-form,
+:root[data-theme="monochrome-legacy"] .request-table-shell,
+:root[data-theme="monochrome-legacy"] .calendar-year-rail,
+:root[data-theme="monochrome-legacy"] .calendar-main,
+:root[data-theme="monochrome-legacy"] .calendar-day-detail,
+:root[data-theme="monochrome-legacy"] .calendar-change-section,
+:root[data-theme="monochrome-legacy"] .modal,
+:root[data-theme="golden-trophy"] .panel,
+:root[data-theme="golden-trophy"] .stat-card,
+:root[data-theme="golden-trophy"] .admin-form,
+:root[data-theme="golden-trophy"] .request-table-shell,
+:root[data-theme="golden-trophy"] .calendar-year-rail,
+:root[data-theme="golden-trophy"] .calendar-main,
+:root[data-theme="golden-trophy"] .calendar-day-detail,
+:root[data-theme="golden-trophy"] .calendar-change-section,
+:root[data-theme="golden-trophy"] .modal,
+:root[data-theme="blood-moon"] .panel,
+:root[data-theme="blood-moon"] .stat-card,
+:root[data-theme="blood-moon"] .admin-form,
+:root[data-theme="blood-moon"] .request-table-shell,
+:root[data-theme="blood-moon"] .calendar-year-rail,
+:root[data-theme="blood-moon"] .calendar-main,
+:root[data-theme="blood-moon"] .calendar-day-detail,
+:root[data-theme="blood-moon"] .calendar-change-section,
+:root[data-theme="blood-moon"] .modal {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--panel-strong) 84%, transparent), var(--panel)),
+    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--blue) 14%, transparent), transparent 34%);
+  border-color: var(--line);
+  box-shadow: var(--shadow), inset 0 0 0 1px color-mix(in srgb, var(--blue) 7%, transparent);
+}
+
+:root[data-theme="crystal-void"] .stat-card::before,
+:root[data-theme="crystal-void"] .admin-action-card::before,
+:root[data-theme="rusted-machine"] .stat-card::before,
+:root[data-theme="rusted-machine"] .admin-action-card::before,
+:root[data-theme="solar-flare"] .stat-card::before,
+:root[data-theme="solar-flare"] .admin-action-card::before,
+:root[data-theme="toxic-core"] .stat-card::before,
+:root[data-theme="toxic-core"] .admin-action-card::before,
+:root[data-theme="dreamscape"] .stat-card::before,
+:root[data-theme="dreamscape"] .admin-action-card::before,
+:root[data-theme="monochrome-legacy"] .stat-card::before,
+:root[data-theme="monochrome-legacy"] .admin-action-card::before,
+:root[data-theme="golden-trophy"] .stat-card::before,
+:root[data-theme="golden-trophy"] .admin-action-card::before,
+:root[data-theme="blood-moon"] .stat-card::before,
+:root[data-theme="blood-moon"] .admin-action-card::before {
+  background: linear-gradient(90deg, var(--blue), var(--green), transparent);
+}
+
+:root[data-theme="crystal-void"] .stat-icon,
+:root[data-theme="crystal-void"] .admin-action-icon,
+:root[data-theme="crystal-void"] .hero-info-button,
+:root[data-theme="rusted-machine"] .stat-icon,
+:root[data-theme="rusted-machine"] .admin-action-icon,
+:root[data-theme="rusted-machine"] .hero-info-button,
+:root[data-theme="solar-flare"] .stat-icon,
+:root[data-theme="solar-flare"] .admin-action-icon,
+:root[data-theme="solar-flare"] .hero-info-button,
+:root[data-theme="toxic-core"] .stat-icon,
+:root[data-theme="toxic-core"] .admin-action-icon,
+:root[data-theme="toxic-core"] .hero-info-button,
+:root[data-theme="dreamscape"] .stat-icon,
+:root[data-theme="dreamscape"] .admin-action-icon,
+:root[data-theme="dreamscape"] .hero-info-button,
+:root[data-theme="monochrome-legacy"] .stat-icon,
+:root[data-theme="monochrome-legacy"] .admin-action-icon,
+:root[data-theme="monochrome-legacy"] .hero-info-button,
+:root[data-theme="golden-trophy"] .stat-icon,
+:root[data-theme="golden-trophy"] .admin-action-icon,
+:root[data-theme="golden-trophy"] .hero-info-button,
+:root[data-theme="blood-moon"] .stat-icon,
+:root[data-theme="blood-moon"] .admin-action-icon,
+:root[data-theme="blood-moon"] .hero-info-button {
+  background: color-mix(in srgb, var(--blue) 14%, transparent);
+  color: var(--blue);
+  border-color: var(--line-strong);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--blue) 18%, transparent);
+}
+
+:root[data-theme="crystal-void"] .source-pill.live,
+:root[data-theme="crystal-void"] .login-button,
+:root[data-theme="crystal-void"] .tabs button.active,
+:root[data-theme="crystal-void"] .year-tabs button:last-child.active,
+:root[data-theme="rusted-machine"] .source-pill.live,
+:root[data-theme="rusted-machine"] .login-button,
+:root[data-theme="rusted-machine"] .tabs button.active,
+:root[data-theme="rusted-machine"] .year-tabs button:last-child.active,
+:root[data-theme="solar-flare"] .source-pill.live,
+:root[data-theme="solar-flare"] .login-button,
+:root[data-theme="solar-flare"] .tabs button.active,
+:root[data-theme="solar-flare"] .year-tabs button:last-child.active,
+:root[data-theme="toxic-core"] .source-pill.live,
+:root[data-theme="toxic-core"] .login-button,
+:root[data-theme="toxic-core"] .tabs button.active,
+:root[data-theme="toxic-core"] .year-tabs button:last-child.active,
+:root[data-theme="dreamscape"] .source-pill.live,
+:root[data-theme="dreamscape"] .login-button,
+:root[data-theme="dreamscape"] .tabs button.active,
+:root[data-theme="dreamscape"] .year-tabs button:last-child.active,
+:root[data-theme="monochrome-legacy"] .source-pill.live,
+:root[data-theme="monochrome-legacy"] .login-button,
+:root[data-theme="monochrome-legacy"] .tabs button.active,
+:root[data-theme="monochrome-legacy"] .year-tabs button:last-child.active,
+:root[data-theme="golden-trophy"] .source-pill.live,
+:root[data-theme="golden-trophy"] .login-button,
+:root[data-theme="golden-trophy"] .tabs button.active,
+:root[data-theme="golden-trophy"] .year-tabs button:last-child.active,
+:root[data-theme="blood-moon"] .source-pill.live,
+:root[data-theme="blood-moon"] .login-button,
+:root[data-theme="blood-moon"] .tabs button.active,
+:root[data-theme="blood-moon"] .year-tabs button:last-child.active {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--blue) 72%, transparent), color-mix(in srgb, var(--bg-soft) 88%, black));
+  border-color: var(--line-strong);
+  color: var(--text);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--blue) 24%, transparent);
+}
+
+:root[data-theme="crystal-void"] .admin-button,
+:root[data-theme="crystal-void"] .source-pill,
+:root[data-theme="crystal-void"] .searchbox,
+:root[data-theme="crystal-void"] .custom-select-button,
+:root[data-theme="crystal-void"] .tabs button,
+:root[data-theme="crystal-void"] .grid-chip,
+:root[data-theme="crystal-void"] .request-table-info span,
+:root[data-theme="crystal-void"] .request-table-weight button,
+:root[data-theme="crystal-void"] .detail,
+:root[data-theme="crystal-void"] .skillset-tag,
+:root[data-theme="rusted-machine"] .admin-button,
+:root[data-theme="rusted-machine"] .source-pill,
+:root[data-theme="rusted-machine"] .searchbox,
+:root[data-theme="rusted-machine"] .custom-select-button,
+:root[data-theme="rusted-machine"] .tabs button,
+:root[data-theme="rusted-machine"] .grid-chip,
+:root[data-theme="rusted-machine"] .request-table-info span,
+:root[data-theme="rusted-machine"] .request-table-weight button,
+:root[data-theme="rusted-machine"] .detail,
+:root[data-theme="rusted-machine"] .skillset-tag,
+:root[data-theme="solar-flare"] .admin-button,
+:root[data-theme="solar-flare"] .source-pill,
+:root[data-theme="solar-flare"] .searchbox,
+:root[data-theme="solar-flare"] .custom-select-button,
+:root[data-theme="solar-flare"] .tabs button,
+:root[data-theme="solar-flare"] .grid-chip,
+:root[data-theme="solar-flare"] .request-table-info span,
+:root[data-theme="solar-flare"] .request-table-weight button,
+:root[data-theme="solar-flare"] .detail,
+:root[data-theme="solar-flare"] .skillset-tag,
+:root[data-theme="toxic-core"] .admin-button,
+:root[data-theme="toxic-core"] .source-pill,
+:root[data-theme="toxic-core"] .searchbox,
+:root[data-theme="toxic-core"] .custom-select-button,
+:root[data-theme="toxic-core"] .tabs button,
+:root[data-theme="toxic-core"] .grid-chip,
+:root[data-theme="toxic-core"] .request-table-info span,
+:root[data-theme="toxic-core"] .request-table-weight button,
+:root[data-theme="toxic-core"] .detail,
+:root[data-theme="toxic-core"] .skillset-tag,
+:root[data-theme="dreamscape"] .admin-button,
+:root[data-theme="dreamscape"] .source-pill,
+:root[data-theme="dreamscape"] .searchbox,
+:root[data-theme="dreamscape"] .custom-select-button,
+:root[data-theme="dreamscape"] .tabs button,
+:root[data-theme="dreamscape"] .grid-chip,
+:root[data-theme="dreamscape"] .request-table-info span,
+:root[data-theme="dreamscape"] .request-table-weight button,
+:root[data-theme="dreamscape"] .detail,
+:root[data-theme="dreamscape"] .skillset-tag,
+:root[data-theme="monochrome-legacy"] .admin-button,
+:root[data-theme="monochrome-legacy"] .source-pill,
+:root[data-theme="monochrome-legacy"] .searchbox,
+:root[data-theme="monochrome-legacy"] .custom-select-button,
+:root[data-theme="monochrome-legacy"] .tabs button,
+:root[data-theme="monochrome-legacy"] .grid-chip,
+:root[data-theme="monochrome-legacy"] .request-table-info span,
+:root[data-theme="monochrome-legacy"] .request-table-weight button,
+:root[data-theme="monochrome-legacy"] .detail,
+:root[data-theme="monochrome-legacy"] .skillset-tag,
+:root[data-theme="golden-trophy"] .admin-button,
+:root[data-theme="golden-trophy"] .source-pill,
+:root[data-theme="golden-trophy"] .searchbox,
+:root[data-theme="golden-trophy"] .custom-select-button,
+:root[data-theme="golden-trophy"] .tabs button,
+:root[data-theme="golden-trophy"] .grid-chip,
+:root[data-theme="golden-trophy"] .request-table-info span,
+:root[data-theme="golden-trophy"] .request-table-weight button,
+:root[data-theme="golden-trophy"] .detail,
+:root[data-theme="golden-trophy"] .skillset-tag,
+:root[data-theme="blood-moon"] .admin-button,
+:root[data-theme="blood-moon"] .source-pill,
+:root[data-theme="blood-moon"] .searchbox,
+:root[data-theme="blood-moon"] .custom-select-button,
+:root[data-theme="blood-moon"] .tabs button,
+:root[data-theme="blood-moon"] .grid-chip,
+:root[data-theme="blood-moon"] .request-table-info span,
+:root[data-theme="blood-moon"] .request-table-weight button,
+:root[data-theme="blood-moon"] .detail,
+:root[data-theme="blood-moon"] .skillset-tag {
+  background: color-mix(in srgb, var(--panel-strong) 82%, transparent);
+  border-color: var(--line);
+  color: var(--text);
+}
+
+:root[data-theme="crystal-void"] .grid-card,
+:root[data-theme="crystal-void"] .request-card,
+:root[data-theme="crystal-void"] .admin-action-card,
+:root[data-theme="crystal-void"] .calendar-change-card,
+:root[data-theme="rusted-machine"] .grid-card,
+:root[data-theme="rusted-machine"] .request-card,
+:root[data-theme="rusted-machine"] .admin-action-card,
+:root[data-theme="rusted-machine"] .calendar-change-card,
+:root[data-theme="solar-flare"] .grid-card,
+:root[data-theme="solar-flare"] .request-card,
+:root[data-theme="solar-flare"] .admin-action-card,
+:root[data-theme="solar-flare"] .calendar-change-card,
+:root[data-theme="toxic-core"] .grid-card,
+:root[data-theme="toxic-core"] .request-card,
+:root[data-theme="toxic-core"] .admin-action-card,
+:root[data-theme="toxic-core"] .calendar-change-card,
+:root[data-theme="dreamscape"] .grid-card,
+:root[data-theme="dreamscape"] .request-card,
+:root[data-theme="dreamscape"] .admin-action-card,
+:root[data-theme="dreamscape"] .calendar-change-card,
+:root[data-theme="monochrome-legacy"] .grid-card,
+:root[data-theme="monochrome-legacy"] .request-card,
+:root[data-theme="monochrome-legacy"] .admin-action-card,
+:root[data-theme="monochrome-legacy"] .calendar-change-card,
+:root[data-theme="golden-trophy"] .grid-card,
+:root[data-theme="golden-trophy"] .request-card,
+:root[data-theme="golden-trophy"] .admin-action-card,
+:root[data-theme="golden-trophy"] .calendar-change-card,
+:root[data-theme="blood-moon"] .grid-card,
+:root[data-theme="blood-moon"] .request-card,
+:root[data-theme="blood-moon"] .admin-action-card,
+:root[data-theme="blood-moon"] .calendar-change-card {
+  background: color-mix(in srgb, var(--panel-strong) 92%, black);
+  border-color: var(--line);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.38), 0 0 16px color-mix(in srgb, var(--blue) 12%, transparent);
+}
+
+:root[data-theme="crystal-void"] .grid-actions,
+:root[data-theme="crystal-void"] .desktop-footer-status,
+:root[data-theme="rusted-machine"] .grid-actions,
+:root[data-theme="rusted-machine"] .desktop-footer-status,
+:root[data-theme="solar-flare"] .grid-actions,
+:root[data-theme="solar-flare"] .desktop-footer-status,
+:root[data-theme="toxic-core"] .grid-actions,
+:root[data-theme="toxic-core"] .desktop-footer-status,
+:root[data-theme="dreamscape"] .grid-actions,
+:root[data-theme="dreamscape"] .desktop-footer-status,
+:root[data-theme="monochrome-legacy"] .grid-actions,
+:root[data-theme="monochrome-legacy"] .desktop-footer-status,
+:root[data-theme="golden-trophy"] .grid-actions,
+:root[data-theme="golden-trophy"] .desktop-footer-status,
+:root[data-theme="blood-moon"] .grid-actions,
+:root[data-theme="blood-moon"] .desktop-footer-status {
+  background: color-mix(in srgb, var(--panel-strong) 90%, black);
+  border-color: var(--line);
+}
+
+:root[data-theme="crystal-void"] .eyebrow,
+:root[data-theme="crystal-void"] .filter-title-row button,
+:root[data-theme="crystal-void"] .latest-link,
+:root[data-theme="crystal-void"] .placement-large,
+:root[data-theme="crystal-void"] .demon-name,
+:root[data-theme="rusted-machine"] .eyebrow,
+:root[data-theme="rusted-machine"] .filter-title-row button,
+:root[data-theme="rusted-machine"] .latest-link,
+:root[data-theme="rusted-machine"] .placement-large,
+:root[data-theme="rusted-machine"] .demon-name,
+:root[data-theme="solar-flare"] .eyebrow,
+:root[data-theme="solar-flare"] .filter-title-row button,
+:root[data-theme="solar-flare"] .latest-link,
+:root[data-theme="solar-flare"] .placement-large,
+:root[data-theme="solar-flare"] .demon-name,
+:root[data-theme="toxic-core"] .eyebrow,
+:root[data-theme="toxic-core"] .filter-title-row button,
+:root[data-theme="toxic-core"] .latest-link,
+:root[data-theme="toxic-core"] .placement-large,
+:root[data-theme="toxic-core"] .demon-name,
+:root[data-theme="dreamscape"] .eyebrow,
+:root[data-theme="dreamscape"] .filter-title-row button,
+:root[data-theme="dreamscape"] .latest-link,
+:root[data-theme="dreamscape"] .placement-large,
+:root[data-theme="dreamscape"] .demon-name,
+:root[data-theme="monochrome-legacy"] .eyebrow,
+:root[data-theme="monochrome-legacy"] .filter-title-row button,
+:root[data-theme="monochrome-legacy"] .latest-link,
+:root[data-theme="monochrome-legacy"] .placement-large,
+:root[data-theme="monochrome-legacy"] .demon-name,
+:root[data-theme="golden-trophy"] .eyebrow,
+:root[data-theme="golden-trophy"] .filter-title-row button,
+:root[data-theme="golden-trophy"] .latest-link,
+:root[data-theme="golden-trophy"] .placement-large,
+:root[data-theme="golden-trophy"] .demon-name,
+:root[data-theme="blood-moon"] .eyebrow,
+:root[data-theme="blood-moon"] .filter-title-row button,
+:root[data-theme="blood-moon"] .latest-link,
+:root[data-theme="blood-moon"] .placement-large,
+:root[data-theme="blood-moon"] .demon-name {
+  color: var(--blue);
 }
 
 @media (min-width: 981px) {

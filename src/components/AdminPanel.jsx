@@ -36,7 +36,19 @@ const SKILLSET_CATALOG = [
 ].map(([name, description]) => ({ name, description }));
 
 const SKILLSET_NAMES = SKILLSET_CATALOG.map(skillset => skillset.name);
-const SITE_THEMES = ["Basic", "Cyber Neon", "Dark Ember"];
+const SITE_THEMES = [
+  "Basic",
+  "Cyber Neon",
+  "Dark Ember",
+  "Crystal Void",
+  "Rusted Machine",
+  "Solar Flare",
+  "Toxic Core",
+  "Dreamscape",
+  "Monochrome Legacy",
+  "Golden Trophy",
+  "Blood Moon"
+];
 
 function parseSkillsets(value) {
   return String(value || "")
