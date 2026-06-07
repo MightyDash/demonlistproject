@@ -55,16 +55,22 @@ export function DemonModal({
   const [distributionLoading, setDistributionLoading] = useState(false);
 
   const distribution = useMemo(() => {
-    return skillsetDistribution
-      .map((item, index) => ({
+    const topSkillsets = skillsetDistribution
+      .map(item => ({
         ...item,
-        percentage: Number(item.percentage || 0),
-        count: Number(item.count || 0),
-        color: SKILLSET_COLORS[index % SKILLSET_COLORS.length]
+        count: Number(item.count || 0)
       }))
-      .filter(item => item.name && item.percentage > 0)
+      .filter(item => item.name && item.count > 0)
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
+
+    const visibleTotal = topSkillsets.reduce((sum, item) => sum + item.count, 0);
+
+    return topSkillsets.map((item, index) => ({
+      ...item,
+      percentage: visibleTotal ? Math.round((item.count / visibleTotal) * 1000) / 10 : 0,
+      color: SKILLSET_COLORS[index % SKILLSET_COLORS.length]
+    }));
   }, [skillsetDistribution]);
 
   const donutBackground = useMemo(() => {
