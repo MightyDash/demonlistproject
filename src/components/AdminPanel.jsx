@@ -113,6 +113,7 @@ export function AdminPanel({
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
   const [refreshListToken, setRefreshListToken] = useState("");
   const [skillsetSyncLimit, setSkillsetSyncLimit] = useState(80);
+  const [pendingAdminPreview, setPendingAdminPreview] = useState(null);
 
   const noteManagerDemons = useMemo(() => {
     const query = noteSearch.trim().toLowerCase();
@@ -139,8 +140,26 @@ export function AdminPanel({
     setEditNotFound(false);
     setEditConfirm(false);
     setRemoveConfirm(false);
+    setPendingAdminPreview(null);
     setAdminMessage("");
     setAdminError("");
+  }
+
+  function showAdminPreview(type, title, details, warning) {
+    setAdminMessage("");
+    setAdminError("");
+    setPendingAdminPreview({ type, title, details, warning });
+  }
+
+  function handleConfirmAdminPreview() {
+    const type = pendingAdminPreview?.type;
+    setPendingAdminPreview(null);
+
+    if (type === "addDemon") return handleAddDemon({ skipPreview: true });
+    if (type === "removeDemon") return handleRemoveDemon({ skipPreview: true });
+    if (type === "editDemon") return handleEditDemon({ skipPreview: true });
+    if (type === "refreshList") return handleRefreshList({ skipPreview: true });
+    if (type === "syncGDDLSkillsets") return handleSyncGDDLSkillsets({ skipPreview: true });
   }
 
   function openNoteManager() {
@@ -316,7 +335,7 @@ export function AdminPanel({
     }
   }
 
-  async function handleEditDemon() {
+  async function handleEditDemon({ skipPreview = false } = {}) {
     setAdminMessage("");
     setAdminError("");
 
@@ -342,6 +361,25 @@ export function AdminPanel({
     }
     if (editForm.status === "IN PROGRESS" && (!Number.isInteger(progressPercent) || progressPercent < 0 || progressPercent > 100)) {
       setAdminError("Progress moet een percentage tussen 0 en 100 zijn.");
+      return;
+    }
+
+    if (!skipPreview) {
+      showAdminPreview(
+        "editDemon",
+        `Edit ${editForm.name.trim()}`,
+        [
+          ["Level ID", editFound.id],
+          ["Difficulty", editForm.difficulty.trim()],
+          ["Creator(s)", editForm.creator.trim()],
+          ["Year", year],
+          ["Attempts", attempts],
+          ["Status", editForm.status],
+          ["Progress", editForm.status === "IN PROGRESS" ? `${progressPercent}%` : "Not in progress"],
+          ["Skillsets", editForm.skillsets || "None"]
+        ],
+        "This will update the demon row in the spreadsheet."
+      );
       return;
     }
 
@@ -401,7 +439,7 @@ export function AdminPanel({
     return response.json();
   }
 
-  async function handleAddDemon() {
+  async function handleAddDemon({ skipPreview = false } = {}) {
     setAdminMessage("");
     setAdminError("");
 
@@ -428,6 +466,22 @@ export function AdminPanel({
 
     if (status === "IN PROGRESS" && (!Number.isInteger(progressPercent) || progressPercent < 0 || progressPercent > 100)) {
       setAdminError("Progress moet een percentage tussen 0 en 100 zijn.");
+      return;
+    }
+
+    if (!skipPreview) {
+      showAdminPreview(
+        "addDemon",
+        "Add demon",
+        [
+          ["Level ID", levelId],
+          ["Attempts", attempts],
+          ["Year", year],
+          ["Status", status],
+          ["Progress", status === "IN PROGRESS" ? `${progressPercent}%` : "Completed"]
+        ],
+        "This will fetch the demon and add it to the spreadsheet."
+      );
       return;
     }
 
@@ -466,7 +520,7 @@ export function AdminPanel({
     }
   }
 
-  async function handleRemoveDemon() {
+  async function handleRemoveDemon({ skipPreview = false } = {}) {
     setAdminMessage("");
     setAdminError("");
 
@@ -474,6 +528,16 @@ export function AdminPanel({
 
     if (!levelId) {
       setAdminError("Level ID is verplicht.");
+      return;
+    }
+
+    if (!skipPreview) {
+      showAdminPreview(
+        "removeDemon",
+        "Remove demon",
+        [["Level ID", levelId]],
+        "This cannot be undone from the website. Make sure this is the correct level."
+      );
       return;
     }
 
@@ -503,13 +567,26 @@ export function AdminPanel({
     }
   }
 
-  async function handleRefreshList() {
+  async function handleRefreshList({ skipPreview = false } = {}) {
     setAdminMessage("");
     setAdminError("");
 
     const cleanRefreshToken = String(refreshListToken || "").trim();
     if (!cleanRefreshToken) {
       setAdminError("Refresh List token is verplicht.");
+      return;
+    }
+
+    if (!skipPreview) {
+      showAdminPreview(
+        "refreshList",
+        "Refresh list",
+        [
+          ["Refresh token", "Filled in"],
+          ["Action", "Fetch all tiers and update placements/history"]
+        ],
+        "This is a heavy operation for the spreadsheet. Only continue when you are sure."
+      );
       return;
     }
 
@@ -568,7 +645,7 @@ export function AdminPanel({
     }
   }
 
-  async function handleSyncGDDLSkillsets() {
+  async function handleSyncGDDLSkillsets({ skipPreview = false } = {}) {
     setAdminMessage("");
     setAdminError("");
 
@@ -578,10 +655,19 @@ export function AdminPanel({
       return;
     }
 
-    const confirmed = window.confirm(
-      `GDDL skillsets syncen voor maximaal ${limit} demons met lege skillsets?`
-    );
-    if (!confirmed) return;
+    if (!skipPreview) {
+      showAdminPreview(
+        "syncGDDLSkillsets",
+        "Sync GDDL skillsets",
+        [
+          ["Max demons to check", limit],
+          ["Only empty skillsets", "Yes"],
+          ["Backup before write", "Yes"]
+        ],
+        "This will only fill demons that currently have no skillsets."
+      );
+      return;
+    }
 
     setIsSubmitting(true);
 
@@ -622,6 +708,42 @@ export function AdminPanel({
 
       {adminMessage && <p className="admin-success">{adminMessage}</p>}
       {adminError && <p className="admin-error">{adminError}</p>}
+      {pendingAdminPreview && (
+        <section className="admin-preview-card">
+          <div>
+            <p className="admin-preview-eyebrow">Preview mode</p>
+            <h3>{pendingAdminPreview.title}</h3>
+            <p>{pendingAdminPreview.warning}</p>
+          </div>
+
+          <dl>
+            {pendingAdminPreview.details.map(([label, value]) => (
+              <div key={label}>
+                <dt>{label}</dt>
+                <dd>{value}</dd>
+              </div>
+            ))}
+          </dl>
+
+          <div className="admin-preview-actions">
+            <button
+              className="login-button"
+              onClick={handleConfirmAdminPreview}
+              disabled={isSubmitting}
+              type="button"
+            >
+              {isSubmitting ? "Running..." : "Confirm action"}
+            </button>
+            <button
+              className="close-button"
+              onClick={() => setPendingAdminPreview(null)}
+              type="button"
+            >
+              Cancel
+            </button>
+          </div>
+        </section>
+      )}
 
       <div className="admin-panel-grid">
         <button
