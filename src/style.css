@@ -454,8 +454,35 @@ button {
 }
 
 .version-info-modal h2 {
-  margin: 0 0 14px;
+  margin: 0;
   font-size: 1.35rem;
+}
+
+.version-info-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 0 0 14px;
+  padding-right: 42px;
+}
+
+.version-edit-button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--panel-strong) 78%, transparent);
+  color: var(--blue);
+  cursor: pointer;
+  box-shadow: var(--glow);
+}
+
+.version-edit-button:hover {
+  border-color: var(--blue);
+  color: var(--text);
 }
 
 .version-info-modal ul {
@@ -467,6 +494,100 @@ button {
 
 .version-info-modal li + li {
   margin-top: 8px;
+}
+
+.version-edit-form {
+  display: grid;
+  gap: 14px;
+}
+
+.version-edit-form label {
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.version-edit-input,
+.version-edit-textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--panel-strong) 70%, transparent);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.95rem;
+  letter-spacing: 0;
+  text-transform: none;
+  outline: none;
+}
+
+.version-edit-input {
+  min-height: 44px;
+  padding: 0 12px;
+}
+
+.version-edit-textarea {
+  min-height: 150px;
+  padding: 12px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.version-edit-input:focus,
+.version-edit-textarea:focus {
+  border-color: var(--blue);
+  box-shadow: var(--glow);
+}
+
+.version-edit-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.version-edit-actions button {
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--button-bg);
+  color: var(--text);
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.version-edit-actions button:first-child {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+  border-color: transparent;
+}
+
+.version-edit-actions button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.version-edit-status {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  font-weight: 900;
+}
+
+.version-edit-status.error {
+  border: 1px solid rgba(255, 91, 111, 0.45);
+  background: rgba(255, 91, 111, 0.12);
+  color: #ff8b9b;
+}
+
+.version-edit-status.success {
+  border: 1px solid rgba(72, 222, 128, 0.45);
+  background: rgba(72, 222, 128, 0.12);
+  color: #86efac;
 }
 
 h1 {

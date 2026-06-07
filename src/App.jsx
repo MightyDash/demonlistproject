@@ -18,6 +18,14 @@ const ROUTES = {
   admin: "/admin-panel"
 };
 
+const DEFAULT_SITE_VERSION = "v0.62";
+const DEFAULT_SITE_CHANGELOG = [
+  "Added multiple site themes and theme-aware admin styling.",
+  "Added skillset distribution on demon detail pages.",
+  "Added safer admin tools with previews before heavy actions.",
+  "Improved the desktop demon list, request page and list changes layout."
+];
+
 function normalizeRoute(pathname) {
   const path = pathname.replace(/\/+$/, "") || ROUTES.home;
   return Object.values(ROUTES).includes(path) ? path : ROUTES.home;
@@ -49,6 +57,8 @@ export default function App() {
   const [apiLatestDemon, setApiLatestDemon] = useState("");
   const [apiNextDemon, setApiNextDemon] = useState(null);
   const [siteTheme, setSiteTheme] = useState(getInitialSiteTheme);
+  const [siteVersion, setSiteVersion] = useState(DEFAULT_SITE_VERSION);
+  const [siteChangelog, setSiteChangelog] = useState(DEFAULT_SITE_CHANGELOG);
   const [viewMode, setViewMode] = useState("grid");
   const [requestView, setRequestView] = useState(false);
   const [historyView, setHistoryView] = useState(false);
@@ -145,6 +155,8 @@ export default function App() {
 
       const data = await response.json();
       if (data.siteTheme) setSiteTheme(data.siteTheme);
+      if (data.siteVersion) setSiteVersion(data.siteVersion);
+      if (Array.isArray(data.siteChangelog)) setSiteChangelog(data.siteChangelog);
       setHistoryChanges(data.changes || []);
     } catch (error) {
       setHistoryError("Could not load recent changes.");
@@ -251,6 +263,8 @@ export default function App() {
         setApiLatestDemon(json.latestDemon || "");
         setApiNextDemon(json.nextDemon || null);
         setSiteTheme(json.siteTheme || "Basic");
+        setSiteVersion(json.siteVersion || DEFAULT_SITE_VERSION);
+        setSiteChangelog(Array.isArray(json.siteChangelog) ? json.siteChangelog : DEFAULT_SITE_CHANGELOG);
         setDemons(rows.map(normalizeDemon));
         setSource("live");
       } catch (error) {
@@ -336,6 +350,39 @@ export default function App() {
       );
 
       return { success: true, message: data.message || "Note saved." };
+    } catch {
+      return { success: false, message: "Kon geen verbinding maken." };
+    }
+  }
+
+  async function saveSiteChangelog(version, changes) {
+    const adminUrl = import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL;
+    const token = localStorage.getItem("admin_token");
+
+    if (!adminUrl || !token) {
+      return { success: false, message: "Admin connection is not configured." };
+    }
+
+    try {
+      const response = await fetch(adminUrl, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "setSiteChangelog",
+          token,
+          version,
+          changes
+        })
+      });
+
+      const data = await response.json();
+      if (!data.success) {
+        return { success: false, message: data.message || "Could not save changelog." };
+      }
+
+      setSiteVersion(data.version || version);
+      setSiteChangelog(Array.isArray(data.changes) ? data.changes : changes);
+
+      return { success: true, message: data.message || "Changelog saved." };
     } catch {
       return { success: false, message: "Kon geen verbinding maken." };
     }
@@ -806,6 +853,9 @@ async function handleSaveRequestStatusChanges() {
           onOpenAdmin={() => navigateTo(ROUTES.admin)}
           onCloseAdmin={() => navigateTo(ROUTES.home)}
           onOpenLogout={() => setShowLogoutConfirm(true)}
+          siteVersion={siteVersion}
+          siteChangelog={siteChangelog}
+          onSaveChangelog={saveSiteChangelog}
         />
 
       {showLogoutConfirm && (
