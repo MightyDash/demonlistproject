@@ -212,7 +212,6 @@ export function DemonModal({
               }}
             />
             <div className="modal-cover-shade" />
-            <div className="modal-play-button" aria-hidden="true" />
           </div>
         </div>
 
