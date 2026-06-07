@@ -110,6 +110,7 @@ export function AdminPanel({
   const [adminError, setAdminError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [themeDraft, setThemeDraft] = useState(siteTheme);
+  const [themeMenuOpen, setThemeMenuOpen] = useState(false);
   const [refreshListToken, setRefreshListToken] = useState("");
   const [skillsetSyncLimit, setSkillsetSyncLimit] = useState(80);
 
@@ -558,6 +559,7 @@ export function AdminPanel({
 
       setAdminMessage(data.message || "Theme updated.");
       if (onThemeChanged) onThemeChanged(data.theme || themeDraft);
+      setThemeMenuOpen(false);
       setShowThemeForm(false);
     } catch (error) {
       setAdminError(error.message || "Kon geen verbinding maken met Apps Script.");
@@ -702,6 +704,7 @@ export function AdminPanel({
           type="button"
           onClick={() => {
             setShowThemeForm(open => !open);
+            setThemeMenuOpen(false);
             setThemeDraft(siteTheme);
             setShowAddForm(false);
             setShowRemoveForm(false);
@@ -983,14 +986,39 @@ export function AdminPanel({
 
           <label>
             Theme
-            <select
-              value={themeDraft}
-              onChange={e => setThemeDraft(e.target.value)}
-            >
-              {SITE_THEMES.map(theme => (
-                <option value={theme} key={theme}>{theme}</option>
-              ))}
-            </select>
+            <div className="theme-picker">
+              <button
+                className="theme-picker-button"
+                type="button"
+                onClick={() => setThemeMenuOpen(open => !open)}
+                aria-haspopup="listbox"
+                aria-expanded={themeMenuOpen}
+              >
+                <span>{themeDraft}</span>
+                <span className="theme-picker-chevron">v</span>
+              </button>
+
+              {themeMenuOpen && (
+                <div className="theme-picker-menu" role="listbox" aria-label="Site theme">
+                  {SITE_THEMES.map(theme => (
+                    <button
+                      className={`theme-picker-option ${themeDraft === theme ? "active" : ""}`}
+                      key={theme}
+                      type="button"
+                      role="option"
+                      aria-selected={themeDraft === theme}
+                      onClick={() => {
+                        setThemeDraft(theme);
+                        setThemeMenuOpen(false);
+                      }}
+                    >
+                      <span>{theme}</span>
+                      {themeDraft === theme && <strong>Selected</strong>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </label>
 
           <div className="admin-form-actions">
@@ -1003,7 +1031,14 @@ export function AdminPanel({
               {isSubmitting ? "Saving..." : "Save Theme"}
             </button>
 
-            <button className="close-button" onClick={() => setShowThemeForm(false)} type="button">
+            <button
+              className="close-button"
+              onClick={() => {
+                setThemeMenuOpen(false);
+                setShowThemeForm(false);
+              }}
+              type="button"
+            >
               Cancel
             </button>
           </div>
