@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { BarChart3, Bookmark, Grid3X3, Info, List, MoreHorizontal, Search, Target, Trophy, X } from "lucide-react";
 import { StatCard } from "./StatCard.jsx";
-import { difficultyClass, formatNumber, isInProgressDemon } from "../demonUtils.js";
+import { difficultyClass, formatNumber, formatTier, isInProgressDemon } from "../demonUtils.js";
 
 export function DemonListContent({
   stats,
