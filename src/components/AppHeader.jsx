@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FileClock, Info, LogIn, LogOut, Pencil, Radio, Shield, X } from "lucide-react";
+import { Award, FileClock, Info, LogIn, LogOut, Pencil, Radio, Shield, X } from "lucide-react";
 
 const DEFAULT_SITE_VERSION = "v0.62";
 const DEFAULT_VERSION_CHANGES = [
@@ -19,6 +19,7 @@ export function AppHeader({
   onOpenHistory,
   onOpenLogin,
   onOpenAdmin,
+  onOpenMilestones,
   onCloseAdmin,
   onOpenLogout,
   siteVersion,
@@ -245,6 +246,13 @@ export function AppHeader({
               <button className="admin-button panel-button" onClick={onOpenHistory} type="button">
                 <FileClock size={16} />
                 {historyView ? "Back to list" : "List Changes"}
+              </button>
+            )}
+
+            {!adminView && !historyView && (
+              <button className="admin-button panel-button" onClick={onOpenMilestones} type="button">
+                <Award size={16} />
+                Milestones
               </button>
             )}
 

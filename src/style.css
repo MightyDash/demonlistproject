@@ -496,6 +496,106 @@ button {
   margin-top: 8px;
 }
 
+.milestones-modal {
+  width: min(720px, calc(100vw - 32px));
+  max-height: min(760px, calc(100vh - 48px));
+  overflow: auto;
+}
+
+.milestones-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 42px 18px 0;
+}
+
+.milestones-icon {
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 50px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--blue) 16%, transparent);
+  color: var(--blue);
+  box-shadow: var(--glow);
+  flex: 0 0 auto;
+}
+
+.milestones-header h2 {
+  margin: 0;
+  font-size: 1.45rem;
+}
+
+.milestones-header p {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
+.milestones-sections {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(240px, 0.8fr);
+  gap: 18px;
+}
+
+.milestones-sections h3 {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.milestone-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.milestone-list li {
+  display: grid;
+  grid-template-columns: 70px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--panel-strong) 62%, transparent);
+}
+
+.milestone-list li.locked {
+  opacity: 0.68;
+}
+
+.milestone-ordinal {
+  color: var(--blue);
+  font-weight: 900;
+}
+
+.milestone-name {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text);
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.milestone-placement {
+  padding: 5px 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.18);
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+
 .version-edit-form {
   display: grid;
   gap: 14px;
@@ -4186,6 +4286,10 @@ h1 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .milestones-sections {
+    grid-template-columns: 1fr;
+  }
+
   .controls {
     grid-template-columns: 1fr;
   }
@@ -4330,6 +4434,21 @@ h1 {
 
   .stats-grid {
     grid-template-columns: 1fr;
+  }
+
+  .milestones-header {
+    align-items: flex-start;
+  }
+
+  .milestone-list li,
+  .honorable-list li {
+    grid-template-columns: 58px minmax(0, 1fr);
+  }
+
+  .milestone-placement,
+  .honorable-list .milestone-placement {
+    grid-column: 2;
+    justify-self: start;
   }
 
   .request-panel,

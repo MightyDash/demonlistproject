@@ -7,6 +7,7 @@ import { DemonListContent } from "./components/DemonListContent.jsx";
 import { DemonModal } from "./components/DemonModal.jsx";
 import { LoginModal } from "./components/LoginModal.jsx";
 import { LogoutConfirm } from "./components/LogoutConfirm.jsx";
+import { MilestonesModal } from "./components/MilestonesModal.jsx";
 import { RecentChanges } from "./components/RecentChanges.jsx";
 import { RequestPanel } from "./components/RequestPanel.jsx";
 import { isInProgressDemon, normalizeDemon, placementNumber, segmentForPlacement } from "./demonUtils.js";
@@ -79,6 +80,7 @@ export default function App() {
   const [requestMessage, setRequestMessage] = useState("");
   const [requestError, setRequestError] = useState("");
   const [showLogin, setShowLogin] = useState(false);
+  const [showMilestones, setShowMilestones] = useState(false);
   const [historyChanges, setHistoryChanges] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState("");
@@ -902,6 +904,7 @@ async function handleSaveRequestStatusChanges() {
           }}
           onOpenLogin={() => setShowLogin(true)}
           onOpenAdmin={() => navigateTo(ROUTES.admin)}
+          onOpenMilestones={() => setShowMilestones(true)}
           onCloseAdmin={() => navigateTo(ROUTES.home)}
           onOpenLogout={() => setShowLogoutConfirm(true)}
           siteVersion={siteVersion}
@@ -1014,6 +1017,13 @@ async function handleSaveRequestStatusChanges() {
             setShowLogin(false);
             setLoginError("");
           }}
+        />
+      )}
+
+      {showMilestones && (
+        <MilestonesModal
+          demons={demons}
+          onClose={() => setShowMilestones(false)}
         />
       )}
     </div>
