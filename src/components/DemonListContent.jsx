@@ -1,13 +1,10 @@
 import React, { useState } from "react";
 import { BarChart3, Bookmark, Grid3X3, Info, List, MoreHorizontal, Search, Target, Trophy, X } from "lucide-react";
 import { StatCard } from "./StatCard.jsx";
-import { difficultyClass, formatNumber, formatTier } from "../demonUtils.js";
+import { difficultyClass, formatNumber, isInProgressDemon } from "../demonUtils.js";
 
 export function DemonListContent({
   stats,
-  hardestBySkillset,
-  skillsetOpen,
-  setSkillsetOpen,
   setSelected,
   query,
   setQuery,
@@ -27,10 +24,15 @@ export function DemonListContent({
   hasMoreDemons,
   onLoadMore,
   apiLatestDemon,
-  onLatestDemonClick
+  onLatestDemonClick,
+  isAdmin,
+  futureListIds = [],
+  onToggleFutureListDemon
 }) {
   const [showProgressInfo, setShowProgressInfo] = useState(false);
   const isProgressView = yearView === "progress";
+  const isFutureView = yearView === "future";
+  const futureIds = new Set(futureListIds.map(id => String(id)));
   const progressInfoText = "It is not yet clear whether these demons will get beaten in the future. I am certain that some will, but I still have my doubts about others. This is just a reminder to myself";
   const yearOptions = [
     ["all", "2026"],
@@ -41,7 +43,8 @@ export function DemonListContent({
     ["2021", "2021"],
     ["2020", "2020"],
     ["2019", "2019"],
-    ["progress", "In Progress"]
+    ["progress", "In Progress"],
+    ["future", "Future List"]
   ];
 
   function resetFilters() {
@@ -67,39 +70,7 @@ export function DemonListContent({
               <StatCard icon={<BarChart3 />} label="Hardest Demon" value={stats.hardest?.name || "Unknown"} detail={stats.hardest?.difficulty || ""} highlight />
             </section>
     
-            {Object.keys(hardestBySkillset).length > 0 && (
-              <section className="panel skillset-overview">
-                <button
-                  className="skillset-header"
-                  onClick={() => setSkillsetOpen(open => !open)}
-                  type="button"
-                >
-                  <span>Hardest demon by skillset</span>
-                  <span className={`skillset-arrow ${skillsetOpen ? "open" : ""}`}>⌄</span>
-                </button>
-    
-                <div className={`skillset-content ${skillsetOpen ? "open" : ""}`}>
-                  <div className="skillset-overview-grid">
-                    {Object.entries(hardestBySkillset)
-                      .sort(([a], [b]) => a.localeCompare(b))
-                      .map(([skill, demon]) => (
-                        <button
-                          key={skill}
-                          className="skillset-overview-card"
-                          type="button"
-                          onClick={() => setSelected(demon)}
-                        >
-                          <span>{skill}</span>
-                          <strong>{demon.name}</strong>
-                          <small>{demon.placement} • Tier {formatTier(demon.tier)}</small>
-                        </button>
-                      ))}
-                  </div>
-                </div>
-              </section>
-            )}
-    
-            <div className={`desktop-list-shell ${isProgressView ? "progress-shell" : ""}`}>
+            <div className={`desktop-list-shell ${isProgressView || isFutureView ? "progress-shell" : ""}`}>
             <section className="panel controls">
               <div className="filter-title-row">
                 <strong>Filters</strong>
@@ -208,13 +179,13 @@ export function DemonListContent({
               {filtered.length === totalCount
                 ? `${totalCount} demons shown`
                 : `${filtered.length} of ${totalCount} demons shown`}
-              {isProgressView && (
+              {(isProgressView || isFutureView) && (
                 <span className="progress-info-wrap">
                   <button
                     className="progress-info-button"
                     onClick={() => setShowProgressInfo(true)}
                     type="button"
-                    aria-label="In progress info"
+                    aria-label={isFutureView ? "Future list info" : "In progress info"}
                   >
                     <Info size={15} />
                   </button>
@@ -241,7 +212,11 @@ export function DemonListContent({
                 >
                   <X size={20} />
                 </button>
-                <p>{progressInfoText}</p>
+                <p>
+                  {isFutureView
+                    ? "Future List combines your completed 2026 demons with selected in-progress demons you want to beat next."
+                    : progressInfoText}
+                </p>
               </section>
             </div>
           )}
@@ -259,8 +234,9 @@ export function DemonListContent({
                   </div>
     
                   {filtered.map(demon => {
-                    const isInProgress = String(demon.status || "").toUpperCase().trim() === "IN PROGRESS";
+                    const isInProgress = isInProgressDemon(demon);
                     const progressPercent = Math.max(0, Math.min(100, Number(demon.progressPercent || 0)));
+                    const isFuturePick = futureIds.has(String(demon.id));
 
                     return (
                     <div
@@ -275,6 +251,7 @@ export function DemonListContent({
                       <div className="name-cell">
                         <span className="demon-name">{demon.name}</span>
                         <span className="mobile-meta">{demon.creator}</span>
+                        {isFuturePick && <span className="future-list-badge">Future List</span>}
                       </div>
                       <div>{demon.creator}</div>
                       <div className="tier">{formatTier(demon.tier)}</div>
@@ -292,8 +269,9 @@ export function DemonListContent({
               ) : (
                 <div className="demon-grid">
                   {filtered.map(demon => {
-                    const isInProgress = String(demon.status || "").toUpperCase().trim() === "IN PROGRESS";
+                    const isInProgress = isInProgressDemon(demon);
                     const progressPercent = Math.max(0, Math.min(100, Number(demon.progressPercent || 0)));
+                    const isFuturePick = futureIds.has(String(demon.id));
 
                     return (
                     <article
@@ -325,6 +303,17 @@ export function DemonListContent({
 
                         {isInProgress ? (
                           <>
+                            {isAdmin && (
+                              <label className="future-list-toggle" onClick={event => event.stopPropagation()}>
+                                <input
+                                  type="checkbox"
+                                  checked={isFuturePick}
+                                  onChange={() => onToggleFutureListDemon?.(demon)}
+                                />
+                                <span>Future List</span>
+                              </label>
+                            )}
+                            {!isAdmin && isFuturePick && <span className="future-list-badge">Future List</span>}
                             <span className={`difficulty ${difficultyClass(demon.difficulty)}`}>
                               {demon.difficulty || "Unknown"}
                             </span>

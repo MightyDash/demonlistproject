@@ -7,7 +7,6 @@ import {
   Clock3,
   ExternalLink,
   FileText,
-  Gamepad2,
   Heart,
   Save,
   Share2,
@@ -292,18 +291,6 @@ export function DemonModal({
               </section>
             </aside>
 
-            {demon.skillsets?.length > 0 && (
-            <section className="modal-info-card skillsets">
-              <h3><Gamepad2 size={22} /> Skillsets</h3>
-              <div className="skillset-list">
-                {demon.skillsets.map(skill => (
-                  <span key={skill} className="skillset-tag">
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </section>
-            )}
           </div>
         </div>
       </article>

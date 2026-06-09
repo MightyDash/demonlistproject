@@ -3,39 +3,15 @@ import {
   ArrowRight,
   Download,
   FileText,
-  Gamepad2,
   Inbox,
   Paintbrush,
   Pencil,
   Plus,
   RefreshCw,
+  RotateCcw,
   Trash2
 } from "lucide-react";
 
-const SKILLSET_CATALOG = [
-  ["Cube", "This level has cube sections that make up a large portion of its difficulty."],
-  ["Ship", "This level has ship sections that make up a large portion of its difficulty."],
-  ["Ball", "This level has ball sections that make up a large portion of its difficulty."],
-  ["UFO", "This level has UFO sections that make up a large portion of its difficulty."],
-  ["Wave", "This level has wave sections that make up a large portion of its difficulty."],
-  ["Robot", "This level has robot sections that make up a large portion of its difficulty."],
-  ["Spider", "This level has spider sections that make up a large portion of its difficulty."],
-  ["Nerve Control", "This level tests your consistency and ability to handle stress near the end of the level."],
-  ["Gimmicky", "This level primarily focuses on developing an experimental, unorthodox gameplay type."],
-  ["Memory", "This level requires remembering a complex path to complete, usually with several fakes, potential routes, and/or visual obscurity."],
-  ["Learny", "This level needs a significant time investment in order to understand its complex/unintuitive gameplay."],
-  ["Duals", "This level has duals that make up a large portion of its difficulty. Generally refers to asymmetrical duals."],
-  ["Fast-Paced", "This level has fast-moving sections (3x or 4x speed) for the majority of the level."],
-  ["Chokepoints", "This level contains parts with very condensed difficulty in relation to the rest of the level."],
-  ["High CPS", "This level has several sections that require very fast (usually controlled) inputs."],
-  ["Timings", "This level tests your ability to perform many very precise inputs."],
-  ["Overall", "This level has no specific skillset it tests, instead drawing on multiple skillsets in smaller proportion for its difficulty."],
-  ["Slow-Paced", "This level has slower-moving sections (0.5x) for a large part of the level."],
-  ["Swing", "This level has swing copter sections that make up a large portion of its difficulty."],
-  ["Flow", "This level has many dynamic gameplay transitions throughout the level, forming a smooth and flowy type of gameplay."]
-].map(([name, description]) => ({ name, description }));
-
-const SKILLSET_NAMES = SKILLSET_CATALOG.map(skillset => skillset.name);
 const SITE_THEMES = [
   "Basic",
   "Cyber Neon",
@@ -49,13 +25,6 @@ const SITE_THEMES = [
   "Golden Trophy",
   "Blood Moon"
 ];
-
-function parseSkillsets(value) {
-  return String(value || "")
-    .split(",")
-    .map(item => item.trim())
-    .filter(Boolean);
-}
 
 export function AdminPanel({
   onBack,
@@ -72,7 +41,6 @@ export function AdminPanel({
   const [showEditForm, setShowEditForm] = useState(false);
   const [showThemeForm, setShowThemeForm] = useState(false);
   const [showRefreshTokenForm, setShowRefreshTokenForm] = useState(false);
-  const [showSkillsetSyncForm, setShowSkillsetSyncForm] = useState(false);
   const [showNoteManager, setShowNoteManager] = useState(false);
   const [noteSearch, setNoteSearch] = useState("");
   const [noteDrafts, setNoteDrafts] = useState({});
@@ -99,12 +67,10 @@ export function AdminPanel({
     creator: "",
     year: "",
     attempts: "",
-    skillsets: "",
     status: "COMPLETED",
     progressPercent: ""
   });
   const [editConfirm, setEditConfirm] = useState(false);
-  const [draggingSkillset, setDraggingSkillset] = useState("");
 
   const [adminMessage, setAdminMessage] = useState("");
   const [adminError, setAdminError] = useState("");
@@ -112,7 +78,6 @@ export function AdminPanel({
   const [themeDraft, setThemeDraft] = useState(siteTheme);
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
   const [refreshListToken, setRefreshListToken] = useState("");
-  const [skillsetSyncLimit, setSkillsetSyncLimit] = useState(80);
   const [pendingAdminPreview, setPendingAdminPreview] = useState(null);
 
   const noteManagerDemons = useMemo(() => {
@@ -134,7 +99,6 @@ export function AdminPanel({
     setShowEditForm(false);
     setShowThemeForm(false);
     setShowRefreshTokenForm(false);
-    setShowSkillsetSyncForm(false);
     setShowNoteManager(false);
     setEditFound(null);
     setEditNotFound(false);
@@ -159,7 +123,7 @@ export function AdminPanel({
     if (type === "removeDemon") return handleRemoveDemon({ skipPreview: true });
     if (type === "editDemon") return handleEditDemon({ skipPreview: true });
     if (type === "refreshList") return handleRefreshList({ skipPreview: true });
-    if (type === "syncGDDLSkillsets") return handleSyncGDDLSkillsets({ skipPreview: true });
+    if (type === "revertRefresh") return handleRevertRefresh({ skipPreview: true });
   }
 
   function openNoteManager() {
@@ -245,54 +209,6 @@ export function AdminPanel({
     }
   }
 
-  function selectedSkillsets() {
-    return parseSkillsets(editForm.skillsets);
-  }
-
-  function setSelectedSkillsets(skillsets) {
-    const cleanSkillsets = skillsets.filter((skillset, index) =>
-      skillset && skillsets.indexOf(skillset) === index
-    );
-
-    setEditForm({
-      ...editForm,
-      skillsets: cleanSkillsets.join(", ")
-    });
-  }
-
-  function addSkillset(skillset) {
-    if (!SKILLSET_NAMES.includes(skillset)) return;
-    const current = selectedSkillsets();
-    if (current.includes(skillset)) return;
-    setSelectedSkillsets([...current, skillset]);
-  }
-
-  function removeSkillset(skillset) {
-    setSelectedSkillsets(selectedSkillsets().filter(item => item !== skillset));
-  }
-
-  function toggleSkillset(skillset) {
-    const current = selectedSkillsets();
-    if (current.includes(skillset)) {
-      removeSkillset(skillset);
-    } else {
-      addSkillset(skillset);
-    }
-  }
-
-  function createSkillsetDragImage(skillset) {
-    const dragImage = document.createElement("div");
-    dragImage.textContent = skillset;
-    dragImage.className = "skillset-drag-preview";
-    document.body.appendChild(dragImage);
-
-    window.setTimeout(() => {
-      dragImage.remove();
-    }, 0);
-
-    return dragImage;
-  }
-
   async function handleSearchEdit() {
     setAdminMessage("");
     setAdminError("");
@@ -320,9 +236,6 @@ export function AdminPanel({
         creator: data.demon.creator || "",
         year: String(data.demon.year || ""),
         attempts: String(data.demon.attempts || ""),
-        skillsets: Array.isArray(data.demon.skillsets)
-          ? data.demon.skillsets.join(", ")
-          : (data.demon.skillsets || ""),
         status: data.demon.status || "COMPLETED",
         progressPercent: data.demon.progressPercent === undefined || data.demon.progressPercent === null
           ? ""
@@ -375,8 +288,7 @@ export function AdminPanel({
           ["Year", year],
           ["Attempts", attempts],
           ["Status", editForm.status],
-          ["Progress", editForm.status === "IN PROGRESS" ? `${progressPercent}%` : "Not in progress"],
-          ["Skillsets", editForm.skillsets || "None"]
+          ["Progress", editForm.status === "IN PROGRESS" ? `${progressPercent}%` : "Not in progress"]
         ],
         "This will update the demon row in the spreadsheet."
       );
@@ -393,7 +305,6 @@ export function AdminPanel({
         creator: editForm.creator.trim(),
         year,
         attempts,
-        skillsets: editForm.skillsets,
         status: editForm.status,
         progressPercent: editForm.status === "IN PROGRESS" ? progressPercent : ""
       });
@@ -618,6 +529,42 @@ export function AdminPanel({
     }
   }
 
+  async function handleRevertRefresh({ skipPreview = false } = {}) {
+    setAdminMessage("");
+    setAdminError("");
+
+    if (!skipPreview) {
+      showAdminPreview(
+        "revertRefresh",
+        "Revert refresh",
+        [
+          ["Action", "Restore latest pre-refresh backup"],
+          ["Applies to", "Refresh List or Update All backups"]
+        ],
+        "This replaces the current demon rows with the latest refresh backup. Only continue if the latest refresh/update was wrong."
+      );
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const data = await sendAdminRequest({ action: "revertRefresh" });
+
+      if (!data.success) {
+        setAdminError(data.message || "Refresh terugzetten mislukt.");
+        return;
+      }
+
+      setAdminMessage(data.message || "Refresh teruggezet.");
+      if (onDataChanged) onDataChanged();
+    } catch (error) {
+      setAdminError(error.message || "Kon geen verbinding maken met Apps Script.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   async function handleSaveTheme() {
     setAdminMessage("");
     setAdminError("");
@@ -638,53 +585,6 @@ export function AdminPanel({
       if (onThemeChanged) onThemeChanged(data.theme || themeDraft);
       setThemeMenuOpen(false);
       setShowThemeForm(false);
-    } catch (error) {
-      setAdminError(error.message || "Kon geen verbinding maken met Apps Script.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  async function handleSyncGDDLSkillsets({ skipPreview = false } = {}) {
-    setAdminMessage("");
-    setAdminError("");
-
-    const limit = Number(skillsetSyncLimit);
-    if (!Number.isInteger(limit) || limit < 1 || limit > 200) {
-      setAdminError("Limit moet tussen 1 en 200 liggen.");
-      return;
-    }
-
-    if (!skipPreview) {
-      showAdminPreview(
-        "syncGDDLSkillsets",
-        "Sync GDDL skillsets",
-        [
-          ["Max demons to check", limit],
-          ["Only empty skillsets", "Yes"],
-          ["Backup before write", "Yes"]
-        ],
-        "This will only fill demons that currently have no skillsets."
-      );
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      const data = await sendAdminRequest({
-        action: "syncGDDLSkillsets",
-        limit
-      });
-
-      if (!data.success) {
-        setAdminError(data.message || "GDDL skillsets syncen mislukt.");
-        return;
-      }
-
-      setAdminMessage(data.message || "GDDL skillsets synced.");
-      setShowSkillsetSyncForm(false);
-      if (onDataChanged) onDataChanged();
     } catch (error) {
       setAdminError(error.message || "Kon geen verbinding maken met Apps Script.");
     } finally {
@@ -755,7 +655,6 @@ export function AdminPanel({
             setShowEditForm(false);
             setShowThemeForm(false);
             setShowRefreshTokenForm(false);
-            setShowSkillsetSyncForm(false);
             setShowNoteManager(false);
             setEditFound(null);
             setEditNotFound(false);
@@ -780,7 +679,6 @@ export function AdminPanel({
             setShowEditForm(false);
             setShowThemeForm(false);
             setShowRefreshTokenForm(false);
-            setShowSkillsetSyncForm(false);
             setShowNoteManager(false);
             setEditFound(null);
             setEditNotFound(false);
@@ -805,7 +703,6 @@ export function AdminPanel({
             setShowRemoveForm(false);
             setShowThemeForm(false);
             setShowRefreshTokenForm(false);
-            setShowSkillsetSyncForm(false);
             setShowNoteManager(false);
             setEditFound(null);
             setEditNotFound(false);
@@ -832,7 +729,6 @@ export function AdminPanel({
             setShowRemoveForm(false);
             setShowEditForm(false);
             setShowRefreshTokenForm(false);
-            setShowSkillsetSyncForm(false);
             setShowNoteManager(false);
             setEditFound(null);
             setEditNotFound(false);
@@ -857,7 +753,6 @@ export function AdminPanel({
             setShowRemoveForm(false);
             setShowEditForm(false);
             setShowThemeForm(false);
-            setShowSkillsetSyncForm(false);
             setShowNoteManager(false);
             setEditFound(null);
             setEditNotFound(false);
@@ -877,26 +772,12 @@ export function AdminPanel({
         <button
           className="admin-action-card"
           type="button"
-          onClick={() => {
-            setShowSkillsetSyncForm(open => !open);
-            setShowAddForm(false);
-            setShowRemoveForm(false);
-            setShowEditForm(false);
-            setShowThemeForm(false);
-            setShowRefreshTokenForm(false);
-            setShowNoteManager(false);
-            setEditFound(null);
-            setEditNotFound(false);
-            setEditConfirm(false);
-            setRemoveConfirm(false);
-            setAdminMessage("");
-            setAdminError("");
-          }}
+          onClick={() => handleRevertRefresh()}
           disabled={isSubmitting}
         >
-          <span className="admin-action-icon skillsets"><Gamepad2 size={24} /></span>
-          <strong>Sync GDDL Skillsets</strong>
-          <span>Vul lege skillsets automatisch aan met GDDL tags.</span>
+          <span className="admin-action-icon revert"><RotateCcw size={24} /></span>
+          <strong>Revert Refresh</strong>
+          <span>Zet de laatste Refresh List of Update All backup terug.</span>
           <ArrowRight className="admin-action-arrow" size={22} />
         </button>
 
@@ -1049,49 +930,6 @@ export function AdminPanel({
               onClick={() => {
                 setShowRefreshTokenForm(false);
                 setRefreshListToken("");
-                setAdminError("");
-              }}
-              type="button"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
-
-      {showSkillsetSyncForm && (
-        <div className="admin-form">
-          <h3>Sync GDDL Skillsets</h3>
-          <p className="admin-form-note">
-            Fills only demons that currently have no skillsets. GDDL votes are cached, and the sheet is backed up before changes are written.
-          </p>
-
-          <label>
-            Max demons to check
-            <input
-              type="number"
-              min="1"
-              max="200"
-              value={skillsetSyncLimit}
-              onChange={event => setSkillsetSyncLimit(event.target.value)}
-              placeholder="Bijv. 80"
-            />
-          </label>
-
-          <div className="admin-form-actions">
-            <button
-              className="login-button"
-              onClick={handleSyncGDDLSkillsets}
-              disabled={isSubmitting}
-              type="button"
-            >
-              {isSubmitting ? "Syncing..." : "Sync Skillsets"}
-            </button>
-
-            <button
-              className="close-button"
-              onClick={() => {
-                setShowSkillsetSyncForm(false);
                 setAdminError("");
               }}
               type="button"
@@ -1366,109 +1204,6 @@ export function AdminPanel({
                 <span className="edit-found-id">ID: {editFound.id}</span>
               </div>
 
-              {(() => {
-                const currentSkillsets = selectedSkillsets();
-                const availableSkillsets = SKILLSET_CATALOG.filter(
-                  skillset => !currentSkillsets.includes(skillset.name)
-                );
-
-                return (
-                  <div className="skillset-picker">
-                    <div className="skillset-picker-header">
-                      <div>
-                        <span>Skillsets</span>
-                        <strong>Drag skillsets to this demon</strong>
-                      </div>
-                      <small>{currentSkillsets.length} selected</small>
-                    </div>
-
-                    <div className="skillset-drag-layout">
-                      <div className="skillset-bank">
-                        <span className="skillset-picker-label">Available</span>
-                        <div className="skillset-chip-grid">
-                          {availableSkillsets.map(skillset => (
-                            <button
-                              className="skillset-choice"
-                              key={skillset.name}
-                              type="button"
-                              draggable
-                              onClick={() => addSkillset(skillset.name)}
-                              onDragStart={event => {
-                                event.dataTransfer.setData("text/plain", skillset.name);
-                                event.dataTransfer.effectAllowed = "copy";
-                                event.dataTransfer.setDragImage(
-                                  createSkillsetDragImage(skillset.name),
-                                  12,
-                                  12
-                                );
-                                setDraggingSkillset(skillset.name);
-                              }}
-                              onDragEnd={() => {
-                                setDraggingSkillset("");
-                              }}
-                            >
-                              {skillset.name}
-                              <span className="skillset-tooltip">{skillset.description}</span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div
-                        className={`skillset-drop-zone ${draggingSkillset ? "dragging" : ""}`}
-                        onDragOver={event => {
-                          event.preventDefault();
-                          event.dataTransfer.dropEffect = "copy";
-                        }}
-                        onDragEnter={event => {
-                          event.preventDefault();
-                        }}
-                        onDrop={event => {
-                          event.preventDefault();
-                          addSkillset(event.dataTransfer.getData("text/plain"));
-                          setDraggingSkillset("");
-                        }}
-                      >
-                        <span className="skillset-picker-label">Selected for {editFound.name}</span>
-                        {currentSkillsets.length > 0 ? (
-                          <div className="skillset-selected-list">
-                            {currentSkillsets.map(skillset => (
-                              <button
-                                className="skillset-selected-chip"
-                                key={skillset}
-                                type="button"
-                                onClick={() => removeSkillset(skillset)}
-                              >
-                                {skillset}
-                                <span>Remove</span>
-                              </button>
-                            ))}
-                          </div>
-                        ) : (
-                          <p>Drop skillsets here or click available skillsets to add them.</p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="skillset-mobile-checks">
-                      {SKILLSET_CATALOG.map(skillset => (
-                        <label key={skillset.name}>
-                          <input
-                            type="checkbox"
-                            checked={currentSkillsets.includes(skillset.name)}
-                            onChange={() => toggleSkillset(skillset.name)}
-                          />
-                          <span>
-                            <strong>{skillset.name}</strong>
-                            <small>{skillset.description}</small>
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })()}
-
               <div className="edit-fields-grid">
                 <label>
                   Naam
@@ -1549,10 +1284,6 @@ export function AdminPanel({
                   </label>
                 )}
 
-                <label className="edit-field-full skillset-hidden-field">
-                  Skillsets
-                  <input value={editForm.skillsets} readOnly />
-                </label>
               </div>
 
               <div className="admin-form-actions" style={{ marginTop: "8px" }}>

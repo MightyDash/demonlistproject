@@ -14,10 +14,6 @@ export function normalizeDemon(row, index) {
     tier: Number(row.tier ?? row.Tier ?? 0),
     tierChange: Number(row.tierChange ?? row["Tier +/-"] ?? row.tier_change ?? 0),
     formerTop1Year: FORMER_TOP_1[name] || null,
-    skillsets: String(row.skillsets ?? row.Skillsets ?? "")
-      .split(",")
-      .map(s => s.trim())
-      .filter(Boolean),
     skillsetDistribution: Array.isArray(row.skillsetDistribution)
       ? row.skillsetDistribution
       : [],
@@ -31,6 +27,15 @@ export function normalizeDemon(row, index) {
 export function placementNumber(placement) {
   const match = String(placement || "").match(/\d+/);
   return match ? Number(match[0]) : 999999;
+}
+
+export function hasPlacement(placement) {
+  return /\d+/.test(String(placement || ""));
+}
+
+export function isInProgressDemon(demon) {
+  const status = String(demon?.status || "").toUpperCase().trim();
+  return status === "IN PROGRESS" || !hasPlacement(demon?.placement);
 }
 
 export function difficultyClass(diff) {

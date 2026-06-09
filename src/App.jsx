@@ -9,7 +9,7 @@ import { LoginModal } from "./components/LoginModal.jsx";
 import { LogoutConfirm } from "./components/LogoutConfirm.jsx";
 import { RecentChanges } from "./components/RecentChanges.jsx";
 import { RequestPanel } from "./components/RequestPanel.jsx";
-import { normalizeDemon, placementNumber, segmentForPlacement } from "./demonUtils.js";
+import { isInProgressDemon, normalizeDemon, placementNumber, segmentForPlacement } from "./demonUtils.js";
 
 const ROUTES = {
   home: "/",
@@ -59,6 +59,7 @@ export default function App() {
   const [siteTheme, setSiteTheme] = useState(getInitialSiteTheme);
   const [siteVersion, setSiteVersion] = useState(DEFAULT_SITE_VERSION);
   const [siteChangelog, setSiteChangelog] = useState(DEFAULT_SITE_CHANGELOG);
+  const [futureListIds, setFutureListIds] = useState([]);
   const [viewMode, setViewMode] = useState("grid");
   const [requestView, setRequestView] = useState(false);
   const [historyView, setHistoryView] = useState(false);
@@ -86,7 +87,6 @@ export default function App() {
   const [loginError, setLoginError] = useState("");
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [adminView, setAdminView] = useState(false);
-  const [skillsetOpen, setSkillsetOpen] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
   const [visibleDemonCount, setVisibleDemonCount] = useState(60);
 
@@ -265,6 +265,7 @@ export default function App() {
         setSiteTheme(json.siteTheme || "Basic");
         setSiteVersion(json.siteVersion || DEFAULT_SITE_VERSION);
         setSiteChangelog(Array.isArray(json.siteChangelog) ? json.siteChangelog : DEFAULT_SITE_CHANGELOG);
+        setFutureListIds(Array.isArray(json.futureListIds) ? json.futureListIds.map(String) : []);
         setDemons(rows.map(normalizeDemon));
         setSource("live");
       } catch (error) {
@@ -385,6 +386,52 @@ export default function App() {
       return { success: true, message: data.message || "Changelog saved." };
     } catch {
       return { success: false, message: "Kon geen verbinding maken." };
+    }
+  }
+
+  async function toggleFutureListDemon(demon) {
+    const adminUrl = import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL;
+    const token = localStorage.getItem("admin_token");
+    const levelId = String(demon?.id || "").trim();
+
+    if (!adminUrl || !token || !levelId) return;
+
+    const enabled = !futureListIds.map(String).includes(levelId);
+
+    setFutureListIds(previous =>
+      enabled
+        ? Array.from(new Set([...previous.map(String), levelId]))
+        : previous.filter(id => String(id) !== levelId)
+    );
+
+    try {
+      const response = await fetch(adminUrl, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "setFutureListDemon",
+          token,
+          levelId,
+          enabled
+        })
+      });
+      const data = await response.json();
+
+      if (!data.success) {
+        setFutureListIds(previous =>
+          enabled
+            ? previous.filter(id => String(id) !== levelId)
+            : Array.from(new Set([...previous.map(String), levelId]))
+        );
+        return;
+      }
+
+      setFutureListIds(Array.isArray(data.futureListIds) ? data.futureListIds.map(String) : []);
+    } catch {
+      setFutureListIds(previous =>
+        enabled
+          ? previous.filter(id => String(id) !== levelId)
+          : Array.from(new Set([...previous.map(String), levelId]))
+      );
     }
   }
 
@@ -640,16 +687,24 @@ async function handleSaveRequestStatusChanges() {
         const matchesDifficulty =
           difficulty === "all" || demon.difficulty === difficulty;
 
-        const isInProgress = String(demon.status || "COMPLETED").toUpperCase().trim() === "IN PROGRESS";
+        const isInProgress = isInProgressDemon(demon);
         const showingInProgress = yearView === "progress";
+        const showingFutureList = yearView === "future";
+        const isFutureListPick = futureListIds.map(String).includes(String(demon.id));
+        const isFutureCompleted = !isInProgress && Number(demon.year || 0) === 2026;
+        const isFutureProgress = isInProgress && isFutureListPick;
 
-        const matchesStatus = showingInProgress ? isInProgress : !isInProgress;
+        const matchesStatus = showingFutureList
+          ? (isFutureCompleted || isFutureProgress)
+          : showingInProgress
+            ? isInProgress
+            : !isInProgress;
 
         const matchesSegment =
-          showingInProgress || segment === "all" || segmentForPlacement(demon.placement) === segment;
+          showingInProgress || showingFutureList || segment === "all" || segmentForPlacement(demon.placement) === segment;
 
         const matchesYearView =
-          showingInProgress || yearView === "all" || Number(demon.year || 0) <= Number(yearView);
+          showingInProgress || showingFutureList || yearView === "all" || Number(demon.year || 0) <= Number(yearView);
 
         return matchesQuery && matchesDifficulty && matchesStatus && matchesSegment && matchesYearView;
       })
@@ -658,9 +713,15 @@ async function handleSaveRequestStatusChanges() {
           return Number(b.progressPercent || 0) - Number(a.progressPercent || 0);
         }
 
+        if (yearView === "future") {
+          const aProgress = isInProgressDemon(a);
+          const bProgress = isInProgressDemon(b);
+          if (aProgress !== bProgress) return aProgress ? 1 : -1;
+        }
+
         return placementNumber(a.placement) - placementNumber(b.placement);
       });
-  }, [demons, query, difficulty, segment, yearView]);
+  }, [demons, query, difficulty, segment, yearView, futureListIds]);
 
   const currentIndex = useMemo(() => {
     if (!selected) return -1;
@@ -798,7 +859,7 @@ async function handleSaveRequestStatusChanges() {
   }, [selected, currentIndex, filtered]);
 
   const stats = useMemo(() => {
-    const completed = demons.filter(d => String(d.status).toUpperCase() === "COMPLETED");
+    const completed = demons.filter(d => !isInProgressDemon(d));
     const totalAttempts = completed.reduce((sum, d) => sum + Number(d.attempts || 0), 0);
     const hardest = completed.slice().sort((a, b) => Number(b.tier) - Number(a.tier))[0];
 
@@ -808,31 +869,6 @@ async function handleSaveRequestStatusChanges() {
       avgAttempts: completed.length ? Math.round(totalAttempts / completed.length) : 0,
       hardest
     };
-  }, [demons]);
-
-  const hardestBySkillset = useMemo(() => {
-    const result = {};
-
-    demons.forEach(demon => {
-      const status = String(demon.status || "COMPLETED").toUpperCase().trim();
-      if (status !== "COMPLETED") return;
-      if (!demon.skillsets || demon.skillsets.length === 0) return;
-
-      const primarySkill = demon.skillsets[0];
-      const demonPlacement = placementNumber(demon.placement);
-
-      if (!result[primarySkill]) {
-        result[primarySkill] = demon;
-        return;
-      }
-
-      const currentPlacement = placementNumber(result[primarySkill].placement);
-      if (demonPlacement < currentPlacement) {
-        result[primarySkill] = demon;
-      }
-    });
-
-    return result;
   }, [demons]);
 
   return (
@@ -914,9 +950,6 @@ async function handleSaveRequestStatusChanges() {
       ) : (
         <DemonListContent
           stats={stats}
-          hardestBySkillset={hardestBySkillset}
-          skillsetOpen={skillsetOpen}
-          setSkillsetOpen={setSkillsetOpen}
           setSelected={setSelected}
           query={query}
           setQuery={setQuery}
@@ -937,6 +970,9 @@ async function handleSaveRequestStatusChanges() {
           onLoadMore={() => setVisibleDemonCount(count => count + 60)}
           apiLatestDemon={apiLatestDemon}
           onLatestDemonClick={handleLatestDemonClick}
+          isAdmin={isAdmin}
+          futureListIds={futureListIds}
+          onToggleFutureListDemon={toggleFutureListDemon}
         />
       )}
 
