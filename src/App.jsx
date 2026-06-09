@@ -675,48 +675,63 @@ async function handleSaveRequestStatusChanges() {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
+    const futureIds = new Set(futureListIds.map(String));
+
+    const matchesSearchAndDifficulty = demon => {
+      const matchesQuery =
+        !q ||
+        demon.name.toLowerCase().includes(q) ||
+        demon.creator.toLowerCase().includes(q) ||
+        demon.id.toLowerCase().includes(q);
+
+      const matchesDifficulty =
+        difficulty === "all" || demon.difficulty === difficulty;
+
+      return matchesQuery && matchesDifficulty;
+    };
+
+    if (yearView === "future") {
+      return demons
+        .filter(demon => !isInProgressDemon(demon) || futureIds.has(String(demon.id)))
+        .sort((a, b) => {
+          const tierDifference = Number(b.tier || 0) - Number(a.tier || 0);
+          if (tierDifference !== 0) return tierDifference;
+
+          return String(a.name || "").localeCompare(String(b.name || ""));
+        })
+        .map((demon, index) => ({
+          ...demon,
+          futurePlacementNumber: index + 1,
+          futurePlacement: `#${index + 1} •`
+        }))
+        .filter(demon => {
+          const matchesSegment =
+            segment === "all" || segmentForPlacement(demon.futurePlacement) === segment;
+
+          return matchesSearchAndDifficulty(demon) && matchesSegment;
+        });
+    }
 
     return demons
       .filter(demon => {
-        const matchesQuery =
-          !q ||
-          demon.name.toLowerCase().includes(q) ||
-          demon.creator.toLowerCase().includes(q) ||
-          demon.id.toLowerCase().includes(q);
-
-        const matchesDifficulty =
-          difficulty === "all" || demon.difficulty === difficulty;
-
         const isInProgress = isInProgressDemon(demon);
         const showingInProgress = yearView === "progress";
-        const showingFutureList = yearView === "future";
-        const isFutureListPick = futureListIds.map(String).includes(String(demon.id));
-        const isFutureCompleted = !isInProgress && Number(demon.year || 0) === 2026;
-        const isFutureProgress = isInProgress && isFutureListPick;
 
-        const matchesStatus = showingFutureList
-          ? (isFutureCompleted || isFutureProgress)
-          : showingInProgress
+        const matchesStatus = showingInProgress
             ? isInProgress
             : !isInProgress;
 
         const matchesSegment =
-          showingInProgress || showingFutureList || segment === "all" || segmentForPlacement(demon.placement) === segment;
+          showingInProgress || segment === "all" || segmentForPlacement(demon.placement) === segment;
 
         const matchesYearView =
-          showingInProgress || showingFutureList || yearView === "all" || Number(demon.year || 0) <= Number(yearView);
+          showingInProgress || yearView === "all" || Number(demon.year || 0) <= Number(yearView);
 
-        return matchesQuery && matchesDifficulty && matchesStatus && matchesSegment && matchesYearView;
+        return matchesSearchAndDifficulty(demon) && matchesStatus && matchesSegment && matchesYearView;
       })
       .sort((a, b) => {
         if (yearView === "progress") {
           return Number(b.progressPercent || 0) - Number(a.progressPercent || 0);
-        }
-
-        if (yearView === "future") {
-          const aProgress = isInProgressDemon(a);
-          const bProgress = isInProgressDemon(b);
-          if (aProgress !== bProgress) return aProgress ? 1 : -1;
         }
 
         return placementNumber(a.placement) - placementNumber(b.placement);

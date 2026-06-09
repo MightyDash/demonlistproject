@@ -70,7 +70,7 @@ export function DemonListContent({
               <StatCard icon={<BarChart3 />} label="Hardest Demon" value={stats.hardest?.name || "Unknown"} detail={stats.hardest?.difficulty || ""} highlight />
             </section>
     
-            <div className={`desktop-list-shell ${isProgressView || isFutureView ? "progress-shell" : ""}`}>
+            <div className={`desktop-list-shell ${isProgressView ? "progress-shell" : ""}`}>
             <section className="panel controls">
               <div className="filter-title-row">
                 <strong>Filters</strong>
@@ -179,13 +179,13 @@ export function DemonListContent({
               {filtered.length === totalCount
                 ? `${totalCount} demons shown`
                 : `${filtered.length} of ${totalCount} demons shown`}
-              {(isProgressView || isFutureView) && (
+              {isProgressView && (
                 <span className="progress-info-wrap">
                   <button
                     className="progress-info-button"
                     onClick={() => setShowProgressInfo(true)}
                     type="button"
-                    aria-label={isFutureView ? "Future list info" : "In progress info"}
+                    aria-label="In progress info"
                   >
                     <Info size={15} />
                   </button>
@@ -213,9 +213,7 @@ export function DemonListContent({
                   <X size={20} />
                 </button>
                 <p>
-                  {isFutureView
-                    ? "Future List combines your completed 2026 demons with selected in-progress demons you want to beat next."
-                    : progressInfoText}
+                  {progressInfoText}
                 </p>
               </section>
             </div>
@@ -235,8 +233,10 @@ export function DemonListContent({
     
                   {filtered.map(demon => {
                     const isInProgress = isInProgressDemon(demon);
+                    const renderAsProgress = isInProgress && isProgressView;
                     const progressPercent = Math.max(0, Math.min(100, Number(demon.progressPercent || 0)));
                     const isFuturePick = futureIds.has(String(demon.id));
+                    const placementLabel = isFutureView ? (demon.futurePlacement || demon.placement) : demon.placement;
 
                     return (
                     <div
@@ -247,11 +247,11 @@ export function DemonListContent({
                       role="button"
                       tabIndex={0}
                     >
-                      <div className="placement">{isInProgress ? `${progressPercent}%` : demon.placement}</div>
+                      <div className="placement">{renderAsProgress ? `${progressPercent}%` : placementLabel}</div>
                       <div className="name-cell">
                         <span className="demon-name">{demon.name}</span>
                         <span className="mobile-meta">{demon.creator}</span>
-                        {isFuturePick && <span className="future-list-badge">Future List</span>}
+                        {isProgressView && isFuturePick && <span className="future-list-badge">Future List</span>}
                       </div>
                       <div>{demon.creator}</div>
                       <div className="tier">{formatTier(demon.tier)}</div>
@@ -270,12 +270,14 @@ export function DemonListContent({
                 <div className="demon-grid">
                   {filtered.map(demon => {
                     const isInProgress = isInProgressDemon(demon);
+                    const renderAsProgress = isInProgress && isProgressView;
                     const progressPercent = Math.max(0, Math.min(100, Number(demon.progressPercent || 0)));
                     const isFuturePick = futureIds.has(String(demon.id));
+                    const placementLabel = isFutureView ? (demon.futurePlacement || demon.placement) : demon.placement;
 
                     return (
                     <article
-                      className={`grid-card ${isInProgress ? "in-progress-card" : ""}`}
+                      className={`grid-card ${renderAsProgress ? "in-progress-card" : ""}`}
                       key={`${demon.id}-${demon.name}`}
                       data-demon-id={demon.id}
                       onClick={() => setSelected(demon)}
@@ -298,10 +300,10 @@ export function DemonListContent({
                         <div>
                           <h3>{demon.name}</h3>
                           <p>by {demon.creator || "Unknown creator"}</p>
-                          {!isInProgress && <span className="grid-rank-inline">{demon.placement}</span>}
+                          {!renderAsProgress && <span className="grid-rank-inline">{placementLabel}</span>}
                         </div>
 
-                        {isInProgress ? (
+                        {renderAsProgress ? (
                           <>
                             {isAdmin && (
                               <label className="future-list-toggle" onClick={event => event.stopPropagation()}>
