@@ -496,8 +496,8 @@ button {
   margin-top: 8px;
 }
 
-.milestones-modal {
-  width: min(720px, calc(100vw - 32px));
+.progress-info-modal.milestones-modal {
+  width: min(1040px, calc(100vw - 48px));
   max-height: min(760px, calc(100vh - 48px));
   overflow: auto;
 }
@@ -534,8 +534,8 @@ button {
 
 .milestones-sections {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(240px, 0.8fr);
-  gap: 18px;
+  grid-template-columns: minmax(0, 1.55fr) minmax(360px, 1fr);
+  gap: 22px;
 }
 
 .milestones-sections h3 {
@@ -556,11 +556,11 @@ button {
 
 .milestone-list li {
   display: grid;
-  grid-template-columns: 70px minmax(0, 1fr) auto;
+  grid-template-columns: 82px minmax(220px, 1fr) auto;
   align-items: center;
-  gap: 10px;
-  min-height: 44px;
-  padding: 8px 10px;
+  gap: 14px;
+  min-height: 48px;
+  padding: 9px 12px;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--panel-strong) 62%, transparent);
@@ -577,11 +577,9 @@ button {
 
 .milestone-name {
   min-width: 0;
-  overflow: hidden;
   color: var(--text);
   font-weight: 900;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.25;
 }
 
 .milestone-placement {
