@@ -69,7 +69,11 @@ export function MilestonesModal({ demons, onClose }) {
 
   return (
     <div className="progress-info-backdrop" onClick={onClose}>
-      <section className="progress-info-modal milestones-modal" onClick={event => event.stopPropagation()}>
+      <section
+        className="progress-info-modal milestones-modal"
+        style={{ width: "1040px", maxWidth: "calc(100vw - 48px)" }}
+        onClick={event => event.stopPropagation()}
+      >
         <button
           className="progress-info-close"
           onClick={onClose}

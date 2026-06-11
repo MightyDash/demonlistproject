@@ -497,7 +497,8 @@ button {
 }
 
 .progress-info-modal.milestones-modal {
-  width: min(1040px, calc(100vw - 48px));
+  width: 1040px;
+  max-width: calc(100vw - 48px);
   max-height: min(760px, calc(100vh - 48px));
   overflow: auto;
 }
