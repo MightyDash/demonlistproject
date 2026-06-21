@@ -354,17 +354,6 @@ export function DemonListContent({
             <div className="list-status-links">
               {isAdmin && (
                 <>
-                  {editListMode && (
-                    <button
-                      className="save-list-button"
-                      onClick={handleSaveChanges}
-                      disabled={!hasUnsavedListChanges || saveState.saving}
-                      type="button"
-                    >
-                      <Check size={16} />
-                      {saveState.saving ? "Saving..." : "Save Changes"}
-                    </button>
-                  )}
                   <button
                     className={`edit-list-button ${editListMode ? "active" : ""}`}
                     onClick={onToggleEditList}
@@ -577,18 +566,29 @@ export function DemonListContent({
             </main>
             </div>
             {editListMode && (
-              <button
-                className="manual-add-button"
-                onClick={() => {
-                  setAddState({ saving: false, message: "", error: "" });
-                  setShowAddDemon(true);
-                }}
-                type="button"
-                aria-label="Add demon"
-                title="Add demon"
-              >
-                <Plus size={25} />
-              </button>
+              <div className="manual-floating-actions">
+                <button
+                  className="save-list-button"
+                  onClick={handleSaveChanges}
+                  disabled={!hasUnsavedListChanges || saveState.saving}
+                  type="button"
+                >
+                  <Check size={18} />
+                  {saveState.saving ? "Saving..." : "Save Changes"}
+                </button>
+                <button
+                  className="manual-add-button"
+                  onClick={() => {
+                    setAddState({ saving: false, message: "", error: "" });
+                    setShowAddDemon(true);
+                  }}
+                  type="button"
+                  aria-label="Add demon"
+                  title="Add demon"
+                >
+                  <Plus size={25} />
+                </button>
+              </div>
             )}
             {addState.error && !showAddDemon && <p className="manual-list-toast error">{addState.error}</p>}
             {showAddDemon && (

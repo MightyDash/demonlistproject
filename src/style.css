@@ -3877,6 +3877,24 @@ h1 {
   cursor: pointer;
 }
 
+.manual-floating-actions {
+  position: fixed;
+  z-index: 170;
+  right: 28px;
+  bottom: 76px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.manual-floating-actions .save-list-button {
+  min-height: 54px;
+  padding: 0 18px;
+  background: rgba(11, 35, 28, 0.96);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.42);
+  backdrop-filter: blur(10px);
+}
+
 .save-list-button:disabled {
   opacity: 0.42;
   cursor: default;
@@ -3980,10 +3998,6 @@ h1 {
 }
 
 .manual-add-button {
-  position: fixed;
-  z-index: 170;
-  right: 28px;
-  bottom: 76px;
   display: grid;
   place-items: center;
   width: 54px;
@@ -4108,6 +4122,10 @@ h1 {
   }
 
   .manual-add-button {
+    flex: 0 0 54px;
+  }
+
+  .manual-floating-actions {
     right: 18px;
     bottom: 22px;
   }
