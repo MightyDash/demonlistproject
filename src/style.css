@@ -2064,6 +2064,8 @@ h1 {
 .grid-card {
   position: relative;
   display: block;
+  min-width: 0;
+  width: 100%;
   overflow: hidden;
   border: 1px solid rgba(148, 163, 184, 0.16);
   border-radius: 8px;
@@ -2579,7 +2581,7 @@ h1 {
   }
 
   .demon-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 16px;
     padding: 18px;
   }
@@ -3909,7 +3911,7 @@ h1 {
   right: 10px;
   bottom: 10px;
   left: 10px;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 8px;
   min-height: 42px;
   padding: 5px;
@@ -3920,11 +3922,18 @@ h1 {
 }
 
 .manual-card-controls span {
+  flex: 1;
   min-width: 0;
   color: rgba(255, 255, 255, 0.8);
   font-size: 12px;
   font-weight: 850;
   text-align: center;
+}
+
+.manual-card-arrows {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 5px;
 }
 
 .manual-card-controls button {

@@ -504,23 +504,25 @@ export function DemonListContent({
                       </div>
                       {editListMode && !renderAsProgress && (
                         <div className="manual-card-controls">
-                          <button
-                            onClick={event => handleMove(event, demon, "up")}
-                            disabled={movingId === String(demon.id)}
-                            type="button"
-                            aria-label={`Move ${demon.name} up`}
-                          >
-                            <ChevronUp size={19} />
-                          </button>
+                          <div className="manual-card-arrows">
+                            <button
+                              onClick={event => handleMove(event, demon, "up")}
+                              disabled={movingId === String(demon.id)}
+                              type="button"
+                              aria-label={`Move ${demon.name} up`}
+                            >
+                              <ChevronUp size={19} />
+                            </button>
+                            <button
+                              onClick={event => handleMove(event, demon, "down")}
+                              disabled={movingId === String(demon.id)}
+                              type="button"
+                              aria-label={`Move ${demon.name} down`}
+                            >
+                              <ChevronDown size={19} />
+                            </button>
+                          </div>
                           <span>{movingId === String(demon.id) ? "Moving..." : "Change placement"}</span>
-                          <button
-                            onClick={event => handleMove(event, demon, "down")}
-                            disabled={movingId === String(demon.id)}
-                            type="button"
-                            aria-label={`Move ${demon.name} down`}
-                          >
-                            <ChevronDown size={19} />
-                          </button>
                         </div>
                       )}
                     </article>
