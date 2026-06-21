@@ -62,6 +62,7 @@ export default function App() {
   const [siteChangelog, setSiteChangelog] = useState(DEFAULT_SITE_CHANGELOG);
   const [futureListIds, setFutureListIds] = useState([]);
   const [viewMode, setViewMode] = useState("grid");
+  const [editListMode, setEditListMode] = useState(false);
   const [requestView, setRequestView] = useState(false);
   const [historyView, setHistoryView] = useState(false);
   const [requestForm, setRequestForm] = useState({
@@ -356,6 +357,65 @@ export default function App() {
     } catch {
       return { success: false, message: "Kon geen verbinding maken." };
     }
+  }
+
+  async function sendManualListAction(payload) {
+    const adminUrl = import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL;
+    const token = localStorage.getItem("admin_token");
+
+    if (!adminUrl || !token) {
+      return { success: false, message: "Admin connection is not configured." };
+    }
+
+    try {
+      const response = await fetch(adminUrl, {
+        method: "POST",
+        body: JSON.stringify({ ...payload, token })
+      });
+      return response.json();
+    } catch {
+      return { success: false, message: "Kon geen verbinding maken." };
+    }
+  }
+
+  async function addManualDemon(form) {
+    const data = await sendManualListAction({
+      action: "manualAddDemon",
+      levelId: form.levelId,
+      attempts: Number(form.attempts),
+      note: form.note,
+      placement: Number(form.placement)
+    });
+
+    if (data.success) {
+      window.location.reload();
+    }
+
+    return data;
+  }
+
+  async function moveManualDemon(demon, direction) {
+    const data = await sendManualListAction({
+      action: "manualMoveDemon",
+      levelId: demon.id,
+      direction
+    });
+
+    if (!data.success || data.unchanged) return data;
+
+    setDemons(previous =>
+      previous.map(item => {
+        if (String(item.id) === String(data.moved?.levelId)) {
+          return { ...item, placement: `#${data.moved.placement} •` };
+        }
+        if (String(item.id) === String(data.swapped?.levelId)) {
+          return { ...item, placement: `#${data.swapped.placement} •` };
+        }
+        return item;
+      })
+    );
+
+    return data;
   }
 
   async function saveSiteChangelog(version, changes) {
@@ -693,14 +753,14 @@ async function handleSaveRequestStatusChanges() {
     };
 
     if (yearView === "future") {
-      return demons
-        .filter(demon => !isInProgressDemon(demon) || futureIds.has(String(demon.id)))
-        .sort((a, b) => {
-          const tierDifference = Number(b.tier || 0) - Number(a.tier || 0);
-          if (tierDifference !== 0) return tierDifference;
+      const completed = demons
+        .filter(demon => !isInProgressDemon(demon))
+        .sort((a, b) => placementNumber(a.placement) - placementNumber(b.placement));
+      const planned = demons.filter(
+        demon => isInProgressDemon(demon) && futureIds.has(String(demon.id))
+      );
 
-          return String(a.name || "").localeCompare(String(b.name || ""));
-        })
+      return [...completed, ...planned]
         .map((demon, index) => ({
           ...demon,
           futurePlacementNumber: index + 1,
@@ -878,12 +938,13 @@ async function handleSaveRequestStatusChanges() {
   const stats = useMemo(() => {
     const completed = demons.filter(d => !isInProgressDemon(d));
     const totalAttempts = completed.reduce((sum, d) => sum + Number(d.attempts || 0), 0);
-    const hardest = completed.slice().sort((a, b) => Number(b.tier) - Number(a.tier))[0];
+    const hardest = completed
+      .slice()
+      .sort((a, b) => placementNumber(a.placement) - placementNumber(b.placement))[0];
 
     return {
       total: completed.length,
       attempts: totalAttempts,
-      avgAttempts: completed.length ? Math.round(totalAttempts / completed.length) : 0,
       hardest
     };
   }, [demons]);
@@ -922,7 +983,6 @@ async function handleSaveRequestStatusChanges() {
       {adminView ? (
         <AdminPanel
           onBack={() => navigateTo(ROUTES.home)}
-          onDataChanged={() => window.location.reload()}
           siteTheme={siteTheme}
           onThemeChanged={setSiteTheme}
           demons={demons}
@@ -991,6 +1051,10 @@ async function handleSaveRequestStatusChanges() {
           isAdmin={isAdmin}
           futureListIds={futureListIds}
           onToggleFutureListDemon={toggleFutureListDemon}
+          editListMode={editListMode}
+          onToggleEditList={() => setEditListMode(active => !active)}
+          onAddManualDemon={addManualDemon}
+          onMoveDemon={moveManualDemon}
         />
       )}
 

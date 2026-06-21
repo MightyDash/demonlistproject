@@ -8,8 +8,6 @@ export const mockDemons = [
     attempts: 20226,
     year: 2026,
     video: "Recorded",
-    tier: 24.0,
-    tierChange: 0,
     status: "COMPLETED",
     thumbnail: "",
     notes: "Current hardest demon."
@@ -23,8 +21,6 @@ export const mockDemons = [
     attempts: 3137,
     year: 2025,
     video: "",
-    tier: 20.57,
-    tierChange: 0,
     status: "COMPLETED",
     thumbnail: "",
     notes: ""
@@ -38,8 +34,6 @@ export const mockDemons = [
     attempts: 4575,
     year: 2023,
     video: "",
-    tier: 20.25,
-    tierChange: 0,
     status: "COMPLETED",
     thumbnail: "",
     notes: ""
@@ -53,8 +47,6 @@ export const mockDemons = [
     attempts: 7159,
     year: 2024,
     video: "",
-    tier: 19.78,
-    tierChange: 0,
     status: "COMPLETED",
     thumbnail: "",
     notes: ""
@@ -68,8 +60,6 @@ export const mockDemons = [
     attempts: 1743,
     year: 2026,
     video: "",
-    tier: 18.69,
-    tierChange: 0.01,
     status: "COMPLETED",
     thumbnail: "",
     notes: "Recently beaten."

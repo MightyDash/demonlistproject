@@ -12,7 +12,7 @@ import {
   Share2,
   X
 } from "lucide-react";
-import { formatNumber, formatTier } from "../demonUtils.js";
+import { formatNumber } from "../demonUtils.js";
 import { SHEET_API_URL } from "../config.js";
 
 const SKILLSET_COLORS = [
@@ -180,7 +180,6 @@ export function DemonModal({
               <span className={`difficulty ${String(cleanDifficulty).toLowerCase().includes("extreme") ? "extreme" : ""}`}>
                 {cleanDifficulty}
               </span>
-              <span className="modal-tier">Tier {formatTier(demon.tier)}</span>
             </div>
 
             <div className="modal-action-row">
@@ -222,7 +221,6 @@ export function DemonModal({
                 <div><span>Level ID</span><strong>{demon.id}</strong></div>
                 <div><span>Creator(s)</span><strong>{demon.creator || "Unknown"}</strong></div>
                 <div><span>Difficulty</span><strong className="overview-danger">{cleanDifficulty}</strong></div>
-                <div><span>Tier</span><strong>{formatTier(demon.tier)}</strong></div>
                 <div><span>Attempts (Total)</span><strong>{formatNumber(demon.attempts)}</strong></div>
                 <div><span>Year</span><strong>{demon.year || "Unknown"}</strong></div>
               </div>
@@ -286,7 +284,7 @@ export function DemonModal({
                 <div className="history-mini-list">
                   <span><b>Latest</b> Stats updated</span>
                   <span><b>{demon.year || "Unknown"}</b> Added to list</span>
-                  <span><b>{formatTier(demon.tier)}</b> Current tier</span>
+                  <span><b>{cleanPlacement}</b> Current placement</span>
                 </div>
               </section>
             </aside>
