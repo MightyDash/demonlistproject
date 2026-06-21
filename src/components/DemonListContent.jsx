@@ -43,9 +43,11 @@ export function DemonListContent({
   futureListIds = [],
   onToggleFutureListDemon,
   editListMode = false,
+  hasUnsavedListChanges = false,
   onToggleEditList,
   onAddManualDemon,
-  onMoveDemon
+  onMoveDemon,
+  onSaveListChanges
 }) {
   const [showProgressInfo, setShowProgressInfo] = useState(false);
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
@@ -53,6 +55,7 @@ export function DemonListContent({
   const [addForm, setAddForm] = useState({ levelId: "", attempts: "", note: "", placement: "" });
   const [addState, setAddState] = useState({ saving: false, message: "", error: "" });
   const [movingId, setMovingId] = useState("");
+  const [saveState, setSaveState] = useState({ saving: false, message: "", error: "" });
   const isProgressView = yearView === "progress";
   const isFutureView = yearView === "future";
   const futureIds = new Set(futureListIds.map(id => String(id)));
@@ -117,6 +120,25 @@ export function DemonListContent({
       setAddState({ saving: false, message: "", error: result?.message || "Placement wijzigen mislukt." });
     }
     setMovingId("");
+  }
+
+  async function handleSaveChanges() {
+    setSaveState({ saving: true, message: "", error: "" });
+    const result = await onSaveListChanges?.();
+
+    if (result?.success) {
+      setSaveState({
+        saving: false,
+        message: result.message || "Changes saved.",
+        error: ""
+      });
+    } else {
+      setSaveState({
+        saving: false,
+        message: "",
+        error: result?.message || "Changes could not be saved."
+      });
+    }
   }
 
   async function handleAddDemon(event) {
@@ -331,14 +353,27 @@ export function DemonListContent({
             </span>
             <div className="list-status-links">
               {isAdmin && (
-                <button
-                  className={`edit-list-button ${editListMode ? "active" : ""}`}
-                  onClick={onToggleEditList}
-                  type="button"
-                >
-                  {editListMode ? <Check size={16} /> : <Pencil size={16} />}
-                  {editListMode ? "Done editing" : "Edit List"}
-                </button>
+                <>
+                  {editListMode && (
+                    <button
+                      className="save-list-button"
+                      onClick={handleSaveChanges}
+                      disabled={!hasUnsavedListChanges || saveState.saving}
+                      type="button"
+                    >
+                      <Check size={16} />
+                      {saveState.saving ? "Saving..." : "Save Changes"}
+                    </button>
+                  )}
+                  <button
+                    className={`edit-list-button ${editListMode ? "active" : ""}`}
+                    onClick={onToggleEditList}
+                    type="button"
+                  >
+                    {editListMode ? <X size={16} /> : <Pencil size={16} />}
+                    {editListMode ? "Done editing" : "Edit List"}
+                  </button>
+                </>
               )}
               {apiLatestDemon && (
                 <button className="latest-link" onClick={onLatestDemonClick} type="button">
@@ -347,6 +382,8 @@ export function DemonListContent({
               )}
             </div>
           </div>
+          {saveState.message && <p className="manual-save-message success">{saveState.message}</p>}
+          {saveState.error && <p className="manual-save-message error">{saveState.error}</p>}
 
           {showProgressInfo && (
             <div className="progress-info-backdrop" onClick={() => setShowProgressInfo(false)}>

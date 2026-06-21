@@ -3863,6 +3863,43 @@ h1 {
   color: #baf5ce;
 }
 
+.save-list-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid rgba(99, 226, 143, 0.5);
+  border-radius: 7px;
+  background: rgba(99, 226, 143, 0.14);
+  color: #baf5ce;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.save-list-button:disabled {
+  opacity: 0.42;
+  cursor: default;
+}
+
+.manual-save-message {
+  margin: 10px 18px 0;
+  padding: 10px 12px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.manual-save-message.success {
+  background: rgba(99, 226, 143, 0.12);
+  color: #baf5ce;
+}
+
+.manual-save-message.error {
+  background: rgba(255, 91, 91, 0.12);
+  color: #ffc2c7;
+}
+
 .demon-table.edit-mode .row {
   grid-template-columns: 78px 1.35fr 1.05fr 130px 90px 80px 94px;
 }

@@ -63,6 +63,7 @@ export default function App() {
   const [futureListIds, setFutureListIds] = useState([]);
   const [viewMode, setViewMode] = useState("grid");
   const [editListMode, setEditListMode] = useState(false);
+  const [listChangesPending, setListChangesPending] = useState(false);
   const [requestView, setRequestView] = useState(false);
   const [historyView, setHistoryView] = useState(false);
   const [requestForm, setRequestForm] = useState({
@@ -394,28 +395,64 @@ export default function App() {
     return data;
   }
 
-  async function moveManualDemon(demon, direction) {
-    const data = await sendManualListAction({
-      action: "manualMoveDemon",
-      levelId: demon.id,
-      direction
-    });
+  function moveManualDemon(demon, direction) {
+    const currentPlacement = placementNumber(demon.placement);
+    const targetPlacement = direction === "up" ? currentPlacement - 1 : currentPlacement + 1;
+    const target = demons.find(item =>
+      !isInProgressDemon(item) && placementNumber(item.placement) === targetPlacement
+    );
 
-    if (!data.success || data.unchanged) return data;
+    if (!target) {
+      return {
+        success: true,
+        unchanged: true,
+        message: direction === "up"
+          ? "This demon is already first."
+          : "This demon is already last."
+      };
+    }
 
     setDemons(previous =>
       previous.map(item => {
-        if (String(item.id) === String(data.moved?.levelId)) {
-          return { ...item, placement: `#${data.moved.placement} •` };
+        if (String(item.id) === String(demon.id)) {
+          return { ...item, placement: `#${targetPlacement} •` };
         }
-        if (String(item.id) === String(data.swapped?.levelId)) {
-          return { ...item, placement: `#${data.swapped.placement} •` };
+        if (String(item.id) === String(target.id)) {
+          return { ...item, placement: `#${currentPlacement} •` };
         }
         return item;
       })
     );
+    setListChangesPending(true);
+    return { success: true };
+  }
 
+  async function saveManualListOrder() {
+    const orderedLevelIds = demons
+      .filter(demon => !isInProgressDemon(demon))
+      .slice()
+      .sort((a, b) => placementNumber(a.placement) - placementNumber(b.placement))
+      .map(demon => String(demon.id));
+    const data = await sendManualListAction({
+      action: "manualSaveOrder",
+      orderedLevelIds
+    });
+
+    if (data.success) setListChangesPending(false);
     return data;
+  }
+
+  function toggleEditListMode() {
+    if (editListMode && listChangesPending) {
+      const discard = window.confirm(
+        "You still have unsaved placement changes. Leave edit mode and discard them?"
+      );
+      if (!discard) return;
+      window.location.reload();
+      return;
+    }
+
+    setEditListMode(active => !active);
   }
 
   async function saveSiteChangelog(version, changes) {
@@ -1052,9 +1089,11 @@ async function handleSaveRequestStatusChanges() {
           futureListIds={futureListIds}
           onToggleFutureListDemon={toggleFutureListDemon}
           editListMode={editListMode}
-          onToggleEditList={() => setEditListMode(active => !active)}
+          hasUnsavedListChanges={listChangesPending}
+          onToggleEditList={toggleEditListMode}
           onAddManualDemon={addManualDemon}
           onMoveDemon={moveManualDemon}
+          onSaveListChanges={saveManualListOrder}
         />
       )}
 
