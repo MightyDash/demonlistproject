@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { BarChart3, Bookmark, Grid3X3, Info, List, MoreHorizontal, Search, Target, Trophy, X } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { BarChart3, Bookmark, Check, Grid3X3, Info, List, MoreHorizontal, Search, SlidersHorizontal, Target, Trophy, X } from "lucide-react";
 import { StatCard } from "./StatCard.jsx";
 import { difficultyClass, formatNumber, formatTier, isInProgressDemon } from "../demonUtils.js";
 
@@ -30,9 +30,16 @@ export function DemonListContent({
   onToggleFutureListDemon
 }) {
   const [showProgressInfo, setShowProgressInfo] = useState(false);
+  const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const isProgressView = yearView === "progress";
   const isFutureView = yearView === "future";
   const futureIds = new Set(futureListIds.map(id => String(id)));
+  const activeFilterCount = [
+    query.trim(),
+    difficulty !== "all",
+    segment !== "all",
+    yearView !== "all"
+  ].filter(Boolean).length;
   const progressInfoText = "It is not yet clear whether these demons will get beaten in the future. I am certain that some will, but I still have my doubts about others. This is just a reminder to myself";
   const yearOptions = [
     ["all", "2026"],
@@ -46,6 +53,23 @@ export function DemonListContent({
     ["progress", "In Progress"],
     ["future", "Future List"]
   ];
+
+  useEffect(() => {
+    if (!filterDrawerOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    function handleEscape(event) {
+      if (event.key === "Escape") setFilterDrawerOpen(false);
+    }
+
+    window.addEventListener("keydown", handleEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [filterDrawerOpen]);
 
   function resetFilters() {
     setQuery("");
@@ -61,6 +85,15 @@ export function DemonListContent({
     setSelected(demon);
   }
 
+  function placementTrendClass(demon) {
+    if (isProgressView || isFutureView) return "";
+
+    const placement = String(demon.placement || "");
+    if (placement.includes("▲")) return "placement-moved-up";
+    if (placement.includes("▼")) return "placement-moved-down";
+    return "";
+  }
+
   return (
           <>
             <section className="stats-grid">
@@ -71,10 +104,47 @@ export function DemonListContent({
             </section>
     
             <div className={`desktop-list-shell ${isProgressView ? "progress-shell" : ""}`}>
-            <section className="panel controls">
+            <div className="mobile-filter-bar">
+              <button
+                className="mobile-filter-button"
+                onClick={() => setFilterDrawerOpen(true)}
+                type="button"
+                aria-expanded={filterDrawerOpen}
+                aria-controls="demon-list-filters"
+              >
+                <SlidersHorizontal size={18} />
+                Filters
+                {activeFilterCount > 0 && <span>{activeFilterCount}</span>}
+              </button>
+              <span>{totalCount} demons</span>
+            </div>
+
+            {filterDrawerOpen && (
+              <button
+                className="mobile-filter-backdrop"
+                onClick={() => setFilterDrawerOpen(false)}
+                type="button"
+                aria-label="Close filters"
+              />
+            )}
+
+            <section
+              id="demon-list-filters"
+              className={`panel controls ${filterDrawerOpen ? "mobile-open" : ""}`}
+            >
               <div className="filter-title-row">
                 <strong>Filters</strong>
-                <button type="button" onClick={resetFilters}>Reset all</button>
+                <div className="filter-title-actions">
+                  <button type="button" onClick={resetFilters}>Reset all</button>
+                  <button
+                    className="mobile-filter-close"
+                    onClick={() => setFilterDrawerOpen(false)}
+                    type="button"
+                    aria-label="Close filters"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
               </div>
               <div className="searchbox">
                 <Search size={18} />
@@ -171,6 +241,15 @@ export function DemonListContent({
                   </button>
                 ))}
               </div>
+
+              <button
+                className="mobile-filter-apply"
+                onClick={() => setFilterDrawerOpen(false)}
+                type="button"
+              >
+                <Check size={18} />
+                Show {totalCount} demons
+              </button>
             </section>
     
             <main className="panel table-panel">
@@ -237,10 +316,11 @@ export function DemonListContent({
                     const progressPercent = Math.max(0, Math.min(100, Number(demon.progressPercent || 0)));
                     const isFuturePick = futureIds.has(String(demon.id));
                     const placementLabel = isFutureView ? (demon.futurePlacement || demon.placement) : demon.placement;
+                    const trendClass = placementTrendClass(demon);
 
                     return (
                     <div
-                      className="row demon-row"
+                      className={`row demon-row ${trendClass}`}
                       key={`${demon.id}-${demon.name}`}
                       onClick={() => setSelected(demon)}
                       onKeyDown={event => handleOpenKey(event, demon)}
@@ -274,10 +354,11 @@ export function DemonListContent({
                     const progressPercent = Math.max(0, Math.min(100, Number(demon.progressPercent || 0)));
                     const isFuturePick = futureIds.has(String(demon.id));
                     const placementLabel = isFutureView ? (demon.futurePlacement || demon.placement) : demon.placement;
+                    const trendClass = placementTrendClass(demon);
 
                     return (
                     <article
-                      className={`grid-card ${renderAsProgress ? "in-progress-card" : ""}`}
+                      className={`grid-card ${renderAsProgress ? "in-progress-card" : ""} ${trendClass}`}
                       key={`${demon.id}-${demon.name}`}
                       data-demon-id={demon.id}
                       onClick={() => setSelected(demon)}
