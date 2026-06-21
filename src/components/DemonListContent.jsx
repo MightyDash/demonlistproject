@@ -46,12 +46,17 @@ export function DemonListContent({
   hasUnsavedListChanges = false,
   onToggleEditList,
   onAddManualDemon,
+  onEditManualDemon,
   onMoveDemon,
   onSaveListChanges
 }) {
   const [showProgressInfo, setShowProgressInfo] = useState(false);
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [showAddDemon, setShowAddDemon] = useState(false);
+  const [showEditDemon, setShowEditDemon] = useState(false);
+  const [editDemonId, setEditDemonId] = useState("");
+  const [editForm, setEditForm] = useState({ attempts: "", note: "", progressPercent: "" });
+  const [editState, setEditState] = useState({ saving: false, error: "" });
   const [addForm, setAddForm] = useState({ levelId: "", attempts: "", note: "", placement: "" });
   const [addState, setAddState] = useState({ saving: false, message: "", error: "" });
   const [movingId, setMovingId] = useState("");
@@ -163,6 +168,51 @@ export function DemonListContent({
 
     if (!result?.success) {
       setAddState({ saving: false, message: "", error: result?.message || "Demon toevoegen mislukt." });
+    }
+  }
+
+  function openDemonEditor() {
+    const demon = filtered.find(item => String(item.id) === String(editDemonId)) || filtered[0];
+    if (demon) {
+      setEditDemonId(String(demon.id));
+      setEditForm({
+        attempts: String(demon.attempts || 0),
+        note: demon.notes || "",
+        progressPercent: isInProgressDemon(demon) ? String(demon.progressPercent || 0) : ""
+      });
+    }
+    setEditState({ saving: false, error: "" });
+    setShowEditDemon(true);
+  }
+
+  function selectEditDemon(levelId) {
+    const demon = filtered.find(item => String(item.id) === String(levelId));
+    setEditDemonId(levelId);
+    if (!demon) return;
+    setEditForm({
+      attempts: String(demon.attempts || 0),
+      note: demon.notes || "",
+      progressPercent: isInProgressDemon(demon) ? String(demon.progressPercent || 0) : ""
+    });
+  }
+
+  async function handleEditDemon(event) {
+    event.preventDefault();
+    const demon = filtered.find(item => String(item.id) === String(editDemonId));
+    if (!demon) return;
+
+    const attempts = Number(editForm.attempts);
+    const progressPercent = editForm.progressPercent === "" ? "" : Number(editForm.progressPercent);
+    if (!Number.isInteger(attempts) || attempts < 0 ||
+        (isInProgressDemon(demon) && (!Number.isInteger(progressPercent) || progressPercent < 0 || progressPercent > 100))) {
+      setEditState({ saving: false, error: "Controleer attempts en het percentage." });
+      return;
+    }
+
+    setEditState({ saving: true, error: "" });
+    const result = await onEditManualDemon?.(demon, { ...editForm, attempts, progressPercent });
+    if (!result?.success) {
+      setEditState({ saving: false, error: result?.message || "Demon bewerken mislukt." });
     }
   }
 
@@ -576,18 +626,29 @@ export function DemonListContent({
                   <Check size={18} />
                   {saveState.saving ? "Saving..." : "Save Changes"}
                 </button>
-                <button
-                  className="manual-add-button"
-                  onClick={() => {
-                    setAddState({ saving: false, message: "", error: "" });
-                    setShowAddDemon(true);
-                  }}
-                  type="button"
-                  aria-label="Add demon"
-                  title="Add demon"
-                >
-                  <Plus size={25} />
-                </button>
+                <div className="manual-round-actions">
+                  <button
+                    className="manual-edit-button"
+                    onClick={openDemonEditor}
+                    type="button"
+                    aria-label="Edit demon"
+                    title="Edit demon"
+                  >
+                    <Pencil size={21} />
+                  </button>
+                  <button
+                    className="manual-add-button"
+                    onClick={() => {
+                      setAddState({ saving: false, message: "", error: "" });
+                      setShowAddDemon(true);
+                    }}
+                    type="button"
+                    aria-label="Add demon"
+                    title="Add demon"
+                  >
+                    <Plus size={25} />
+                  </button>
+                </div>
               </div>
             )}
             {addState.error && !showAddDemon && <p className="manual-list-toast error">{addState.error}</p>}
@@ -652,6 +713,63 @@ export function DemonListContent({
                   <button className="login-button" disabled={addState.saving} type="submit">
                     <Plus size={18} />
                     {addState.saving ? "Adding..." : "Add to list"}
+                  </button>
+                </form>
+              </div>
+            )}
+            {showEditDemon && (
+              <div className="manual-add-backdrop" onMouseDown={() => !editState.saving && setShowEditDemon(false)}>
+                <form className="manual-add-modal" onSubmit={handleEditDemon} onMouseDown={event => event.stopPropagation()}>
+                  <button className="manual-add-close" onClick={() => setShowEditDemon(false)} type="button">
+                    <X size={20} />
+                  </button>
+                  <div>
+                    <p className="eyebrow">Edit List</p>
+                    <h2>Edit Demon</h2>
+                  </div>
+                  <label>
+                    Demon
+                    <select value={editDemonId} onChange={event => selectEditDemon(event.target.value)}>
+                      {filtered.map(demon => (
+                        <option key={demon.id} value={demon.id}>
+                          {demon.name}{isInProgressDemon(demon) ? ` (${demon.progressPercent || 0}%)` : ""}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    Attempts
+                    <input
+                      type="number"
+                      min="0"
+                      value={editForm.attempts}
+                      onChange={event => setEditForm(current => ({ ...current, attempts: event.target.value }))}
+                    />
+                  </label>
+                  {isInProgressDemon(filtered.find(item => String(item.id) === String(editDemonId))) && (
+                    <label>
+                      Progress %
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={editForm.progressPercent}
+                        onChange={event => setEditForm(current => ({ ...current, progressPercent: event.target.value }))}
+                      />
+                    </label>
+                  )}
+                  <label>
+                    Note
+                    <textarea
+                      value={editForm.note}
+                      onChange={event => setEditForm(current => ({ ...current, note: event.target.value }))}
+                      rows={4}
+                    />
+                  </label>
+                  {editState.error && <p className="admin-error">{editState.error}</p>}
+                  <button className="login-button" disabled={editState.saving} type="submit">
+                    <Check size={18} />
+                    {editState.saving ? "Saving..." : "Save Demon"}
                   </button>
                 </form>
               </div>

@@ -395,6 +395,19 @@ export default function App() {
     return data;
   }
 
+  async function editManualDemon(demon, form) {
+    const data = await sendManualListAction({
+      action: "manualEditDemon",
+      levelId: demon.id,
+      attempts: Number(form.attempts),
+      note: form.note,
+      progressPercent: form.progressPercent === "" ? "" : Number(form.progressPercent)
+    });
+
+    if (data.success) window.location.reload();
+    return data;
+  }
+
   function moveManualDemon(demon, direction) {
     const currentPlacement = placementNumber(demon.placement);
     const targetPlacement = direction === "up" ? currentPlacement - 1 : currentPlacement + 1;
@@ -1092,6 +1105,7 @@ async function handleSaveRequestStatusChanges() {
           hasUnsavedListChanges={listChangesPending}
           onToggleEditList={toggleEditListMode}
           onAddManualDemon={addManualDemon}
+          onEditManualDemon={editManualDemon}
           onMoveDemon={moveManualDemon}
           onSaveListChanges={saveManualListOrder}
         />
