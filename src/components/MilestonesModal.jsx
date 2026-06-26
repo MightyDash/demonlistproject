@@ -12,7 +12,7 @@ const MILESTONES = [
   { ordinal: "300th", name: "Backstreet Boy" },
   { ordinal: "350th", name: "To the grave" },
   { ordinal: "400th", name: "cant let go copy" },
-  { ordinal: "500th", name: null },
+  { ordinal: "500th", name: "Adventure to Uncnown" },
   { ordinal: "600th", name: null },
   { ordinal: "700th", name: null },
   { ordinal: "800th", name: null },
