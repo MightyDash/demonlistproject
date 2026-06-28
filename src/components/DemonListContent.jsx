@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { BarChart3, Bookmark, Check, Grid3X3, Info, List, MoreHorizontal, Search, SlidersHorizontal, Target, Trophy, X } from "lucide-react";
+import { BarChart3, Check, Grid3X3, Info, List, Search, SlidersHorizontal, Target, Trophy, X } from "lucide-react";
 import { StatCard } from "./StatCard.jsx";
 import { difficultyClass, formatNumber, formatTier, isInProgressDemon } from "../demonUtils.js";
 
@@ -422,11 +422,6 @@ export function DemonListContent({
                             <span className="grid-chip">{demon.year || "Unknown"}</span>
                           </div>
                         )}
-                      </div>
-                      <div className="grid-actions" aria-hidden="true">
-                        <button type="button" onClick={event => event.stopPropagation()}><Bookmark size={18} /></button>
-                        <button type="button" onClick={event => event.stopPropagation()}><BarChart3 size={18} /></button>
-                        <button type="button" onClick={event => event.stopPropagation()}><MoreHorizontal size={18} /></button>
                       </div>
                     </article>
                     );
