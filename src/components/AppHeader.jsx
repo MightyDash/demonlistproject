@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Award, FileClock, Info, LogIn, LogOut, Pencil, Radio, Shield, X } from "lucide-react";
+import { Info, Pencil, X } from "lucide-react";
+import { StaggeredMenu } from "./StaggeredMenu.jsx";
 
 const DEFAULT_SITE_VERSION = "v0.62";
 const DEFAULT_VERSION_CHANGES = [
@@ -237,57 +238,18 @@ export function AppHeader({
           )}
     
           <div>
-            <div className={`source-pill ${source}`}>
-              {source === "live" && <Radio size={15} />}
-              {source === "live" ? "Live Sheet Data" : source === "mock" ? "Mock Data" : "Loading"}
-            </div>
-    
-            {!adminView && (
-              <button className="admin-button panel-button" onClick={onOpenHistory} type="button">
-                <FileClock size={16} />
-                {historyView ? "Back to list" : "List Changes"}
-              </button>
-            )}
-
-            {!adminView && !historyView && (
-              <button className="admin-button panel-button" onClick={onOpenMilestones} type="button">
-                <Award size={16} />
-                Milestones
-              </button>
-            )}
-
-            {!adminView && !historyView && (
-              <button className="admin-button panel-button" onClick={onOpenRequests} type="button">
-                Demon Requests
-              </button>
-            )}
-    
-            {!isAdmin && (
-              <button className="admin-button" onClick={onOpenLogin} type="button">
-                <LogIn size={16} />
-                Admin Login
-              </button>
-            )}
-    
-            {isAdmin && !adminView && (
-              <button className="admin-button panel-button" onClick={onOpenAdmin} type="button">
-                <Shield size={16} />
-                Go to panel
-              </button>
-            )}
-    
-            {isAdmin && adminView && (
-              <button className="admin-button panel-button" onClick={onCloseAdmin} type="button">
-                Back to list
-              </button>
-            )}
-    
-            {isAdmin && (
-              <button className="admin-button logout-button" onClick={onOpenLogout} type="button">
-                <LogOut size={16} />
-                Logout
-              </button>
-            )}
+            <StaggeredMenu
+              source={source}
+              isAdmin={isAdmin}
+              adminView={adminView}
+              onHome={onCloseAdmin}
+              onHistory={onOpenHistory}
+              onMilestones={onOpenMilestones}
+              onRequests={onOpenRequests}
+              onLogin={onOpenLogin}
+              onAdmin={onOpenAdmin}
+              onLogout={onOpenLogout}
+            />
           </div>
         </header>
   );
