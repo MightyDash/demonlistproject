@@ -3841,12 +3841,6 @@ h1 {
   font-weight: 800;
 }
 
-.list-updated-at {
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 750;
-}
-
 .tier-update-summary {
   display: grid;
   gap: 8px;

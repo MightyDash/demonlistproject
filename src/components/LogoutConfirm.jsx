@@ -5,7 +5,7 @@ export function LogoutConfirm({ onConfirm, onCancel }) {
           <div className="modal-backdrop">
             <div className="confirm-panel">
               <h2>Logout?</h2>
-              <p>Weet je zeker dat je wilt uitloggen?</p>
+              <p>Are you sure you want to log out?</p>
     
               <div className="confirm-actions">
                 <button className="logout-confirm-button" onClick={onConfirm} type="button">
@@ -13,7 +13,7 @@ export function LogoutConfirm({ onConfirm, onCancel }) {
                 </button>
     
                 <button className="close-button" onClick={onCancel} type="button">
-                  Annuleren
+                  Cancel
                 </button>
               </div>
             </div>

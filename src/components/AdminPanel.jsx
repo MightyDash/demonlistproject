@@ -149,7 +149,7 @@ export function AdminPanel({
 
   async function handleSaveManagedNote(demon) {
     if (!onSaveNote) {
-      setAdminError("Note Manager is niet gekoppeld.");
+      setAdminError("Note Manager is not connected.");
       return;
     }
 
@@ -160,11 +160,11 @@ export function AdminPanel({
     try {
       const result = await onSaveNote(demon, noteDrafts[demon.id] || "");
       if (!result?.success) {
-        setAdminError(result?.message || "Note opslaan mislukt.");
+        setAdminError(result?.message || "Could not save the note.");
         return;
       }
 
-      setAdminMessage(result.message || `Note voor ${demon.name} opgeslagen.`);
+      setAdminMessage(result.message || `Note for ${demon.name} saved.`);
     } finally {
       setNoteSavingId("");
     }
@@ -212,9 +212,9 @@ export function AdminPanel({
       link.remove();
       URL.revokeObjectURL(url);
 
-      setAdminMessage("Backup export gemaakt.");
+      setAdminMessage("Backup export created.");
     } catch (error) {
-      setAdminError(error.message || "Backup export mislukt.");
+      setAdminError(error.message || "Backup export failed.");
     }
   }
 
@@ -227,7 +227,7 @@ export function AdminPanel({
 
     const q = editSearch.trim();
     if (!q) {
-      setAdminError("Vul een Level ID of naam in.");
+      setAdminError("Enter a Level ID or name.");
       return;
     }
 
@@ -251,7 +251,7 @@ export function AdminPanel({
           : String(data.demon.progressPercent)
       });
     } catch (error) {
-      setAdminError(error.message || "Kon geen verbinding maken met Apps Script.");
+      setAdminError(error.message || "Could not connect to Apps Script.");
     } finally {
       setIsSubmitting(false);
     }
@@ -266,23 +266,23 @@ export function AdminPanel({
     const progressPercent = Number(editForm.progressPercent);
 
     if (!editForm.name.trim()) {
-      setAdminError("Naam is verplicht.");
+      setAdminError("Name is required.");
       return;
     }
     if (!Number.isInteger(year) || String(year).length !== 4) {
-      setAdminError("Jaar moet een geldig 4-cijferig jaar zijn.");
+      setAdminError("Year must be a valid four-digit year.");
       return;
     }
     if (!Number.isInteger(attempts) || attempts < 0) {
-      setAdminError("Attempts moet een geldig getal zijn.");
+      setAdminError("Attempts must be a valid number.");
       return;
     }
     if (editForm.status !== "COMPLETED" && editForm.status !== "IN PROGRESS") {
-      setAdminError("Status moet COMPLETED of IN PROGRESS zijn.");
+      setAdminError("Status must be COMPLETED or IN PROGRESS.");
       return;
     }
     if (editForm.status === "IN PROGRESS" && (!Number.isInteger(progressPercent) || progressPercent < 0 || progressPercent > 100)) {
-      setAdminError("Progress moet een percentage tussen 0 en 100 zijn.");
+      setAdminError("Progress must be a percentage between 0 and 100.");
       return;
     }
 
@@ -319,18 +319,18 @@ export function AdminPanel({
       });
 
       if (!data.success) {
-        setAdminError(data.message || "Bewerken mislukt.");
+        setAdminError(data.message || "Could not edit the demon.");
         return;
       }
 
-      setAdminMessage(data.message || "Demon bijgewerkt.");
+      setAdminMessage(data.message || "Demon updated.");
       setEditFound(null);
       setEditSearch("");
       setEditConfirm(false);
       setShowEditForm(false);
       if (onDataChanged) onDataChanged();
     } catch (error) {
-      setAdminError(error.message || "Kon geen verbinding maken met Apps Script.");
+      setAdminError(error.message || "Could not connect to Apps Script.");
     } finally {
       setIsSubmitting(false);
     }
@@ -341,11 +341,11 @@ export function AdminPanel({
     const token = localStorage.getItem("admin_token");
 
     if (!adminUrl) {
-      throw new Error("VITE_APPS_SCRIPT_ADMIN_URL ontbreekt in Render.");
+      throw new Error("VITE_APPS_SCRIPT_ADMIN_URL is missing in Render.");
     }
 
     if (!token) {
-      throw new Error("Je bent niet ingelogd.");
+      throw new Error("You are not logged in.");
     }
 
     const response = await fetch(adminUrl, {
@@ -370,22 +370,22 @@ export function AdminPanel({
     const progressPercent = Number(addForm.progressPercent);
 
     if (!levelId) {
-      setAdminError("Level ID is verplicht.");
+      setAdminError("Level ID is required.");
       return;
     }
 
     if (!Number.isInteger(attempts) || attempts < 0) {
-      setAdminError("Attempts moet een geldig getal zijn.");
+      setAdminError("Attempts must be a valid number.");
       return;
     }
 
     if (!Number.isInteger(year) || String(year).length !== 4) {
-      setAdminError("Year moet een geldig 4-cijferig jaartal zijn.");
+      setAdminError("Year must be a valid four-digit year.");
       return;
     }
 
     if (status === "IN PROGRESS" && (!Number.isInteger(progressPercent) || progressPercent < 0 || progressPercent > 100)) {
-      setAdminError("Progress moet een percentage tussen 0 en 100 zijn.");
+      setAdminError("Progress must be a percentage between 0 and 100.");
       return;
     }
 
@@ -418,11 +418,11 @@ export function AdminPanel({
       });
 
       if (!data.success) {
-        setAdminError(data.message || "Demon toevoegen mislukt.");
+        setAdminError(data.message || "Could not add the demon.");
         return;
       }
 
-      setAdminMessage(data.message || "Demon toegevoegd.");
+      setAdminMessage(data.message || "Demon added.");
       setAddForm({
         levelId: "",
         attempts: "",
@@ -434,7 +434,7 @@ export function AdminPanel({
 
       if (onDataChanged) onDataChanged();
     } catch (error) {
-      setAdminError(error.message || "Kon geen verbinding maken met Apps Script.");
+      setAdminError(error.message || "Could not connect to Apps Script.");
     } finally {
       setIsSubmitting(false);
     }
@@ -447,7 +447,7 @@ export function AdminPanel({
     const levelId = String(removeLevelId || "").trim();
 
     if (!levelId) {
-      setAdminError("Level ID is verplicht.");
+      setAdminError("Level ID is required.");
       return;
     }
 
@@ -470,18 +470,18 @@ export function AdminPanel({
       });
 
       if (!data.success) {
-        setAdminError(data.message || "Demon verwijderen mislukt.");
+        setAdminError(data.message || "Could not remove the demon.");
         return;
       }
 
-      setAdminMessage(data.message || "Demon verwijderd.");
+      setAdminMessage(data.message || "Demon removed.");
       setRemoveLevelId("");
       setRemoveConfirm(false);
       setShowRemoveForm(false);
 
       if (onDataChanged) onDataChanged();
     } catch (error) {
-      setAdminError(error.message || "Kon geen verbinding maken met Apps Script.");
+      setAdminError(error.message || "Could not connect to Apps Script.");
     } finally {
       setIsSubmitting(false);
     }
@@ -493,7 +493,7 @@ export function AdminPanel({
 
     const cleanRefreshToken = String(refreshListToken || "").trim();
     if (!cleanRefreshToken) {
-      setAdminError("Refresh List token is verplicht.");
+      setAdminError("Refresh List token is required.");
       return;
     }
 
@@ -526,7 +526,7 @@ export function AdminPanel({
       });
 
       if (!data.success) {
-        setAdminError(data.message || "List refresh mislukt.");
+        setAdminError(data.message || "List refresh failed.");
         return;
       }
 
@@ -535,7 +535,7 @@ export function AdminPanel({
       setShowRefreshTokenForm(false);
       if (onDataChanged) onDataChanged();
     } catch (error) {
-      setAdminError(error.message || "Kon geen verbinding maken met Apps Script.");
+      setAdminError(error.message || "Could not connect to Apps Script.");
     } finally {
       setIsSubmitting(false);
     }
@@ -549,7 +549,7 @@ export function AdminPanel({
       if (!data.success) {
         setTierUpdateCheck({
           loading: false,
-          error: data.message || "Updatecontrole mislukt.",
+          error: data.message || "Update check failed.",
           data: null
         });
         return;
@@ -559,7 +559,7 @@ export function AdminPanel({
     } catch (error) {
       setTierUpdateCheck({
         loading: false,
-        error: error.message || "Kon tier-updates niet controleren.",
+        error: error.message || "Could not check for tier updates.",
         data: null
       });
     }
@@ -588,14 +588,14 @@ export function AdminPanel({
       const data = await sendAdminRequest({ action: "revertRefresh" });
 
       if (!data.success) {
-        setAdminError(data.message || "Refresh terugzetten mislukt.");
+        setAdminError(data.message || "Could not revert the refresh.");
         return;
       }
 
-      setAdminMessage(data.message || "Refresh teruggezet.");
+      setAdminMessage(data.message || "Refresh reverted.");
       if (onDataChanged) onDataChanged();
     } catch (error) {
-      setAdminError(error.message || "Kon geen verbinding maken met Apps Script.");
+      setAdminError(error.message || "Could not connect to Apps Script.");
     } finally {
       setIsSubmitting(false);
     }
@@ -613,7 +613,7 @@ export function AdminPanel({
       });
 
       if (!data.success) {
-        setAdminError(data.message || "Theme wijzigen mislukt.");
+        setAdminError(data.message || "Could not change the theme.");
         return;
       }
 
@@ -622,7 +622,7 @@ export function AdminPanel({
       setThemeMenuOpen(false);
       setShowThemeForm(false);
     } catch (error) {
-      setAdminError(error.message || "Kon geen verbinding maken met Apps Script.");
+      setAdminError(error.message || "Could not connect to Apps Script.");
     } finally {
       setIsSubmitting(false);
     }
@@ -702,7 +702,7 @@ export function AdminPanel({
         >
           <span className="admin-action-icon add"><Plus size={28} /></span>
           <strong>Add Demon</strong>
-          <span>Nieuwe demon toevoegen aan je sheet.</span>
+          <span>Add a new demon to your sheet.</span>
           <ArrowRight className="admin-action-arrow" size={22} />
         </button>
 
@@ -726,7 +726,7 @@ export function AdminPanel({
         >
           <span className="admin-action-icon remove"><Trash2 size={24} /></span>
           <strong>Remove Demon</strong>
-          <span>Demon verwijderen via Level ID.</span>
+          <span>Remove a demon by Level ID.</span>
           <ArrowRight className="admin-action-arrow" size={22} />
         </button>
 
@@ -750,7 +750,7 @@ export function AdminPanel({
         >
           <span className="admin-action-icon edit"><Pencil size={24} /></span>
           <strong>Edit Demon</strong>
-          <span>Naam, difficulty, makers en meer aanpassen.</span>
+          <span>Edit the name, difficulty, creators and more.</span>
           <ArrowRight className="admin-action-arrow" size={22} />
         </button>
 
@@ -776,7 +776,7 @@ export function AdminPanel({
         >
           <span className="admin-action-icon theme"><Paintbrush size={24} /></span>
           <strong>Site Theme</strong>
-          <span>Stel het thema voor alle bezoekers in.</span>
+          <span>Set the theme for all visitors.</span>
           <ArrowRight className="admin-action-arrow" size={22} />
         </button>
 
@@ -821,7 +821,7 @@ export function AdminPanel({
         >
           <span className="admin-action-icon revert"><RotateCcw size={24} /></span>
           <strong>Revert Refresh</strong>
-          <span>Zet de laatste Refresh List of Update All backup terug.</span>
+          <span>Restore the latest Refresh List or Update All backup.</span>
           <ArrowRight className="admin-action-arrow" size={22} />
         </button>
 
@@ -832,7 +832,7 @@ export function AdminPanel({
         >
           <span className="admin-action-icon notes"><FileText size={24} /></span>
           <strong>Note Manager</strong>
-          <span>Alle demon notes snel bekijken en bewerken.</span>
+          <span>Quickly view and edit all demon notes.</span>
           <ArrowRight className="admin-action-arrow" size={22} />
         </button>
 
@@ -855,7 +855,7 @@ export function AdminPanel({
         >
           <span className="admin-action-icon requests"><Inbox size={24} /></span>
           <strong>Demon Requests</strong>
-          <span>Ga direct naar de request pagina.</span>
+          <span>Open the request page.</span>
           <ArrowRight className="admin-action-arrow" size={22} />
         </button>
       </div>
@@ -866,7 +866,7 @@ export function AdminPanel({
             <div>
               <h3>Note Manager</h3>
               <p className="admin-form-note">
-                Bewerk je persoonlijke demon notes zonder elke demonkaart los te openen.
+                Edit your personal demon notes without opening every demon card.
               </p>
             </div>
             <span>{noteManagerDemons.length} demons</span>
@@ -1181,7 +1181,7 @@ export function AdminPanel({
                 className="logout-confirm-button"
                 onClick={() => {
                   if (!String(removeLevelId || "").trim()) {
-                    setAdminError("Level ID is verplicht.");
+                    setAdminError("Level ID is required.");
                     return;
                   }
                   setAdminError("");
@@ -1207,8 +1207,8 @@ export function AdminPanel({
           ) : (
             <div className="remove-confirm-box">
               <p>
-                Weet je zeker dat je demon met Level ID{" "}
-                <strong>{removeLevelId}</strong> wilt verwijderen?
+                Are you sure you want to remove the demon with Level ID{" "}
+                remove <strong>{removeLevelId}</strong>?
               </p>
 
               <div className="admin-form-actions">
@@ -1248,7 +1248,7 @@ export function AdminPanel({
                 setEditConfirm(false);
               }}
               onKeyDown={e => { if (e.key === "Enter") handleSearchEdit(); }}
-              placeholder="Exacte naam of Level ID..."
+              placeholder="Exact name or Level ID..."
             />
             <button
               className="login-button edit-search-btn"
@@ -1256,17 +1256,17 @@ export function AdminPanel({
               disabled={isSubmitting}
               type="button"
             >
-              {isSubmitting ? "Zoeken..." : "Zoek"}
+              {isSubmitting ? "Searching..." : "Search"}
             </button>
           </div>
 
           <p className="edit-search-hint">
-            Typ de exacte naam (hoofdletterongevoelig) of het exacte Level ID.
+            Enter the exact name (case-insensitive) or exact Level ID.
           </p>
 
           {editNotFound && (
             <p className="admin-error" style={{ marginTop: "12px" }}>
-              Geen demon gevonden. Controleer de naam of het Level ID.
+              No demon found. Check the name or Level ID.
             </p>
           )}
 
@@ -1274,17 +1274,17 @@ export function AdminPanel({
             <>
               <div className="edit-found-badge">
                 <span className="edit-found-dot" />
-                <span>Gevonden: <strong>{editFound.name}</strong></span>
+                <span>Found: <strong>{editFound.name}</strong></span>
                 <span className="edit-found-id">ID: {editFound.id}</span>
               </div>
 
               <div className="edit-fields-grid">
                 <label>
-                  Naam
+                  Name
                   <input
                     value={editForm.name}
                     onChange={e => setEditForm({ ...editForm, name: e.target.value })}
-                    placeholder="Naam van de demon"
+                    placeholder="Demon name"
                   />
                 </label>
 
@@ -1307,7 +1307,7 @@ export function AdminPanel({
                 </label>
 
                 <label>
-                  Jaar
+                  Year
                   <input
                     type="number"
                     value={editForm.year}
@@ -1366,7 +1366,7 @@ export function AdminPanel({
                   onClick={() => setEditConfirm(true)}
                   type="button"
                 >
-                  Opslaan
+                  Save
                 </button>
                 <button
                   className="close-button"
@@ -1377,7 +1377,7 @@ export function AdminPanel({
                   }}
                   type="button"
                 >
-                  Annuleren
+                  Cancel
                 </button>
               </div>
             </>
@@ -1386,7 +1386,7 @@ export function AdminPanel({
           {editFound && editConfirm && (
             <div className="remove-confirm-box" style={{ borderColor: "rgba(94,161,255,0.35)", background: "rgba(94,161,255,0.08)" }}>
               <p style={{ color: "var(--text)" }}>
-                Weet je zeker dat je <strong style={{ color: "var(--blue)" }}>{editFound.name}</strong> wilt bijwerken met de nieuwe gegevens?
+                Are you sure you want to update <strong style={{ color: "var(--blue)" }}>{editFound.name}</strong> with the new information?
               </p>
               <div className="admin-form-actions">
                 <button
@@ -1395,14 +1395,14 @@ export function AdminPanel({
                   disabled={isSubmitting}
                   type="button"
                 >
-                  {isSubmitting ? "Opslaan..." : "Ja, opslaan"}
+                  {isSubmitting ? "Saving..." : "Yes, save"}
                 </button>
                 <button
                   className="close-button"
                   onClick={() => setEditConfirm(false)}
                   type="button"
                 >
-                  Terug
+                  Back
                 </button>
               </div>
             </div>

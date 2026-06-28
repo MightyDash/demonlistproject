@@ -43,7 +43,7 @@ export function DemonListContent({
   ].filter(Boolean).length;
   const progressInfoText = "It is not yet clear whether these demons will get beaten in the future. I am certain that some will, but I still have my doubts about others. This is just a reminder to myself";
   const formattedUpdatedAt = listUpdatedAt
-    ? new Intl.DateTimeFormat("nl-NL", {
+    ? new Intl.DateTimeFormat("en-GB", {
         dateStyle: "long",
         timeStyle: "short",
         timeZone: "Europe/Amsterdam"
@@ -279,7 +279,6 @@ export function DemonListContent({
               )}
             </span>
             <div className="list-status-links">
-              <span className="list-updated-at">Updated {formattedUpdatedAt}</span>
               {apiLatestDemon && (
                 <button className="latest-link" onClick={onLatestDemonClick} type="button">
                   Latest: {apiLatestDemon}

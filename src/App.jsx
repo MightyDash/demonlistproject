@@ -356,7 +356,7 @@ export default function App() {
 
       return { success: true, message: data.message || "Note saved." };
     } catch {
-      return { success: false, message: "Kon geen verbinding maken." };
+      return { success: false, message: "Could not connect." };
     }
   }
 
@@ -389,7 +389,7 @@ export default function App() {
 
       return { success: true, message: data.message || "Changelog saved." };
     } catch {
-      return { success: false, message: "Kon geen verbinding maken." };
+      return { success: false, message: "Could not connect." };
     }
   }
 
@@ -466,11 +466,11 @@ export default function App() {
     const data = await response.json();
 
     if (!data.success) {
-      setRequestError(data.message || "Request mislukt.");
+      setRequestError(data.message || "Request failed.");
       return;
     }
 
-    setRequestMessage("Request succesvol verstuurd!");
+    setRequestMessage("Request submitted successfully!");
 
     setRequestForm({
       levelId: "",
@@ -479,7 +479,7 @@ export default function App() {
     });
     await loadRequests({ silent: true });
   } catch (error) {
-    setRequestError("Kon geen verbinding maken.");
+    setRequestError("Could not connect.");
   } finally {
     setRequestLoading(false);
   }
@@ -498,7 +498,7 @@ async function handleSaveRequestStatusChanges() {
   const changes = Object.entries(requestStatusDrafts);
 
   if (changes.length === 0) {
-    setRequestMessage("Geen status wijzigingen om op te slaan.");
+    setRequestMessage("There are no status changes to save.");
     return;
   }
 
@@ -519,16 +519,16 @@ async function handleSaveRequestStatusChanges() {
       const data = await response.json();
 
       if (!data.success) {
-        setRequestError(data.message || "Status wijzigen mislukt.");
+        setRequestError(data.message || "Could not update the status.");
         return;
       }
     }
 
     setRequestStatusDrafts({});
-    setRequestMessage("Status wijzigingen opgeslagen.");
+    setRequestMessage("Status changes saved.");
     await loadRequests({ silent: true });
   } catch (error) {
-    setRequestError("Kon geen verbinding maken.");
+    setRequestError("Could not connect.");
   } finally {
     setRequestStatusSaving(false);
   }
@@ -537,7 +537,7 @@ async function handleSaveRequestStatusChanges() {
   setRequestError("");
   setRequestMessage("");
 
-  const confirmDelete = window.confirm("Weet je zeker dat je deze rejected request wilt verwijderen?");
+  const confirmDelete = window.confirm("Are you sure you want to delete this rejected request?");
   if (!confirmDelete) return;
 
   try {
@@ -553,14 +553,14 @@ async function handleSaveRequestStatusChanges() {
     const data = await response.json();
 
     if (!data.success) {
-      setRequestError(data.message || "Request verwijderen mislukt.");
+      setRequestError(data.message || "Could not delete the request.");
       return;
     }
 
-    setRequestMessage("Request verwijderd.");
+    setRequestMessage("Request deleted.");
     await loadRequests({ silent: true });
   } catch {
-    setRequestError("Kon geen verbinding maken.");
+    setRequestError("Could not connect.");
   }
 }
   async function handleAllowWeightIncrease(rowNumber) {
@@ -580,21 +580,21 @@ async function handleSaveRequestStatusChanges() {
     const data = await response.json();
 
     if (!data.success) {
-      setRequestError(data.message || "Weight increase toestaan mislukt.");
+      setRequestError(data.message || "Could not allow the weight increase.");
       return;
     }
 
-    setRequestMessage("Weight Increase staat nu open voor deze request.");
+    setRequestMessage("Weight increase is now allowed for this request.");
     await loadRequests({ silent: true });
   } catch {
-    setRequestError("Kon geen verbinding maken.");
+    setRequestError("Could not connect.");
   }
   }
   async function handleAllowWeightIncreaseForAll() {
   setRequestError("");
   setRequestMessage("");
 
-  const confirmOpen = window.confirm("Weet je zeker dat je Weight Increase voor alle requests wilt openzetten?");
+  const confirmOpen = window.confirm("Are you sure you want to allow weight increases for all requests?");
   if (!confirmOpen) return;
 
   try {
@@ -609,14 +609,14 @@ async function handleSaveRequestStatusChanges() {
     const data = await response.json();
 
     if (!data.success) {
-      setRequestError(data.message || "Alle Weight Increases openzetten mislukt.");
+      setRequestError(data.message || "Could not allow all weight increases.");
       return;
     }
 
-    setRequestMessage(data.message || "Alle requests staan open voor Weight Increase.");
+    setRequestMessage(data.message || "Weight increases are now allowed for all requests.");
     await loadRequests({ silent: true });
   } catch {
-    setRequestError("Kon geen verbinding maken.");
+    setRequestError("Could not connect.");
   }
 }
   function handleToggleRejectedRequest(rowNumber) {
@@ -641,11 +641,11 @@ async function handleSaveRequestStatusChanges() {
   setRequestMessage("");
 
   if (selectedRejectedRequests.length === 0) {
-    setRequestMessage("Geen rejected requests geselecteerd.");
+    setRequestMessage("No rejected requests selected.");
     return;
   }
 
-  const confirmDelete = window.confirm(`Weet je zeker dat je ${selectedRejectedRequests.length} rejected requests wilt verwijderen?`);
+  const confirmDelete = window.confirm(`Are you sure you want to delete ${selectedRejectedRequests.length} rejected requests?`);
   if (!confirmDelete) return;
 
   try {
@@ -661,15 +661,15 @@ async function handleSaveRequestStatusChanges() {
     const data = await response.json();
 
     if (!data.success) {
-      setRequestError(data.message || "Geselecteerde requests verwijderen mislukt.");
+      setRequestError(data.message || "Could not delete the selected requests.");
       return;
     }
 
     setSelectedRejectedRequests([]);
-    setRequestMessage(data.message || "Geselecteerde requests verwijderd.");
+    setRequestMessage(data.message || "Selected requests deleted.");
     await loadRequests({ silent: true });
   } catch {
-    setRequestError("Kon geen verbinding maken.");
+    setRequestError("Could not connect.");
   }
 }
   const difficulties = useMemo(() => {
