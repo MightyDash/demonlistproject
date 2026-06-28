@@ -62,8 +62,6 @@ export default function App() {
   const [siteChangelog, setSiteChangelog] = useState(DEFAULT_SITE_CHANGELOG);
   const [futureListIds, setFutureListIds] = useState([]);
   const [viewMode, setViewMode] = useState("grid");
-  const [editListMode, setEditListMode] = useState(false);
-  const [listChangesPending, setListChangesPending] = useState(false);
   const [requestView, setRequestView] = useState(false);
   const [historyView, setHistoryView] = useState(false);
   const [requestForm, setRequestForm] = useState({
@@ -358,114 +356,6 @@ export default function App() {
     } catch {
       return { success: false, message: "Kon geen verbinding maken." };
     }
-  }
-
-  async function sendManualListAction(payload) {
-    const adminUrl = import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL;
-    const token = localStorage.getItem("admin_token");
-
-    if (!adminUrl || !token) {
-      return { success: false, message: "Admin connection is not configured." };
-    }
-
-    try {
-      const response = await fetch(adminUrl, {
-        method: "POST",
-        body: JSON.stringify({ ...payload, token })
-      });
-      return response.json();
-    } catch {
-      return { success: false, message: "Kon geen verbinding maken." };
-    }
-  }
-
-  async function addManualDemon(form) {
-    const data = await sendManualListAction({
-      action: "manualAddDemon",
-      levelId: form.levelId,
-      attempts: Number(form.attempts),
-      note: form.note,
-      placement: Number(form.placement)
-    });
-
-    if (data.success) {
-      window.location.reload();
-    }
-
-    return data;
-  }
-
-  async function editManualDemon(demon, form) {
-    const data = await sendManualListAction({
-      action: "manualEditDemon",
-      levelId: demon.id,
-      attempts: Number(form.attempts),
-      note: form.note,
-      progressPercent: form.progressPercent === "" ? "" : Number(form.progressPercent)
-    });
-
-    if (data.success) window.location.reload();
-    return data;
-  }
-
-  function moveManualDemon(demon, direction) {
-    const currentPlacement = placementNumber(demon.placement);
-    const targetPlacement = direction === "up" ? currentPlacement - 1 : currentPlacement + 1;
-    const target = demons.find(item =>
-      !isInProgressDemon(item) && placementNumber(item.placement) === targetPlacement
-    );
-
-    if (!target) {
-      return {
-        success: true,
-        unchanged: true,
-        message: direction === "up"
-          ? "This demon is already first."
-          : "This demon is already last."
-      };
-    }
-
-    setDemons(previous =>
-      previous.map(item => {
-        if (String(item.id) === String(demon.id)) {
-          return { ...item, placement: `#${targetPlacement} •` };
-        }
-        if (String(item.id) === String(target.id)) {
-          return { ...item, placement: `#${currentPlacement} •` };
-        }
-        return item;
-      })
-    );
-    setListChangesPending(true);
-    return { success: true };
-  }
-
-  async function saveManualListOrder() {
-    const orderedLevelIds = demons
-      .filter(demon => !isInProgressDemon(demon))
-      .slice()
-      .sort((a, b) => placementNumber(a.placement) - placementNumber(b.placement))
-      .map(demon => String(demon.id));
-    const data = await sendManualListAction({
-      action: "manualSaveOrder",
-      orderedLevelIds
-    });
-
-    if (data.success) setListChangesPending(false);
-    return data;
-  }
-
-  function toggleEditListMode() {
-    if (editListMode && listChangesPending) {
-      const discard = window.confirm(
-        "You still have unsaved placement changes. Leave edit mode and discard them?"
-      );
-      if (!discard) return;
-      window.location.reload();
-      return;
-    }
-
-    setEditListMode(active => !active);
   }
 
   async function saveSiteChangelog(version, changes) {
@@ -803,14 +693,14 @@ async function handleSaveRequestStatusChanges() {
     };
 
     if (yearView === "future") {
-      const completed = demons
-        .filter(demon => !isInProgressDemon(demon))
-        .sort((a, b) => placementNumber(a.placement) - placementNumber(b.placement));
-      const planned = demons.filter(
-        demon => isInProgressDemon(demon) && futureIds.has(String(demon.id))
-      );
+      return demons
+        .filter(demon => !isInProgressDemon(demon) || futureIds.has(String(demon.id)))
+        .sort((a, b) => {
+          const tierDifference = Number(b.tier || 0) - Number(a.tier || 0);
+          if (tierDifference !== 0) return tierDifference;
 
-      return [...completed, ...planned]
+          return String(a.name || "").localeCompare(String(b.name || ""));
+        })
         .map((demon, index) => ({
           ...demon,
           futurePlacementNumber: index + 1,
@@ -988,13 +878,12 @@ async function handleSaveRequestStatusChanges() {
   const stats = useMemo(() => {
     const completed = demons.filter(d => !isInProgressDemon(d));
     const totalAttempts = completed.reduce((sum, d) => sum + Number(d.attempts || 0), 0);
-    const hardest = completed
-      .slice()
-      .sort((a, b) => placementNumber(a.placement) - placementNumber(b.placement))[0];
+    const hardest = completed.slice().sort((a, b) => Number(b.tier) - Number(a.tier))[0];
 
     return {
       total: completed.length,
       attempts: totalAttempts,
+      avgAttempts: completed.length ? Math.round(totalAttempts / completed.length) : 0,
       hardest
     };
   }, [demons]);
@@ -1033,6 +922,7 @@ async function handleSaveRequestStatusChanges() {
       {adminView ? (
         <AdminPanel
           onBack={() => navigateTo(ROUTES.home)}
+          onDataChanged={() => window.location.reload()}
           siteTheme={siteTheme}
           onThemeChanged={setSiteTheme}
           demons={demons}
@@ -1101,13 +991,6 @@ async function handleSaveRequestStatusChanges() {
           isAdmin={isAdmin}
           futureListIds={futureListIds}
           onToggleFutureListDemon={toggleFutureListDemon}
-          editListMode={editListMode}
-          hasUnsavedListChanges={listChangesPending}
-          onToggleEditList={toggleEditListMode}
-          onAddManualDemon={addManualDemon}
-          onEditManualDemon={editManualDemon}
-          onMoveDemon={moveManualDemon}
-          onSaveListChanges={saveManualListOrder}
         />
       )}
 

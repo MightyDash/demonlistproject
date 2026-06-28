@@ -1,21 +1,7 @@
 import React, { useEffect, useState } from "react";
-import {
-  Check,
-  ChevronDown,
-  ChevronUp,
-  Grid3X3,
-  Info,
-  List,
-  Pencil,
-  Plus,
-  Search,
-  SlidersHorizontal,
-  Target,
-  Trophy,
-  X
-} from "lucide-react";
+import { BarChart3, Bookmark, Check, Grid3X3, Info, List, MoreHorizontal, Search, SlidersHorizontal, Target, Trophy, X } from "lucide-react";
 import { StatCard } from "./StatCard.jsx";
-import { difficultyClass, formatNumber, isInProgressDemon } from "../demonUtils.js";
+import { difficultyClass, formatNumber, formatTier, isInProgressDemon } from "../demonUtils.js";
 
 export function DemonListContent({
   stats,
@@ -41,26 +27,10 @@ export function DemonListContent({
   onLatestDemonClick,
   isAdmin,
   futureListIds = [],
-  onToggleFutureListDemon,
-  editListMode = false,
-  hasUnsavedListChanges = false,
-  onToggleEditList,
-  onAddManualDemon,
-  onEditManualDemon,
-  onMoveDemon,
-  onSaveListChanges
+  onToggleFutureListDemon
 }) {
   const [showProgressInfo, setShowProgressInfo] = useState(false);
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
-  const [showAddDemon, setShowAddDemon] = useState(false);
-  const [showEditDemon, setShowEditDemon] = useState(false);
-  const [editDemonId, setEditDemonId] = useState("");
-  const [editForm, setEditForm] = useState({ attempts: "", note: "", progressPercent: "" });
-  const [editState, setEditState] = useState({ saving: false, error: "" });
-  const [addForm, setAddForm] = useState({ levelId: "", attempts: "", note: "", placement: "" });
-  const [addState, setAddState] = useState({ saving: false, message: "", error: "" });
-  const [movingId, setMovingId] = useState("");
-  const [saveState, setSaveState] = useState({ saving: false, message: "", error: "" });
   const isProgressView = yearView === "progress";
   const isFutureView = yearView === "future";
   const futureIds = new Set(futureListIds.map(id => String(id)));
@@ -115,107 +85,6 @@ export function DemonListContent({
     setSelected(demon);
   }
 
-  async function handleMove(event, demon, direction) {
-    event.stopPropagation();
-    setMovingId(String(demon.id));
-    setAddState({ saving: false, message: "", error: "" });
-
-    const result = await onMoveDemon?.(demon, direction);
-    if (!result?.success) {
-      setAddState({ saving: false, message: "", error: result?.message || "Placement wijzigen mislukt." });
-    }
-    setMovingId("");
-  }
-
-  async function handleSaveChanges() {
-    setSaveState({ saving: true, message: "", error: "" });
-    const result = await onSaveListChanges?.();
-
-    if (result?.success) {
-      setSaveState({
-        saving: false,
-        message: result.message || "Changes saved.",
-        error: ""
-      });
-    } else {
-      setSaveState({
-        saving: false,
-        message: "",
-        error: result?.message || "Changes could not be saved."
-      });
-    }
-  }
-
-  async function handleAddDemon(event) {
-    event.preventDefault();
-    setAddState({ saving: false, message: "", error: "" });
-
-    const levelId = addForm.levelId.trim();
-    const attempts = Number(addForm.attempts);
-    const placement = Number(addForm.placement);
-
-    if (!levelId || !Number.isInteger(attempts) || attempts < 0 || !Number.isInteger(placement) || placement < 1) {
-      setAddState({
-        saving: false,
-        message: "",
-        error: "Vul een Level ID, geldige attempts en een geldige placement in."
-      });
-      return;
-    }
-
-    setAddState({ saving: true, message: "", error: "" });
-    const result = await onAddManualDemon?.({ ...addForm, levelId, attempts, placement });
-
-    if (!result?.success) {
-      setAddState({ saving: false, message: "", error: result?.message || "Demon toevoegen mislukt." });
-    }
-  }
-
-  function openDemonEditor() {
-    const demon = filtered.find(item => String(item.id) === String(editDemonId)) || filtered[0];
-    if (demon) {
-      setEditDemonId(String(demon.id));
-      setEditForm({
-        attempts: String(demon.attempts || 0),
-        note: demon.notes || "",
-        progressPercent: isInProgressDemon(demon) ? String(demon.progressPercent || 0) : ""
-      });
-    }
-    setEditState({ saving: false, error: "" });
-    setShowEditDemon(true);
-  }
-
-  function selectEditDemon(levelId) {
-    const demon = filtered.find(item => String(item.id) === String(levelId));
-    setEditDemonId(levelId);
-    if (!demon) return;
-    setEditForm({
-      attempts: String(demon.attempts || 0),
-      note: demon.notes || "",
-      progressPercent: isInProgressDemon(demon) ? String(demon.progressPercent || 0) : ""
-    });
-  }
-
-  async function handleEditDemon(event) {
-    event.preventDefault();
-    const demon = filtered.find(item => String(item.id) === String(editDemonId));
-    if (!demon) return;
-
-    const attempts = Number(editForm.attempts);
-    const progressPercent = editForm.progressPercent === "" ? "" : Number(editForm.progressPercent);
-    if (!Number.isInteger(attempts) || attempts < 0 ||
-        (isInProgressDemon(demon) && (!Number.isInteger(progressPercent) || progressPercent < 0 || progressPercent > 100))) {
-      setEditState({ saving: false, error: "Controleer attempts en het percentage." });
-      return;
-    }
-
-    setEditState({ saving: true, error: "" });
-    const result = await onEditManualDemon?.(demon, { ...editForm, attempts, progressPercent });
-    if (!result?.success) {
-      setEditState({ saving: false, error: result?.message || "Demon bewerken mislukt." });
-    }
-  }
-
   function placementTrendClass(demon) {
     if (isProgressView || isFutureView) return "";
 
@@ -230,7 +99,8 @@ export function DemonListContent({
             <section className="stats-grid">
               <StatCard icon={<Trophy />} label="Total Demons" value={formatNumber(stats.total)} />
               <StatCard icon={<Target />} label="Total Attempts" value={formatNumber(stats.attempts)} />
-              <StatCard icon={<Trophy />} label="Hardest Demon" value={stats.hardest?.name || "Unknown"} detail={stats.hardest?.difficulty || ""} highlight />
+              <StatCard icon={<BarChart3 />} label="Avg Attempts" value={formatNumber(stats.avgAttempts)} />
+              <StatCard icon={<BarChart3 />} label="Hardest Demon" value={stats.hardest?.name || "Unknown"} detail={stats.hardest?.difficulty || ""} highlight />
             </section>
     
             <div className={`desktop-list-shell ${isProgressView ? "progress-shell" : ""}`}>
@@ -402,18 +272,6 @@ export function DemonListContent({
               )}
             </span>
             <div className="list-status-links">
-              {isAdmin && (
-                <>
-                  <button
-                    className={`edit-list-button ${editListMode ? "active" : ""}`}
-                    onClick={onToggleEditList}
-                    type="button"
-                  >
-                    {editListMode ? <X size={16} /> : <Pencil size={16} />}
-                    {editListMode ? "Done editing" : "Edit List"}
-                  </button>
-                </>
-              )}
               {apiLatestDemon && (
                 <button className="latest-link" onClick={onLatestDemonClick} type="button">
                   Latest: {apiLatestDemon}
@@ -421,8 +279,6 @@ export function DemonListContent({
               )}
             </div>
           </div>
-          {saveState.message && <p className="manual-save-message success">{saveState.message}</p>}
-          {saveState.error && <p className="manual-save-message error">{saveState.error}</p>}
 
           {showProgressInfo && (
             <div className="progress-info-backdrop" onClick={() => setShowProgressInfo(false)}>
@@ -443,15 +299,15 @@ export function DemonListContent({
           )}
     
               {viewMode === "list" ? (
-                <div className={`demon-table ${editListMode ? "edit-mode" : ""}`}>
+                <div className="demon-table">
                   <div className="row heading">
                     <div>#</div>
                     <div>Demon</div>
                     <div>Creator</div>
+                    <div>Tier</div>
                     <div>Difficulty</div>
                     <div>Attempts</div>
                     <div>Year</div>
-                    {editListMode && <div>Move</div>}
                   </div>
     
                   {filtered.map(demon => {
@@ -478,6 +334,7 @@ export function DemonListContent({
                         {isProgressView && isFuturePick && <span className="future-list-badge">Future List</span>}
                       </div>
                       <div>{demon.creator}</div>
+                      <div className="tier">{formatTier(demon.tier)}</div>
                       <div>
                         <span className={`difficulty ${difficultyClass(demon.difficulty)}`}>
                           {demon.difficulty}
@@ -485,26 +342,6 @@ export function DemonListContent({
                       </div>
                       <div>{formatNumber(demon.attempts)}</div>
                       <div>{demon.year || ""}</div>
-                      {editListMode && (
-                        <div className="manual-row-controls">
-                          <button
-                            onClick={event => handleMove(event, demon, "up")}
-                            disabled={isInProgress || movingId === String(demon.id)}
-                            type="button"
-                            aria-label={`Move ${demon.name} up`}
-                          >
-                            <ChevronUp size={17} />
-                          </button>
-                          <button
-                            onClick={event => handleMove(event, demon, "down")}
-                            disabled={isInProgress || movingId === String(demon.id)}
-                            type="button"
-                            aria-label={`Move ${demon.name} down`}
-                          >
-                            <ChevronDown size={17} />
-                          </button>
-                        </div>
-                      )}
                     </div>
                     );
                   })}
@@ -571,6 +408,7 @@ export function DemonListContent({
                           </>
                         ) : (
                           <div className="grid-meta">
+                            <span className="grid-chip tier-chip">Tier {formatTier(demon.tier)}</span>
                             <span className={`grid-chip difficulty-chip ${difficultyClass(demon.difficulty)}`}>
                               {demon.difficulty || "Unknown"}
                             </span>
@@ -578,29 +416,11 @@ export function DemonListContent({
                           </div>
                         )}
                       </div>
-                      {editListMode && !renderAsProgress && (
-                        <div className="manual-card-controls">
-                          <div className="manual-card-arrows">
-                            <button
-                              onClick={event => handleMove(event, demon, "up")}
-                              disabled={movingId === String(demon.id)}
-                              type="button"
-                              aria-label={`Move ${demon.name} up`}
-                            >
-                              <ChevronUp size={19} />
-                            </button>
-                            <button
-                              onClick={event => handleMove(event, demon, "down")}
-                              disabled={movingId === String(demon.id)}
-                              type="button"
-                              aria-label={`Move ${demon.name} down`}
-                            >
-                              <ChevronDown size={19} />
-                            </button>
-                          </div>
-                          <span>{movingId === String(demon.id) ? "Moving..." : "Change placement"}</span>
-                        </div>
-                      )}
+                      <div className="grid-actions" aria-hidden="true">
+                        <button type="button" onClick={event => event.stopPropagation()}><Bookmark size={18} /></button>
+                        <button type="button" onClick={event => event.stopPropagation()}><BarChart3 size={18} /></button>
+                        <button type="button" onClick={event => event.stopPropagation()}><MoreHorizontal size={18} /></button>
+                      </div>
                     </article>
                     );
                   })}
@@ -615,165 +435,6 @@ export function DemonListContent({
               )}
             </main>
             </div>
-            {editListMode && (
-              <div className="manual-floating-actions">
-                <button
-                  className="save-list-button"
-                  onClick={handleSaveChanges}
-                  disabled={!hasUnsavedListChanges || saveState.saving}
-                  type="button"
-                >
-                  <Check size={18} />
-                  {saveState.saving ? "Saving..." : "Save Changes"}
-                </button>
-                <div className="manual-round-actions">
-                  <button
-                    className="manual-edit-button"
-                    onClick={openDemonEditor}
-                    type="button"
-                    aria-label="Edit demon"
-                    title="Edit demon"
-                  >
-                    <Pencil size={21} />
-                  </button>
-                  <button
-                    className="manual-add-button"
-                    onClick={() => {
-                      setAddState({ saving: false, message: "", error: "" });
-                      setShowAddDemon(true);
-                    }}
-                    type="button"
-                    aria-label="Add demon"
-                    title="Add demon"
-                  >
-                    <Plus size={25} />
-                  </button>
-                </div>
-              </div>
-            )}
-            {addState.error && !showAddDemon && <p className="manual-list-toast error">{addState.error}</p>}
-            {showAddDemon && (
-              <div className="manual-add-backdrop" onMouseDown={() => !addState.saving && setShowAddDemon(false)}>
-                <form className="manual-add-modal" onSubmit={handleAddDemon} onMouseDown={event => event.stopPropagation()}>
-                  <button
-                    className="manual-add-close"
-                    onClick={() => setShowAddDemon(false)}
-                    disabled={addState.saving}
-                    type="button"
-                    aria-label="Close"
-                  >
-                    <X size={20} />
-                  </button>
-                  <div>
-                    <p className="eyebrow">Manual placement</p>
-                    <h2>Add Demon</h2>
-                  </div>
-                  <label>
-                    Level ID
-                    <input
-                      value={addForm.levelId}
-                      onChange={event => setAddForm(current => ({ ...current, levelId: event.target.value }))}
-                      placeholder="10565740"
-                      autoFocus
-                    />
-                  </label>
-                  <div className="manual-add-grid">
-                    <label>
-                      Attempts
-                      <input
-                        type="number"
-                        min="0"
-                        value={addForm.attempts}
-                        onChange={event => setAddForm(current => ({ ...current, attempts: event.target.value }))}
-                        placeholder="20226"
-                      />
-                    </label>
-                    <label>
-                      Placement
-                      <input
-                        type="number"
-                        min="1"
-                        max={stats.total + 1}
-                        value={addForm.placement}
-                        onChange={event => setAddForm(current => ({ ...current, placement: event.target.value }))}
-                        placeholder={`1-${stats.total + 1}`}
-                      />
-                    </label>
-                  </div>
-                  <label>
-                    Note
-                    <textarea
-                      value={addForm.note}
-                      onChange={event => setAddForm(current => ({ ...current, note: event.target.value }))}
-                      placeholder="Optional note..."
-                      rows={4}
-                    />
-                  </label>
-                  {addState.error && <p className="admin-error">{addState.error}</p>}
-                  <button className="login-button" disabled={addState.saving} type="submit">
-                    <Plus size={18} />
-                    {addState.saving ? "Adding..." : "Add to list"}
-                  </button>
-                </form>
-              </div>
-            )}
-            {showEditDemon && (
-              <div className="manual-add-backdrop" onMouseDown={() => !editState.saving && setShowEditDemon(false)}>
-                <form className="manual-add-modal" onSubmit={handleEditDemon} onMouseDown={event => event.stopPropagation()}>
-                  <button className="manual-add-close" onClick={() => setShowEditDemon(false)} type="button">
-                    <X size={20} />
-                  </button>
-                  <div>
-                    <p className="eyebrow">Edit List</p>
-                    <h2>Edit Demon</h2>
-                  </div>
-                  <label>
-                    Demon
-                    <select value={editDemonId} onChange={event => selectEditDemon(event.target.value)}>
-                      {filtered.map(demon => (
-                        <option key={demon.id} value={demon.id}>
-                          {demon.name}{isInProgressDemon(demon) ? ` (${demon.progressPercent || 0}%)` : ""}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label>
-                    Attempts
-                    <input
-                      type="number"
-                      min="0"
-                      value={editForm.attempts}
-                      onChange={event => setEditForm(current => ({ ...current, attempts: event.target.value }))}
-                    />
-                  </label>
-                  {isInProgressDemon(filtered.find(item => String(item.id) === String(editDemonId))) && (
-                    <label>
-                      Progress %
-                      <input
-                        type="number"
-                        min="0"
-                        max="100"
-                        value={editForm.progressPercent}
-                        onChange={event => setEditForm(current => ({ ...current, progressPercent: event.target.value }))}
-                      />
-                    </label>
-                  )}
-                  <label>
-                    Note
-                    <textarea
-                      value={editForm.note}
-                      onChange={event => setEditForm(current => ({ ...current, note: event.target.value }))}
-                      rows={4}
-                    />
-                  </label>
-                  {editState.error && <p className="admin-error">{editState.error}</p>}
-                  <button className="login-button" disabled={editState.saving} type="submit">
-                    <Check size={18} />
-                    {editState.saving ? "Saving..." : "Save Demon"}
-                  </button>
-                </form>
-              </div>
-            )}
             <div className="desktop-footer-status" aria-hidden="true">
               <span>Tip: Click a demon card to view more details and stats.</span>
               <span>Data powered by Google Sheets</span>

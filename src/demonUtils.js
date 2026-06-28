@@ -11,6 +11,8 @@ export function normalizeDemon(row, index) {
     attempts: Number(row.attempts ?? row.Attempts ?? 0),
     year: Number(row.year ?? row.Year ?? 0),
     video: row.video ?? row["Done for Video"] ?? "",
+    tier: Number(row.tier ?? row.Tier ?? 0),
+    tierChange: Number(row.tierChange ?? row["Tier +/-"] ?? row.tier_change ?? 0),
     formerTop1Year: FORMER_TOP_1[name] || null,
     skillsetDistribution: Array.isArray(row.skillsetDistribution)
       ? row.skillsetDistribution
@@ -55,6 +57,13 @@ export function segmentForPlacement(placement) {
 
 export function formatNumber(value) {
   return new Intl.NumberFormat("nl-NL").format(Number(value || 0));
+}
+
+export function formatTier(value) {
+  return Number(value || 0).toLocaleString("nl-NL", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
 }
 
 const FORMER_TOP_1 = {
