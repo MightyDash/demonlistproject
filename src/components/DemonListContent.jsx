@@ -24,6 +24,7 @@ export function DemonListContent({
   hasMoreDemons,
   onLoadMore,
   apiLatestDemon,
+  listUpdatedAt,
   onLatestDemonClick,
   isAdmin,
   futureListIds = [],
@@ -41,6 +42,13 @@ export function DemonListContent({
     yearView !== "all"
   ].filter(Boolean).length;
   const progressInfoText = "It is not yet clear whether these demons will get beaten in the future. I am certain that some will, but I still have my doubts about others. This is just a reminder to myself";
+  const formattedUpdatedAt = listUpdatedAt
+    ? new Intl.DateTimeFormat("nl-NL", {
+        dateStyle: "long",
+        timeStyle: "short",
+        timeZone: "Europe/Amsterdam"
+      }).format(new Date(listUpdatedAt))
+    : "Unknown";
   const yearOptions = [
     ["all", "2026"],
     ["2025", "2025"],
@@ -99,7 +107,6 @@ export function DemonListContent({
             <section className="stats-grid">
               <StatCard icon={<Trophy />} label="Total Demons" value={formatNumber(stats.total)} />
               <StatCard icon={<Target />} label="Total Attempts" value={formatNumber(stats.attempts)} />
-              <StatCard icon={<BarChart3 />} label="Avg Attempts" value={formatNumber(stats.avgAttempts)} />
               <StatCard icon={<BarChart3 />} label="Hardest Demon" value={stats.hardest?.name || "Unknown"} detail={stats.hardest?.difficulty || ""} highlight />
             </section>
     
@@ -272,6 +279,7 @@ export function DemonListContent({
               )}
             </span>
             <div className="list-status-links">
+              <span className="list-updated-at">Updated {formattedUpdatedAt}</span>
               {apiLatestDemon && (
                 <button className="latest-link" onClick={onLatestDemonClick} type="button">
                   Latest: {apiLatestDemon}
@@ -438,7 +446,7 @@ export function DemonListContent({
             <div className="desktop-footer-status" aria-hidden="true">
               <span>Tip: Click a demon card to view more details and stats.</span>
               <span>Data powered by Google Sheets</span>
-              <span>Last updated: live</span>
+              <span>Last updated: {formattedUpdatedAt}</span>
             </div>
           </>
   );

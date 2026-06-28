@@ -57,6 +57,7 @@ export default function App() {
   const [yearView, setYearView] = useState("all");
   const [apiLatestDemon, setApiLatestDemon] = useState("");
   const [apiNextDemon, setApiNextDemon] = useState(null);
+  const [listUpdatedAt, setListUpdatedAt] = useState("");
   const [siteTheme, setSiteTheme] = useState(getInitialSiteTheme);
   const [siteVersion, setSiteVersion] = useState(DEFAULT_SITE_VERSION);
   const [siteChangelog, setSiteChangelog] = useState(DEFAULT_SITE_CHANGELOG);
@@ -264,6 +265,7 @@ export default function App() {
 
         setApiLatestDemon(json.latestDemon || "");
         setApiNextDemon(json.nextDemon || null);
+        setListUpdatedAt(json.listUpdatedAt || json.updatedAt || "");
         setSiteTheme(json.siteTheme || "Basic");
         setSiteVersion(json.siteVersion || DEFAULT_SITE_VERSION);
         setSiteChangelog(Array.isArray(json.siteChangelog) ? json.siteChangelog : DEFAULT_SITE_CHANGELOG);
@@ -883,7 +885,6 @@ async function handleSaveRequestStatusChanges() {
     return {
       total: completed.length,
       attempts: totalAttempts,
-      avgAttempts: completed.length ? Math.round(totalAttempts / completed.length) : 0,
       hardest
     };
   }, [demons]);
@@ -987,6 +988,7 @@ async function handleSaveRequestStatusChanges() {
           hasMoreDemons={hasMoreMobileDemons}
           onLoadMore={() => setVisibleDemonCount(count => count + 60)}
           apiLatestDemon={apiLatestDemon}
+          listUpdatedAt={listUpdatedAt}
           onLatestDemonClick={handleLatestDemonClick}
           isAdmin={isAdmin}
           futureListIds={futureListIds}
