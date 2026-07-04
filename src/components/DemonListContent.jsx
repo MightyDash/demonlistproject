@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { BarChart3, Check, Grid3X3, Info, List, Search, SlidersHorizontal, Target, Trophy, X } from "lucide-react";
 import { StatCard } from "./StatCard.jsx";
-import { FadeContent } from "./effects/FadeContent.jsx";
 import { difficultyClass, formatNumber, formatTier, isInProgressDemon } from "../demonUtils.js";
 
 export function DemonListContent({
@@ -103,21 +102,15 @@ export function DemonListContent({
     return "";
   }
 
-  function handleCardSpotlight(event) {
-    const bounds = event.currentTarget.getBoundingClientRect();
-    event.currentTarget.style.setProperty("--spot-x", `${event.clientX - bounds.left}px`);
-    event.currentTarget.style.setProperty("--spot-y", `${event.clientY - bounds.top}px`);
-  }
-
   return (
           <>
-            <FadeContent className="stats-grid" as="section">
-              <StatCard icon={<Trophy />} label="Total Demons" value={stats.total} animate />
-              <StatCard icon={<Target />} label="Total Attempts" value={stats.attempts} animate />
+            <section className="stats-grid">
+              <StatCard icon={<Trophy />} label="Total Demons" value={formatNumber(stats.total)} />
+              <StatCard icon={<Target />} label="Total Attempts" value={formatNumber(stats.attempts)} />
               <StatCard icon={<BarChart3 />} label="Hardest Demon" value={stats.hardest?.name || "Unknown"} detail={stats.hardest?.difficulty || ""} highlight />
-            </FadeContent>
+            </section>
     
-            <FadeContent className={`desktop-list-shell ${isProgressView ? "progress-shell" : ""}`}>
+            <div className={`desktop-list-shell ${isProgressView ? "progress-shell" : ""}`}>
             <div className="mobile-filter-bar">
               <button
                 className="mobile-filter-button"
@@ -324,7 +317,7 @@ export function DemonListContent({
                     <div>Year</div>
                   </div>
     
-                  {filtered.map((demon, index) => {
+                  {filtered.map(demon => {
                     const isInProgress = isInProgressDemon(demon);
                     const renderAsProgress = isInProgress && isProgressView;
                     const progressPercent = Math.max(0, Math.min(100, Number(demon.progressPercent || 0)));
@@ -337,7 +330,6 @@ export function DemonListContent({
                       className={`row demon-row ${trendClass}`}
                       key={`${demon.id}-${demon.name}`}
                       onClick={() => setSelected(demon)}
-                      onMouseMove={handleCardSpotlight}
                       onKeyDown={event => handleOpenKey(event, demon)}
                       role="button"
                       tabIndex={0}
@@ -363,7 +355,7 @@ export function DemonListContent({
                 </div>
               ) : (
                 <div className="demon-grid">
-                  {filtered.map((demon, index) => {
+                  {filtered.map(demon => {
                     const isInProgress = isInProgressDemon(demon);
                     const renderAsProgress = isInProgress && isProgressView;
                     const progressPercent = Math.max(0, Math.min(100, Number(demon.progressPercent || 0)));
@@ -376,7 +368,6 @@ export function DemonListContent({
                       className={`grid-card ${renderAsProgress ? "in-progress-card" : ""} ${trendClass}`}
                       key={`${demon.id}-${demon.name}`}
                       data-demon-id={demon.id}
-                      style={{ "--card-index": index % 13 }}
                       onClick={() => setSelected(demon)}
                       onKeyDown={event => handleOpenKey(event, demon)}
                       role="button"
@@ -445,7 +436,7 @@ export function DemonListContent({
                 </div>
               )}
             </main>
-            </FadeContent>
+            </div>
             <div className="desktop-footer-status" aria-hidden="true">
               <span>Tip: Click a demon card to view more details and stats.</span>
               <span>Data powered by Google Sheets</span>

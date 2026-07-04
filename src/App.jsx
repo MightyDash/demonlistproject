@@ -10,8 +10,6 @@ import { LogoutConfirm } from "./components/LogoutConfirm.jsx";
 import { MilestonesModal } from "./components/MilestonesModal.jsx";
 import { RecentChanges } from "./components/RecentChanges.jsx";
 import { RequestPanel } from "./components/RequestPanel.jsx";
-import { GridScan } from "./components/effects/GridScan.jsx";
-import { GradualBlur } from "./components/effects/GradualBlur.jsx";
 import { isInProgressDemon, normalizeDemon, placementNumber, segmentForPlacement } from "./demonUtils.js";
 
 const ROUTES = {
@@ -893,8 +891,6 @@ async function handleSaveRequestStatusChanges() {
 
   return (
     <div className="app" data-theme={themeSlug(siteTheme)}>
-      <GridScan />
-      <GradualBlur />
       <AppHeader
           adminView={adminView}
           source={source}
