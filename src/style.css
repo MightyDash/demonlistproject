@@ -6554,6 +6554,57 @@ textarea:focus-visible {
   }
 }
 
+@media (min-width: 981px) {
+  .desktop-list-shell.progress-shell {
+    display: grid;
+    grid-template-columns: 330px minmax(0, 1fr);
+    align-items: start;
+    gap: 18px;
+  }
+
+  .desktop-list-shell.progress-shell .controls {
+    position: sticky;
+    top: 18px;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+    margin: 0;
+    padding: 18px;
+    border: 1px solid rgba(65, 134, 210, 0.36);
+    border-radius: 8px;
+    background:
+      linear-gradient(180deg, rgba(12, 28, 47, 0.92), rgba(5, 12, 23, 0.94));
+    box-shadow: 0 28px 70px rgba(0, 0, 0, 0.4);
+    backdrop-filter: none;
+  }
+
+  .desktop-list-shell.progress-shell .filter-title-row {
+    display: flex;
+  }
+
+  .desktop-list-shell.progress-shell .filter-section-label {
+    display: block;
+  }
+
+  .desktop-list-shell.progress-shell .tabs {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    justify-content: stretch;
+  }
+
+  .desktop-list-shell.progress-shell .year-tabs,
+  .desktop-list-shell.progress-shell .view-tabs {
+    grid-column: auto;
+    margin-top: 0;
+  }
+
+  .desktop-list-shell.progress-shell .year-tabs,
+  .desktop-list-shell.progress-shell .view-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 .grid-meta {
   min-width: 0;
 }
