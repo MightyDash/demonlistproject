@@ -1,6 +1,9 @@
 export function normalizeDemon(row, index) {
   const id = String(row.id ?? row.ID ?? "");
   const name = row.name ?? row.demon ?? row.Demon ?? "";
+  const rawDate = row.date ?? row.Date ?? row.dateBeaten ?? row["Date beaten"] ?? row.year ?? row.Year ?? "";
+  const dateLabel = formatDateLabel(rawDate);
+  const dateYear = extractDateYear(rawDate);
 
   return {
     placement: row.placement ?? row.Placement ?? row["#"] ?? `#${index + 1}`,
@@ -9,7 +12,9 @@ export function normalizeDemon(row, index) {
     id,
     difficulty: row.difficulty ?? row.Difficulty ?? "",
     attempts: Number(row.attempts ?? row.Attempts ?? 0),
-    year: Number(row.year ?? row.Year ?? 0),
+    year: dateYear,
+    date: dateLabel,
+    dateYear,
     video: row.video ?? row["Done for Video"] ?? "",
     tier: Number(row.tier ?? row.Tier ?? 0),
     tierChange: Number(row.tierChange ?? row["Tier +/-"] ?? row.tier_change ?? 0),
@@ -22,6 +27,51 @@ export function normalizeDemon(row, index) {
     thumbnail: id ? `https://levelthumbs.prevter.me/thumbnail/${id}` : "",
     notes: row.notes ?? ""
   };
+}
+
+export function extractDateYear(value) {
+  if (value === null || value === undefined || value === "") return 0;
+
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value.getFullYear();
+  }
+
+  const text = String(value).trim();
+  if (/^\d{4}$/.test(text)) return Number(text);
+
+  const slashMatch = text.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2}|\d{4})$/);
+  if (slashMatch) {
+    const yearText = slashMatch[3];
+    const year = Number(yearText.length === 2 ? `20${yearText}` : yearText);
+    return year >= 1900 && year <= 2100 ? year : 0;
+  }
+
+  const parsed = new Date(text);
+  return Number.isNaN(parsed.getTime()) ? 0 : parsed.getFullYear();
+}
+
+export function formatDateLabel(value) {
+  if (value === null || value === undefined || value === "") return "";
+
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return new Intl.DateTimeFormat("en-GB").format(value);
+  }
+
+  const text = String(value).trim();
+  if (/^\d{4}$/.test(text)) return text;
+
+  const slashMatch = text.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2}|\d{4})$/);
+  if (slashMatch) {
+    const day = slashMatch[1].padStart(2, "0");
+    const month = slashMatch[2].padStart(2, "0");
+    const year = slashMatch[3].length === 2 ? `20${slashMatch[3]}` : slashMatch[3];
+    return `${day}/${month}/${year}`;
+  }
+
+  const parsed = new Date(text);
+  if (Number.isNaN(parsed.getTime())) return text;
+
+  return new Intl.DateTimeFormat("en-GB").format(parsed);
 }
 
 export function placementNumber(placement) {

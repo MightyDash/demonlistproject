@@ -71,7 +71,6 @@ export function MilestonesModal({ demons, onClose }) {
     <div className="progress-info-backdrop" onClick={onClose}>
       <section
         className="progress-info-modal milestones-modal"
-        style={{ width: "1040px", maxWidth: "calc(100vw - 48px)" }}
         onClick={event => event.stopPropagation()}
       >
         <button

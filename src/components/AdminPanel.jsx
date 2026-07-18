@@ -26,6 +26,32 @@ const SITE_THEMES = [
   "Blood Moon"
 ];
 
+function normalizeDateInput(value) {
+  const text = String(value || "").trim();
+  if (/^\d{4}$/.test(text)) return { valid: true, value: text };
+
+  const match = text.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2}|\d{4})$/);
+  if (!match) return { valid: false, value: text };
+
+  const day = Number(match[1]);
+  const month = Number(match[2]);
+  const year = Number(match[3].length === 2 ? `20${match[3]}` : match[3]);
+  const date = new Date(year, month - 1, day);
+  const valid =
+    year >= 1900 &&
+    year <= 2100 &&
+    date.getFullYear() === year &&
+    date.getMonth() === month - 1 &&
+    date.getDate() === day;
+
+  return {
+    valid,
+    value: valid
+      ? `${String(day).padStart(2, "0")}/${String(month).padStart(2, "0")}/${year}`
+      : text
+  };
+}
+
 export function AdminPanel({
   onBack,
   onDataChanged,
@@ -49,7 +75,7 @@ export function AdminPanel({
   const [addForm, setAddForm] = useState({
     levelId: "",
     attempts: "",
-    year: new Date().getFullYear(),
+    date: String(new Date().getFullYear()),
     status: "COMPLETED",
     progressPercent: ""
   });
@@ -65,7 +91,7 @@ export function AdminPanel({
     name: "",
     difficulty: "",
     creator: "",
-    year: "",
+    date: "",
     attempts: "",
     status: "COMPLETED",
     progressPercent: ""
@@ -243,7 +269,7 @@ export function AdminPanel({
         name: data.demon.name || "",
         difficulty: data.demon.difficulty || "",
         creator: data.demon.creator || "",
-        year: String(data.demon.year || ""),
+        date: String(data.demon.date || data.demon.year || ""),
         attempts: String(data.demon.attempts || ""),
         status: data.demon.status || "COMPLETED",
         progressPercent: data.demon.progressPercent === undefined || data.demon.progressPercent === null
@@ -261,7 +287,7 @@ export function AdminPanel({
     setAdminMessage("");
     setAdminError("");
 
-    const year = Number(editForm.year);
+    const dateInput = normalizeDateInput(editForm.date);
     const attempts = Number(editForm.attempts);
     const progressPercent = Number(editForm.progressPercent);
 
@@ -269,8 +295,8 @@ export function AdminPanel({
       setAdminError("Name is required.");
       return;
     }
-    if (!Number.isInteger(year) || String(year).length !== 4) {
-      setAdminError("Year must be a valid four-digit year.");
+    if (!dateInput.valid) {
+      setAdminError("Date must be a four-digit year or dd/mm/yyyy.");
       return;
     }
     if (!Number.isInteger(attempts) || attempts < 0) {
@@ -294,7 +320,7 @@ export function AdminPanel({
           ["Level ID", editFound.id],
           ["Difficulty", editForm.difficulty.trim()],
           ["Creator(s)", editForm.creator.trim()],
-          ["Year", year],
+          ["Date", dateInput.value],
           ["Attempts", attempts],
           ["Status", editForm.status],
           ["Progress", editForm.status === "IN PROGRESS" ? `${progressPercent}%` : "Not in progress"]
@@ -312,7 +338,7 @@ export function AdminPanel({
         name: editForm.name.trim(),
         difficulty: editForm.difficulty.trim(),
         creator: editForm.creator.trim(),
-        year,
+        date: dateInput.value,
         attempts,
         status: editForm.status,
         progressPercent: editForm.status === "IN PROGRESS" ? progressPercent : ""
@@ -365,7 +391,7 @@ export function AdminPanel({
 
     const levelId = String(addForm.levelId || "").trim();
     const attempts = Number(addForm.attempts);
-    const year = Number(addForm.year);
+    const dateInput = normalizeDateInput(addForm.date);
     const status = String(addForm.status || "COMPLETED").trim().toUpperCase();
     const progressPercent = Number(addForm.progressPercent);
 
@@ -379,8 +405,8 @@ export function AdminPanel({
       return;
     }
 
-    if (!Number.isInteger(year) || String(year).length !== 4) {
-      setAdminError("Year must be a valid four-digit year.");
+    if (!dateInput.valid) {
+      setAdminError("Date must be a four-digit year or dd/mm/yyyy.");
       return;
     }
 
@@ -396,7 +422,7 @@ export function AdminPanel({
         [
           ["Level ID", levelId],
           ["Attempts", attempts],
-          ["Year", year],
+          ["Date", dateInput.value],
           ["Status", status],
           ["Progress", status === "IN PROGRESS" ? `${progressPercent}%` : "Completed"]
         ],
@@ -412,7 +438,7 @@ export function AdminPanel({
         action: "addDemon",
         levelId,
         attempts,
-        year,
+        date: dateInput.value,
         status,
         progressPercent: status === "IN PROGRESS" ? progressPercent : ""
       });
@@ -426,7 +452,7 @@ export function AdminPanel({
       setAddForm({
         levelId: "",
         attempts: "",
-        year: new Date().getFullYear(),
+        date: String(new Date().getFullYear()),
         status: "COMPLETED",
         progressPercent: ""
       });
@@ -545,7 +571,7 @@ export function AdminPanel({
     setTierUpdateCheck({ loading: true, error: "", data: null });
 
     try {
-      const data = await sendAdminRequest({ action: "checkTierUpdates" });
+      const data = await sendAdminRequest({ action: "checkTierUpdates", forceRefresh: true });
       if (!data.success) {
         setTierUpdateCheck({
           loading: false,
@@ -844,7 +870,7 @@ export function AdminPanel({
         >
           <span className="admin-action-icon backup"><Download size={24} /></span>
           <strong>Backup Export</strong>
-          <span>Download demons, notes, requests en settings als JSON.</span>
+          <span>Download demons, notes, requests and settings as JSON.</span>
           <ArrowRight className="admin-action-arrow" size={22} />
         </button>
 
@@ -894,7 +920,7 @@ export function AdminPanel({
                   />
                   <div>
                     <strong>{demon.name}</strong>
-                    <span>{demon.placement || "Unplaced"} · ID: {demon.id}</span>
+                    <span>{demon.placement || "Unplaced"} - ID: {demon.id}</span>
                   </div>
                 </div>
 
@@ -1088,7 +1114,7 @@ export function AdminPanel({
             <input
               value={addForm.levelId}
               onChange={e => setAddForm({ ...addForm, levelId: e.target.value })}
-              placeholder="Bijv. 10565740"
+              placeholder="Example: 10565740"
             />
           </label>
 
@@ -1099,17 +1125,16 @@ export function AdminPanel({
               min="0"
               value={addForm.attempts}
               onChange={e => setAddForm({ ...addForm, attempts: e.target.value })}
-              placeholder="Bijv. 20226"
+              placeholder="Example: 20226"
             />
           </label>
 
           <label>
-            Year
+            Date
             <input
-              type="number"
-              value={addForm.year}
-              onChange={e => setAddForm({ ...addForm, year: e.target.value })}
-              placeholder="Bijv. 2026"
+              value={addForm.date}
+              onChange={e => setAddForm({ ...addForm, date: e.target.value })}
+              placeholder="Example: 2026 or 09/10/2025"
             />
           </label>
 
@@ -1137,7 +1162,7 @@ export function AdminPanel({
                 max="100"
                 value={addForm.progressPercent}
                 onChange={e => setAddForm({ ...addForm, progressPercent: e.target.value })}
-                placeholder="Bijv. 72"
+                placeholder="Example: 72"
               />
             </label>
           )}
@@ -1171,7 +1196,7 @@ export function AdminPanel({
                 setRemoveLevelId(e.target.value);
                 setRemoveConfirm(false);
               }}
-              placeholder="Bijv. 10565740"
+              placeholder="Example: 10565740"
             />
           </label>
 
@@ -1293,7 +1318,7 @@ export function AdminPanel({
                   <input
                     value={editForm.difficulty}
                     onChange={e => setEditForm({ ...editForm, difficulty: e.target.value })}
-                    placeholder="Bijv. Extreme Demon"
+                    placeholder="Example: Extreme Demon"
                   />
                 </label>
 
@@ -1302,17 +1327,16 @@ export function AdminPanel({
                   <input
                     value={editForm.creator}
                     onChange={e => setEditForm({ ...editForm, creator: e.target.value })}
-                    placeholder="Bijv. Riot & more"
+                    placeholder="Example: Riot & more"
                   />
                 </label>
 
                 <label>
-                  Year
+                  Date
                   <input
-                    type="number"
-                    value={editForm.year}
-                    onChange={e => setEditForm({ ...editForm, year: e.target.value })}
-                    placeholder="Bijv. 2024"
+                    value={editForm.date}
+                    onChange={e => setEditForm({ ...editForm, date: e.target.value })}
+                    placeholder="Example: 2024 or 09/10/2025"
                   />
                 </label>
 
@@ -1323,7 +1347,7 @@ export function AdminPanel({
                     min="0"
                     value={editForm.attempts}
                     onChange={e => setEditForm({ ...editForm, attempts: e.target.value })}
-                    placeholder="Bijv. 5000"
+                    placeholder="Example: 5000"
                   />
                 </label>
 
@@ -1353,7 +1377,7 @@ export function AdminPanel({
                       max="100"
                       value={editForm.progressPercent}
                       onChange={e => setEditForm({ ...editForm, progressPercent: e.target.value })}
-                      placeholder="Bijv. 67"
+                      placeholder="Example: 67"
                     />
                   </label>
                 )}

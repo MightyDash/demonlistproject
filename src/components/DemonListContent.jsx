@@ -41,7 +41,7 @@ export function DemonListContent({
     segment !== "all",
     yearView !== "all"
   ].filter(Boolean).length;
-  const progressInfoText = "It is not yet clear whether these demons will get beaten in the future. I am certain that some will, but I still have my doubts about others. This is just a reminder to myself";
+  const progressInfoText = "It is not yet clear whether these demons will be beaten in the future. I am certain that some will, but I still have my doubts about others. This is just a reminder to myself.";
   const formattedUpdatedAt = listUpdatedAt
     ? new Intl.DateTimeFormat("en-GB", {
         dateStyle: "long",
@@ -314,7 +314,7 @@ export function DemonListContent({
                     <div>Tier</div>
                     <div>Difficulty</div>
                     <div>Attempts</div>
-                    <div>Year</div>
+                    <div>Date</div>
                   </div>
     
                   {filtered.map(demon => {
@@ -348,7 +348,7 @@ export function DemonListContent({
                         </span>
                       </div>
                       <div>{formatNumber(demon.attempts)}</div>
-                      <div>{demon.year || ""}</div>
+                      <div>{demon.date || demon.year || ""}</div>
                     </div>
                     );
                   })}
@@ -419,7 +419,7 @@ export function DemonListContent({
                             <span className={`grid-chip difficulty-chip ${difficultyClass(demon.difficulty)}`}>
                               {demon.difficulty || "Unknown"}
                             </span>
-                            <span className="grid-chip">{demon.year || "Unknown"}</span>
+                            <span className="grid-chip">{demon.date || demon.year || "Unknown"}</span>
                           </div>
                         )}
                       </div>

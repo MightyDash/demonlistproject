@@ -6548,6 +6548,32 @@ textarea:focus-visible {
   }
 }
 
+@media (min-width: 981px) and (max-width: 1320px) {
+  .demon-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+
+.grid-meta {
+  min-width: 0;
+}
+
+.grid-chip {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.milestones-modal {
+  width: min(1040px, calc(100vw - 48px));
+}
+
+.milestone-name {
+  overflow-wrap: anywhere;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .grid-card.placement-moved-up,
   .demon-row.placement-moved-up,

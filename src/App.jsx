@@ -129,8 +129,6 @@ export default function App() {
 
     const data = await response.json();
 
-      console.log("getRequests response:", data);
-
       if (data.success) {
         setRequests(data.requests || []);
         setSelectedRejectedRequests(selected =>
@@ -729,7 +727,7 @@ async function handleSaveRequestStatusChanges() {
           showingInProgress || segment === "all" || segmentForPlacement(demon.placement) === segment;
 
         const matchesYearView =
-          showingInProgress || yearView === "all" || Number(demon.year || 0) <= Number(yearView);
+          showingInProgress || yearView === "all" || Number(demon.dateYear || demon.year || 0) <= Number(yearView);
 
         return matchesSearchAndDifficulty(demon) && matchesStatus && matchesSegment && matchesYearView;
       })

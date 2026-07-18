@@ -224,7 +224,7 @@ export function DemonModal({
                 <div><span>Difficulty</span><strong className="overview-danger">{cleanDifficulty}</strong></div>
                 <div><span>Tier</span><strong>{formatTier(demon.tier)}</strong></div>
                 <div><span>Attempts (Total)</span><strong>{formatNumber(demon.attempts)}</strong></div>
-                <div><span>Year</span><strong>{demon.year || "Unknown"}</strong></div>
+                <div><span>Date</span><strong>{demon.date || demon.year || "Unknown"}</strong></div>
               </div>
             </section>
 
@@ -285,7 +285,7 @@ export function DemonModal({
                 <h3><Clock3 size={22} /> Level history</h3>
                 <div className="history-mini-list">
                   <span><b>Latest</b> Stats updated</span>
-                  <span><b>{demon.year || "Unknown"}</b> Added to list</span>
+                  <span><b>{demon.date || demon.year || "Unknown"}</b> Added to list</span>
                   <span><b>{formatTier(demon.tier)}</b> Current tier</span>
                 </div>
               </section>
