@@ -6625,6 +6625,340 @@ textarea:focus-visible {
   overflow-wrap: anywhere;
 }
 
+.timeline-modal {
+  width: min(1180px, calc(100vw - 48px));
+  max-height: min(820px, calc(100vh - 48px));
+  overflow: auto;
+}
+
+.timeline-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 42px 22px 0;
+}
+
+.timeline-icon {
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 50px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--blue) 16%, transparent);
+  color: var(--blue);
+  box-shadow: var(--glow);
+  flex: 0 0 auto;
+}
+
+.timeline-header h2,
+.timeline-detail-header h3,
+.timeline-month-title h3 {
+  margin: 0;
+}
+
+.timeline-header p,
+.timeline-detail-header p,
+.timeline-month-title p {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
+.timeline-years {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(132px, 1fr);
+  align-items: center;
+  min-height: 230px;
+  margin: 0 -6px 24px;
+  padding: 68px 6px 58px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.timeline-year-node {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-width: 132px;
+  height: 74px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.timeline-year-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 26px;
+  transform: translateY(-50%);
+  background:
+    linear-gradient(90deg, transparent 0 8px, var(--line-strong) 8px calc(100% - 8px), transparent calc(100% - 8px)),
+    linear-gradient(135deg, transparent 0 14px, color-mix(in srgb, var(--blue) 52%, var(--panel)) 14px calc(100% - 14px), transparent calc(100% - 14px));
+  opacity: 0.85;
+}
+
+.timeline-year-circle {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 74px;
+  height: 74px;
+  border: 4px solid var(--line-strong);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--panel-strong) 94%, black);
+  color: var(--text);
+  font-weight: 950;
+  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.34);
+  transition: transform 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+
+.timeline-year-node.active .timeline-year-circle,
+.timeline-year-node:hover .timeline-year-circle {
+  border-color: var(--blue);
+  color: var(--blue);
+  transform: translateY(-2px);
+}
+
+.timeline-year-summary {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  z-index: 2;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  width: 210px;
+  min-height: 78px;
+  padding: 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--panel-strong) 94%, black);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.48);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 8px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.timeline-year-node.summary-below .timeline-year-summary {
+  top: calc(100% + 8px);
+  bottom: auto;
+  transform: translate(-50%, -8px);
+}
+
+.timeline-year-summary strong {
+  color: var(--blue);
+  font-size: 1.12rem;
+}
+
+.timeline-year-summary small {
+  color: var(--muted);
+  text-align: center;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .timeline-year-node:hover .timeline-year-summary,
+  .timeline-year-node:focus-visible .timeline-year-summary {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .timeline-year-summary {
+    display: none;
+  }
+}
+
+.timeline-detail-header,
+.timeline-month-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.timeline-month-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.timeline-month-card {
+  display: grid;
+  align-content: space-between;
+  min-height: 138px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 90% 20%, color-mix(in srgb, var(--blue) 14%, transparent), transparent 32%),
+    color-mix(in srgb, var(--panel-strong) 72%, transparent);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.timeline-month-card:hover,
+.timeline-month-card:focus-visible,
+.timeline-month-card.active {
+  transform: translateY(-3px);
+  border-color: var(--blue);
+  box-shadow: var(--glow);
+  outline: none;
+}
+
+.timeline-month-card span {
+  color: var(--muted);
+  font-size: 1.02rem;
+  font-weight: 800;
+}
+
+.timeline-month-card strong {
+  color: var(--blue);
+  font-size: clamp(32px, 5vw, 54px);
+  line-height: 1;
+}
+
+.timeline-month-card small {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.timeline-month-demons {
+  padding-top: 4px;
+}
+
+.timeline-demon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 12px;
+}
+
+.timeline-demon-card {
+  position: relative;
+  display: block;
+  min-height: 118px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #101722;
+  color: white;
+  cursor: pointer;
+  text-align: left;
+  isolation: isolate;
+}
+
+.timeline-demon-card img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.8;
+  transition: transform 0.22s ease, opacity 0.22s ease;
+}
+
+.timeline-demon-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(3, 7, 12, 0.92), rgba(3, 7, 12, 0.18));
+  z-index: 1;
+}
+
+.timeline-demon-card span {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 12px;
+  z-index: 2;
+  font-size: 1rem;
+  font-weight: 950;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.72);
+}
+
+.timeline-demon-card:hover,
+.timeline-demon-card:focus-visible {
+  border-color: var(--blue);
+  outline: none;
+}
+
+.timeline-demon-card:hover img,
+.timeline-demon-card:focus-visible img {
+  opacity: 0.95;
+  transform: scale(1.06);
+}
+
+.timeline-empty {
+  display: grid;
+  place-items: center;
+  min-height: 110px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+@media (max-width: 760px) {
+  .timeline-modal {
+    width: calc(100vw - 22px);
+    max-height: calc(100vh - 22px);
+  }
+
+  .timeline-years {
+    grid-auto-columns: 118px;
+    min-height: 116px;
+    padding: 22px 4px;
+  }
+
+  .timeline-year-node {
+    min-width: 118px;
+  }
+
+  .timeline-year-circle {
+    width: 64px;
+    height: 64px;
+    font-size: 0.9rem;
+  }
+
+  .timeline-year-summary {
+    display: none;
+  }
+
+  .timeline-detail-header,
+  .timeline-month-title {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .timeline-month-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .timeline-month-card {
+    min-height: 118px;
+    padding: 14px;
+  }
+}
+
+@media (max-width: 520px) {
+  .timeline-month-grid,
+  .timeline-demon-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .grid-card.placement-moved-up,
   .demon-row.placement-moved-up,

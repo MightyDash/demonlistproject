@@ -10,6 +10,7 @@ import { LogoutConfirm } from "./components/LogoutConfirm.jsx";
 import { MilestonesModal } from "./components/MilestonesModal.jsx";
 import { RecentChanges } from "./components/RecentChanges.jsx";
 import { RequestPanel } from "./components/RequestPanel.jsx";
+import { TimelineModal } from "./components/TimelineModal.jsx";
 import { isInProgressDemon, normalizeDemon, placementNumber, segmentForPlacement } from "./demonUtils.js";
 
 const ROUTES = {
@@ -82,6 +83,7 @@ export default function App() {
   const [requestError, setRequestError] = useState("");
   const [showLogin, setShowLogin] = useState(false);
   const [showMilestones, setShowMilestones] = useState(false);
+  const [showTimeline, setShowTimeline] = useState(false);
   const [historyChanges, setHistoryChanges] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState("");
@@ -904,6 +906,7 @@ async function handleSaveRequestStatusChanges() {
           onOpenLogin={() => setShowLogin(true)}
           onOpenAdmin={() => navigateTo(ROUTES.admin)}
           onOpenMilestones={() => setShowMilestones(true)}
+          onOpenTimeline={() => setShowTimeline(true)}
           onCloseAdmin={() => navigateTo(ROUTES.home)}
           onOpenLogout={() => setShowLogoutConfirm(true)}
           siteVersion={siteVersion}
@@ -1024,6 +1027,14 @@ async function handleSaveRequestStatusChanges() {
         <MilestonesModal
           demons={demons}
           onClose={() => setShowMilestones(false)}
+        />
+      )}
+
+      {showTimeline && (
+        <TimelineModal
+          demons={demons}
+          onClose={() => setShowTimeline(false)}
+          onSelectDemon={setSelected}
         />
       )}
     </div>
