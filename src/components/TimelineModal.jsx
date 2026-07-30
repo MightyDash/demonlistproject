@@ -24,6 +24,8 @@ const HARDEST_MONTH_HIGHLIGHTS = {
   "2026-march": "bloodbath"
 };
 
+const TIMELINE_START_YEAR = 2018;
+
 function parseTimelineDate(demon) {
   const dateText = String(demon?.date || "").trim();
   const exactMatch = dateText.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
@@ -86,6 +88,8 @@ function buildTimelineData(demons, timelineEntries) {
 
     return yearMap.get(year);
   }
+
+  ensureYear(TIMELINE_START_YEAR);
 
   completed.forEach(demon => {
     const date = parseTimelineDate(demon);
