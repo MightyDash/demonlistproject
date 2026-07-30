@@ -21,6 +21,21 @@ const ROUTES = {
   admin: "/admin-panel"
 };
 
+const TIMELINE_MONTH_SLUGS = new Set([
+  "january",
+  "february",
+  "march",
+  "april",
+  "may",
+  "june",
+  "july",
+  "august",
+  "september",
+  "october",
+  "november",
+  "december"
+]);
+
 const DEFAULT_SITE_VERSION = "v0.62";
 const DEFAULT_SITE_CHANGELOG = [
   "Added multiple site themes and theme-aware admin styling.",
@@ -31,7 +46,23 @@ const DEFAULT_SITE_CHANGELOG = [
 
 function normalizeRoute(pathname) {
   const path = pathname.replace(/\/+$/, "") || ROUTES.home;
+  if (/^\/timeline\/\d{4}\/[a-z]+$/i.test(path)) {
+    const month = path.split("/")[3].toLowerCase();
+    return TIMELINE_MONTH_SLUGS.has(month) ? path.toLowerCase() : ROUTES.timeline;
+  }
   return Object.values(ROUTES).includes(path) ? path : ROUTES.home;
+}
+
+function parseTimelineRoute(pathname) {
+  const path = pathname.replace(/\/+$/, "") || ROUTES.home;
+  const match = path.match(/^\/timeline\/(\d{4})\/([a-z]+)$/i);
+
+  if (!match) return { year: null, month: null };
+
+  const month = match[2].toLowerCase();
+  return TIMELINE_MONTH_SLUGS.has(month)
+    ? { year: Number(match[1]), month }
+    : { year: null, month: null };
 }
 
 function themeSlug(theme) {
@@ -64,10 +95,12 @@ export default function App() {
   const [siteVersion, setSiteVersion] = useState(DEFAULT_SITE_VERSION);
   const [siteChangelog, setSiteChangelog] = useState(DEFAULT_SITE_CHANGELOG);
   const [futureListIds, setFutureListIds] = useState([]);
+  const [timelineEntries, setTimelineEntries] = useState([]);
   const [viewMode, setViewMode] = useState("grid");
   const [requestView, setRequestView] = useState(false);
   const [historyView, setHistoryView] = useState(false);
   const [timelineView, setTimelineView] = useState(false);
+  const [timelineRoute, setTimelineRoute] = useState({ year: null, month: null });
   const [requestForm, setRequestForm] = useState({
   levelId: "",
   type: "Classic",
@@ -101,7 +134,8 @@ export default function App() {
 
     setRequestView(route === ROUTES.requests);
     setHistoryView(route === ROUTES.history);
-    setTimelineView(route === ROUTES.timeline);
+    setTimelineView(route === ROUTES.timeline || route.startsWith(`${ROUTES.timeline}/`));
+    setTimelineRoute(parseTimelineRoute(route));
     setAdminView(route === ROUTES.admin);
   }
 
@@ -272,6 +306,7 @@ export default function App() {
         setSiteVersion(json.siteVersion || DEFAULT_SITE_VERSION);
         setSiteChangelog(Array.isArray(json.siteChangelog) ? json.siteChangelog : DEFAULT_SITE_CHANGELOG);
         setFutureListIds(Array.isArray(json.futureListIds) ? json.futureListIds.map(String) : []);
+        setTimelineEntries(Array.isArray(json.timelineEntries) ? json.timelineEntries : []);
         setDemons(rows.map(normalizeDemon));
         setSource("live");
       } catch (error) {
@@ -438,6 +473,70 @@ export default function App() {
           ? previous.filter(id => String(id) !== levelId)
           : Array.from(new Set([...previous.map(String), levelId]))
       );
+    }
+  }
+
+  async function addTimelineEntry({ year, month, levelId }) {
+    const adminUrl = import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL;
+    const token = localStorage.getItem("admin_token");
+
+    if (!adminUrl || !token) {
+      return { success: false, message: "Admin connection is not configured." };
+    }
+
+    try {
+      const response = await fetch(adminUrl, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "addTimelineEntry",
+          token,
+          year,
+          month,
+          levelId
+        })
+      });
+      const data = await response.json();
+
+      if (!data.success) {
+        return { success: false, message: data.message || "Could not add demon to timeline." };
+      }
+
+      setTimelineEntries(Array.isArray(data.timelineEntries) ? data.timelineEntries : []);
+      return { success: true, message: data.message || "Demon added to timeline." };
+    } catch {
+      return { success: false, message: "Could not connect." };
+    }
+  }
+
+  async function removeTimelineEntry({ year, month, levelId }) {
+    const adminUrl = import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL;
+    const token = localStorage.getItem("admin_token");
+
+    if (!adminUrl || !token) {
+      return { success: false, message: "Admin connection is not configured." };
+    }
+
+    try {
+      const response = await fetch(adminUrl, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "removeTimelineEntry",
+          token,
+          year,
+          month,
+          levelId
+        })
+      });
+      const data = await response.json();
+
+      if (!data.success) {
+        return { success: false, message: data.message || "Could not remove demon from timeline." };
+      }
+
+      setTimelineEntries(Array.isArray(data.timelineEntries) ? data.timelineEntries : []);
+      return { success: true, message: data.message || "Demon removed from timeline." };
+    } catch {
+      return { success: false, message: "Could not connect." };
     }
   }
 
@@ -975,7 +1074,15 @@ async function handleSaveRequestStatusChanges() {
       ) : timelineView ? (
         <TimelinePage
           demons={demons}
+          timelineEntries={timelineEntries}
+          routeYear={timelineRoute.year}
+          routeMonth={timelineRoute.month}
+          isAdmin={isAdmin}
           onSelectDemon={setSelected}
+          onOpenMonth={(year, month) => navigateTo(`${ROUTES.timeline}/${year}/${month}`)}
+          onBackToTimeline={() => navigateTo(ROUTES.timeline)}
+          onAddTimelineEntry={addTimelineEntry}
+          onRemoveTimelineEntry={removeTimelineEntry}
         />
       ) : (
         <DemonListContent
