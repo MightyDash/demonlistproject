@@ -4,27 +4,12 @@ import {
   Download,
   FileText,
   Inbox,
-  Paintbrush,
   Pencil,
   Plus,
   RefreshCw,
   RotateCcw,
   Trash2
 } from "lucide-react";
-
-const SITE_THEMES = [
-  "Basic",
-  "Cyber Neon",
-  "Dark Ember",
-  "Crystal Void",
-  "Rusted Machine",
-  "Solar Flare",
-  "Toxic Core",
-  "Dreamscape",
-  "Monochrome Legacy",
-  "Golden Trophy",
-  "Blood Moon"
-];
 
 function normalizeDateInput(value) {
   const text = String(value || "").trim();
@@ -55,8 +40,6 @@ function normalizeDateInput(value) {
 export function AdminPanel({
   onBack,
   onDataChanged,
-  siteTheme = "Basic",
-  onThemeChanged,
   demons = [],
   requests = [],
   onOpenRequests,
@@ -65,7 +48,6 @@ export function AdminPanel({
   const [showAddForm, setShowAddForm] = useState(false);
   const [showRemoveForm, setShowRemoveForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
-  const [showThemeForm, setShowThemeForm] = useState(false);
   const [showRefreshTokenForm, setShowRefreshTokenForm] = useState(false);
   const [showNoteManager, setShowNoteManager] = useState(false);
   const [noteSearch, setNoteSearch] = useState("");
@@ -101,8 +83,6 @@ export function AdminPanel({
   const [adminMessage, setAdminMessage] = useState("");
   const [adminError, setAdminError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [themeDraft, setThemeDraft] = useState(siteTheme);
-  const [themeMenuOpen, setThemeMenuOpen] = useState(false);
   const [refreshListToken, setRefreshListToken] = useState("");
   const [pendingAdminPreview, setPendingAdminPreview] = useState(null);
   const [tierUpdateCheck, setTierUpdateCheck] = useState({
@@ -132,7 +112,6 @@ export function AdminPanel({
     setShowAddForm(false);
     setShowRemoveForm(false);
     setShowEditForm(false);
-    setShowThemeForm(false);
     setShowRefreshTokenForm(false);
     setShowNoteManager(false);
     setEditFound(null);
@@ -214,7 +193,6 @@ export function AdminPanel({
 
       const backup = {
         exportedAt: new Date().toISOString(),
-        siteTheme,
         counts: {
           demons: demons.length,
           requests: requestBackup.length,
@@ -627,33 +605,6 @@ export function AdminPanel({
     }
   }
 
-  async function handleSaveTheme() {
-    setAdminMessage("");
-    setAdminError("");
-    setIsSubmitting(true);
-
-    try {
-      const data = await sendAdminRequest({
-        action: "setSiteTheme",
-        theme: themeDraft
-      });
-
-      if (!data.success) {
-        setAdminError(data.message || "Could not change the theme.");
-        return;
-      }
-
-      setAdminMessage(data.message || "Theme updated.");
-      if (onThemeChanged) onThemeChanged(data.theme || themeDraft);
-      setThemeMenuOpen(false);
-      setShowThemeForm(false);
-    } catch (error) {
-      setAdminError(error.message || "Could not connect to Apps Script.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
   return (
     <section className="panel admin-panel">
       <div className="admin-panel-header">
@@ -715,7 +666,6 @@ export function AdminPanel({
             setShowAddForm(open => !open);
             setShowRemoveForm(false);
             setShowEditForm(false);
-            setShowThemeForm(false);
             setShowRefreshTokenForm(false);
             setShowNoteManager(false);
             setEditFound(null);
@@ -739,7 +689,6 @@ export function AdminPanel({
             setShowRemoveForm(open => !open);
             setShowAddForm(false);
             setShowEditForm(false);
-            setShowThemeForm(false);
             setShowRefreshTokenForm(false);
             setShowNoteManager(false);
             setEditFound(null);
@@ -763,7 +712,6 @@ export function AdminPanel({
             setShowEditForm(open => !open);
             setShowAddForm(false);
             setShowRemoveForm(false);
-            setShowThemeForm(false);
             setShowRefreshTokenForm(false);
             setShowNoteManager(false);
             setEditFound(null);
@@ -784,37 +732,10 @@ export function AdminPanel({
           className="admin-action-card"
           type="button"
           onClick={() => {
-            setShowThemeForm(open => !open);
-            setThemeMenuOpen(false);
-            setThemeDraft(siteTheme);
-            setShowAddForm(false);
-            setShowRemoveForm(false);
-            setShowEditForm(false);
-            setShowRefreshTokenForm(false);
-            setShowNoteManager(false);
-            setEditFound(null);
-            setEditNotFound(false);
-            setEditConfirm(false);
-            setRemoveConfirm(false);
-            setAdminMessage("");
-            setAdminError("");
-          }}
-        >
-          <span className="admin-action-icon theme"><Paintbrush size={24} /></span>
-          <strong>Site Theme</strong>
-          <span>Set the theme for all visitors.</span>
-          <ArrowRight className="admin-action-arrow" size={22} />
-        </button>
-
-        <button
-          className="admin-action-card"
-          type="button"
-          onClick={() => {
             setShowRefreshTokenForm(open => !open);
             setShowAddForm(false);
             setShowRemoveForm(false);
             setShowEditForm(false);
-            setShowThemeForm(false);
             setShowNoteManager(false);
             setEditFound(null);
             setEditNotFound(false);
@@ -1031,71 +952,6 @@ export function AdminPanel({
                 setShowRefreshTokenForm(false);
                 setRefreshListToken("");
                 setAdminError("");
-              }}
-              type="button"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
-
-      {showThemeForm && (
-        <div className="admin-form">
-          <h3>Site Theme</h3>
-
-          <label>
-            Theme
-            <div className="theme-picker">
-              <button
-                className="theme-picker-button"
-                type="button"
-                onClick={() => setThemeMenuOpen(open => !open)}
-                aria-haspopup="listbox"
-                aria-expanded={themeMenuOpen}
-              >
-                <span>{themeDraft}</span>
-                <span className="theme-picker-chevron">v</span>
-              </button>
-
-              {themeMenuOpen && (
-                <div className="theme-picker-menu" role="listbox" aria-label="Site theme">
-                  {SITE_THEMES.map(theme => (
-                    <button
-                      className={`theme-picker-option ${themeDraft === theme ? "active" : ""}`}
-                      key={theme}
-                      type="button"
-                      role="option"
-                      aria-selected={themeDraft === theme}
-                      onClick={() => {
-                        setThemeDraft(theme);
-                        setThemeMenuOpen(false);
-                      }}
-                    >
-                      <span>{theme}</span>
-                      {themeDraft === theme && <strong>Selected</strong>}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </label>
-
-          <div className="admin-form-actions">
-            <button
-              className="login-button"
-              onClick={handleSaveTheme}
-              disabled={isSubmitting}
-              type="button"
-            >
-              {isSubmitting ? "Saving..." : "Save Theme"}
-            </button>
-
-            <button
-              className="close-button"
-              onClick={() => {
-                setThemeMenuOpen(false);
-                setShowThemeForm(false);
               }}
               type="button"
             >

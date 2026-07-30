@@ -38,7 +38,7 @@ const TIMELINE_MONTH_SLUGS = new Set([
 
 const DEFAULT_SITE_VERSION = "v0.62";
 const DEFAULT_SITE_CHANGELOG = [
-  "Added multiple site themes and theme-aware admin styling.",
+  "Switched the site to a cleaner fixed grayscale style.",
   "Added skillset distribution on demon detail pages.",
   "Added safer admin tools with previews before heavy actions.",
   "Improved the desktop demon list, request page and list changes layout."
@@ -63,20 +63,6 @@ function parseTimelineRoute(pathname) {
   return TIMELINE_MONTH_SLUGS.has(month)
     ? { year: Number(match[1]), month }
     : { year: null, month: null };
-}
-
-function themeSlug(theme) {
-  return String(theme || "Basic").trim().toLowerCase().replace(/\s+/g, "-");
-}
-
-function getInitialSiteTheme() {
-  if (typeof window === "undefined") return "Basic";
-
-  try {
-    return localStorage.getItem("site_theme") || "Basic";
-  } catch {
-    return "Basic";
-  }
 }
 
 async function readJsonResponse(response) {
@@ -119,7 +105,6 @@ export default function App() {
   const [apiLatestDemon, setApiLatestDemon] = useState("");
   const [apiNextDemon, setApiNextDemon] = useState(null);
   const [listUpdatedAt, setListUpdatedAt] = useState("");
-  const [siteTheme, setSiteTheme] = useState(getInitialSiteTheme);
   const [siteVersion, setSiteVersion] = useState(DEFAULT_SITE_VERSION);
   const [siteChangelog, setSiteChangelog] = useState(DEFAULT_SITE_CHANGELOG);
   const [futureListIds, setFutureListIds] = useState([]);
@@ -221,7 +206,6 @@ export default function App() {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
       const data = await response.json();
-      if (data.siteTheme) setSiteTheme(data.siteTheme);
       if (data.siteVersion) setSiteVersion(data.siteVersion);
       if (Array.isArray(data.siteChangelog)) setSiteChangelog(data.siteChangelog);
       setHistoryChanges(data.changes || []);
@@ -280,17 +264,6 @@ export default function App() {
   }, [query, difficulty, segment, yearView, viewMode, isMobileView]);
 
   useEffect(() => {
-    const theme = siteTheme || "Basic";
-    document.documentElement.dataset.theme = themeSlug(theme);
-
-    try {
-      localStorage.setItem("site_theme", theme);
-    } catch {
-      // Ignore storage failures; backend theme still wins after loading.
-    }
-  }, [siteTheme]);
-
-  useEffect(() => {
     const savedToken = localStorage.getItem("admin_token");
     if (!savedToken) return;
 
@@ -330,7 +303,6 @@ export default function App() {
         setApiLatestDemon(json.latestDemon || "");
         setApiNextDemon(json.nextDemon || null);
         setListUpdatedAt(json.listUpdatedAt || json.updatedAt || "");
-        setSiteTheme(json.siteTheme || "Basic");
         setSiteVersion(json.siteVersion || DEFAULT_SITE_VERSION);
         setSiteChangelog(Array.isArray(json.siteChangelog) ? json.siteChangelog : DEFAULT_SITE_CHANGELOG);
         setFutureListIds(Array.isArray(json.futureListIds) ? json.futureListIds.map(String) : []);
@@ -1029,7 +1001,7 @@ async function handleSaveRequestStatusChanges() {
   }, [demons]);
 
   return (
-    <div className="app" data-theme={themeSlug(siteTheme)}>
+    <div className="app">
       <AppHeader
           adminView={adminView}
           source={source}
@@ -1067,8 +1039,6 @@ async function handleSaveRequestStatusChanges() {
         <AdminPanel
           onBack={() => navigateTo(ROUTES.home)}
           onDataChanged={() => window.location.reload()}
-          siteTheme={siteTheme}
-          onThemeChanged={setSiteTheme}
           demons={demons}
           requests={requests}
           onOpenRequests={() => navigateTo(ROUTES.requests)}

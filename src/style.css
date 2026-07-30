@@ -4901,98 +4901,6 @@ textarea:focus-visible {
   border-color: rgba(94, 161, 255, 0.65);
 }
 
-.theme-picker {
-  position: relative;
-  width: 100%;
-}
-
-.theme-picker-button {
-  width: 100%;
-  min-height: 54px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 0 16px;
-  border-radius: 8px;
-  border: 1px solid var(--line);
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02)),
-    color-mix(in srgb, var(--panel-strong) 88%, transparent);
-  color: var(--text);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  cursor: pointer;
-  font: inherit;
-  font-weight: 900;
-  text-align: left;
-}
-
-.theme-picker-button:hover,
-.theme-picker-button[aria-expanded="true"] {
-  border-color: var(--line-strong);
-  box-shadow: var(--glow), inset 0 1px 0 rgba(255, 255, 255, 0.07);
-}
-
-.theme-picker-chevron {
-  color: var(--muted);
-  font-size: 0.85rem;
-  line-height: 1;
-}
-
-.theme-picker-menu {
-  position: absolute;
-  z-index: 60;
-  top: calc(100% + 8px);
-  left: 0;
-  right: 0;
-  max-height: 330px;
-  overflow: auto;
-  padding: 8px;
-  border-radius: 8px;
-  border: 1px solid var(--line-strong);
-  background:
-    linear-gradient(160deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)),
-    color-mix(in srgb, var(--panel-strong) 96%, black);
-  box-shadow: var(--shadow), var(--glow);
-}
-
-.theme-picker-option {
-  width: 100%;
-  min-height: 42px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 0 12px;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--muted);
-  cursor: pointer;
-  font: inherit;
-  font-weight: 850;
-  text-align: left;
-}
-
-.theme-picker-option:hover {
-  border-color: var(--line);
-  background: color-mix(in srgb, var(--blue) 12%, transparent);
-  color: var(--text);
-}
-
-.theme-picker-option.active {
-  border-color: var(--line-strong);
-  background: color-mix(in srgb, var(--blue) 18%, transparent);
-  color: var(--text);
-}
-
-.theme-picker-option strong {
-  color: var(--blue);
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
 .admin-form textarea {
   min-height: 120px;
   padding: 12px 14px;
@@ -7238,6 +7146,219 @@ textarea:focus-visible {
   .desktop-list-shell .controls {
     transition: none;
   }
+}
+
+/* Fixed grayscale site skin. This intentionally overrides all old selectable themes. */
+:root {
+  --bg: #17181b;
+  --bg-soft: #202126;
+  --panel: rgba(29, 30, 34, 0.84);
+  --panel-strong: rgba(24, 25, 29, 0.96);
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.16);
+  --text: #f1f1f2;
+  --muted: #a7a8ad;
+  --blue: #d7d7da;
+  --green: #c8c8cb;
+  --red: #bdbdc2;
+  --orange: #ededee;
+  --yellow: #f5f5f6;
+  --shadow: 0 18px 54px rgba(0, 0, 0, 0.34);
+  --glow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 18px 46px rgba(0, 0, 0, 0.28);
+  --page-glow-1: transparent;
+  --page-glow-2: transparent;
+  --page-start: #17181b;
+  --page-mid: #17181b;
+  --page-end: #17181b;
+  --circuit-hue: 0deg;
+  --archive-ink: #17181b;
+  --archive-panel: rgba(29, 30, 34, 0.84);
+  --archive-panel-strong: rgba(24, 25, 29, 0.96);
+  --archive-cyan: #d7d7da;
+  --archive-orange: #ededee;
+}
+
+html,
+body,
+:root[data-theme] body {
+  background: #17181b !important;
+}
+
+body::before,
+body::after,
+:root[data-theme] body::before,
+:root[data-theme] body::after {
+  display: none !important;
+  content: none !important;
+  animation: none !important;
+  background: none !important;
+}
+
+.app,
+.panel,
+.controls,
+.stat-card,
+.admin-form,
+.request-table-shell,
+.calendar-year-rail,
+.calendar-main,
+.calendar-day-detail,
+.calendar-change-section,
+.modal,
+.progress-info-modal,
+.timeline-page,
+.request-card,
+.admin-action-card,
+.calendar-change-card,
+.grid-actions,
+.desktop-footer-status {
+  background: rgba(29, 30, 34, 0.84) !important;
+  border-color: var(--line) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+.hero,
+.admin-panel-header,
+.request-page-header,
+.history-header,
+.timeline-header {
+  background: transparent !important;
+}
+
+.source-pill.live,
+.login-button,
+.tabs button.active,
+.year-tabs button.active,
+.mobile-filter-apply,
+.timeline-add-button,
+.stat-icon,
+.admin-action-icon,
+.hero-info-button,
+.version-badge,
+.modal-placement-pill {
+  background: #ededee !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  color: #15161a !important;
+  box-shadow: none !important;
+}
+
+.admin-button,
+.source-pill,
+.searchbox,
+.custom-select-button,
+.tabs button,
+.grid-chip,
+.detail,
+.request-table-info span,
+.request-table-weight button,
+.timeline-month-card,
+.timeline-year-circle,
+.timeline-year-summary,
+.timeline-add-popover,
+.timeline-search-box,
+.timeline-suggestions button,
+.timeline-back-link,
+.future-list-toggle,
+.future-list-badge {
+  background: rgba(22, 23, 27, 0.78) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: var(--text) !important;
+  box-shadow: none !important;
+}
+
+.admin-button:hover,
+.tabs button:hover,
+.tabs button:focus-visible,
+.custom-select-button:hover,
+.timeline-month-card:hover,
+.timeline-month-card:focus-visible,
+.timeline-year-node:hover .timeline-year-circle,
+.timeline-year-node.active .timeline-year-circle,
+.grid-card:hover,
+.grid-card:focus-visible,
+.request-card:hover,
+.admin-action-card:hover {
+  border-color: rgba(255, 255, 255, 0.28) !important;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.32) !important;
+}
+
+.eyebrow,
+.latest-link,
+.placement-large,
+.demon-name,
+.filter-title-row button,
+.modal-back-link,
+.modal-info-card h3,
+.timeline-icon,
+.timeline-month-card strong,
+.timeline-year-summary strong,
+.timeline-suggestions span,
+.milestone-ordinal,
+.version-badge {
+  color: #f1f1f2 !important;
+}
+
+.stat-card::before,
+.admin-action-card::before,
+.grid-overlay::after,
+.hero::after,
+.timeline-year-line,
+.timeline-month-card.hardest-month::before,
+.timeline-month-card.hardest-month::after {
+  background: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: none !important;
+  animation: none !important;
+}
+
+.timeline-month-card.hardest-month,
+.timeline-month-card.acu,
+.timeline-month-card.icdx,
+.timeline-month-card.make-it-drop,
+.timeline-month-card.bloodbath {
+  border-color: rgba(255, 255, 255, 0.26) !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.14),
+    0 18px 42px rgba(0, 0, 0, 0.3) !important;
+}
+
+.difficulty,
+.difficulty-chip,
+.difficulty.extreme,
+.difficulty.insane,
+.difficulty.hard,
+.difficulty.medium,
+.difficulty.easy,
+.difficulty-chip.extreme,
+.difficulty-chip.insane,
+.difficulty-chip.hard,
+.difficulty-chip.medium,
+.difficulty-chip.easy,
+.logout-button,
+.warning,
+.danger-text {
+  background: rgba(255, 255, 255, 0.07) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  color: #f1f1f2 !important;
+}
+
+.grid-card,
+.timeline-demon-card {
+  background: #202126 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.grid-thumb,
+.timeline-demon-card img {
+  filter: saturate(0.5) contrast(0.96) brightness(0.86);
+}
+
+.desktop-list-shell.progress-shell .controls,
+.desktop-list-shell .controls.mobile-open,
+.mobile-filter-bar,
+.request-save-bar {
+  background: rgba(24, 25, 29, 0.96) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: var(--shadow) !important;
 }
 
 

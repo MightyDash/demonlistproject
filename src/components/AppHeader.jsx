@@ -3,7 +3,7 @@ import { Award, CalendarDays, FileClock, Info, LogIn, LogOut, Pencil, Radio, Shi
 
 const DEFAULT_SITE_VERSION = "v0.62";
 const DEFAULT_VERSION_CHANGES = [
-  "Added multiple site themes and theme-aware admin styling.",
+  "Switched the site to a cleaner fixed grayscale style.",
   "Added skillset distribution on demon detail pages.",
   "Added safer admin tools with previews before heavy actions.",
   "Improved the desktop demon list, request page and list changes layout."
