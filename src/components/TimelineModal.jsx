@@ -17,6 +17,13 @@ const MONTHS = [
   { name: "December", slug: "december" }
 ];
 
+const HARDEST_MONTH_HIGHLIGHTS = {
+  "2023-september": "acu",
+  "2024-april": "icdx",
+  "2025-october": "make-it-drop",
+  "2026-march": "bloodbath"
+};
+
 function parseTimelineDate(demon) {
   const dateText = String(demon?.date || "").trim();
   const exactMatch = dateText.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
@@ -56,6 +63,10 @@ function parseTimelineDate(demon) {
 
 function pluralizeDemons(count) {
   return `${count} ${count === 1 ? "demon" : "demons"}`;
+}
+
+function getHardestMonthHighlight(year, monthSlug) {
+  return HARDEST_MONTH_HIGHLIGHTS[`${year}-${monthSlug}`] || "";
 }
 
 function buildTimelineData(demons, timelineEntries) {
@@ -387,18 +398,22 @@ export function TimelinePage({
       </div>
 
       <div className="timeline-month-grid">
-        {selectedYearData.months.map(month => (
-          <button
-            className="timeline-month-card"
-            key={month.slug}
-            onClick={() => onOpenMonth(selectedYearData.year, month.slug)}
-            type="button"
-          >
-            <span>{month.name}</span>
-            <strong>{month.demons.length}</strong>
-            <small>{pluralizeDemons(month.demons.length)}</small>
-          </button>
-        ))}
+        {selectedYearData.months.map(month => {
+          const highlight = getHardestMonthHighlight(selectedYearData.year, month.slug);
+
+          return (
+            <button
+              className={`timeline-month-card ${highlight ? `hardest-month ${highlight}` : ""}`}
+              key={month.slug}
+              onClick={() => onOpenMonth(selectedYearData.year, month.slug)}
+              type="button"
+            >
+              <span>{month.name}</span>
+              <strong>{month.demons.length}</strong>
+              <small>{pluralizeDemons(month.demons.length)}</small>
+            </button>
+          );
+        })}
       </div>
     </section>
   );
