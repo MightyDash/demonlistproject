@@ -7361,4 +7361,282 @@ body::after,
   box-shadow: var(--shadow) !important;
 }
 
+/* Concept C: full-width library dashboard */
+html,
+body {
+  width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+body,
+:root[data-theme] body {
+  background:
+    linear-gradient(180deg, #1b1c20 0%, #18191d 46%, #15161a 100%) !important;
+}
+
+.app {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 18px clamp(14px, 2vw, 34px) 84px !important;
+}
+
+.hero {
+  width: 100% !important;
+  margin: 0 0 16px !important;
+  padding: 14px 0 16px 64px !important;
+  gap: 18px !important;
+  align-items: end !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09) !important;
+}
+
+.hero::before {
+  top: 14px !important;
+  width: 44px !important;
+  height: 44px !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  background: #eeeeef !important;
+  color: #15161a !important;
+  font-size: 20px !important;
+}
+
+.hero::after {
+  width: min(240px, 22vw) !important;
+  height: 2px !important;
+  background: rgba(255, 255, 255, 0.28) !important;
+}
+
+.hero h1 {
+  font-size: clamp(34px, 3.2vw, 54px) !important;
+}
+
+.hero .subtitle {
+  max-width: 680px !important;
+  margin-top: 8px !important;
+}
+
+.hero > div:last-child {
+  align-self: center !important;
+  gap: 8px !important;
+}
+
+.hero .admin-button,
+.hero .panel-button,
+.source-pill {
+  min-height: 38px !important;
+  padding: 0 13px !important;
+  white-space: nowrap !important;
+}
+
+.stats-grid {
+  width: 100% !important;
+  margin: 0 0 16px !important;
+  border-radius: 0 !important;
+}
+
+.stat-card {
+  min-height: 104px !important;
+  padding: 20px clamp(18px, 2.2vw, 34px) !important;
+}
+
+.desktop-list-shell,
+.desktop-list-shell.progress-shell {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+.table-panel {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+.demon-grid {
+  width: 100% !important;
+  grid-template-columns: repeat(auto-fill, minmax(285px, 1fr)) !important;
+  gap: 14px !important;
+  padding: 14px !important;
+}
+
+.grid-card {
+  border-radius: 4px !important;
+  aspect-ratio: 16 / 9 !important;
+}
+
+.desktop-footer-status {
+  right: 0 !important;
+  left: 0 !important;
+}
+
+.timeline-page,
+.admin-panel,
+.request-panel,
+.recent-panel,
+.calendar-panel {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+@media (min-width: 981px) {
+  .desktop-list-shell,
+  .desktop-list-shell.progress-shell {
+    display: block !important;
+    grid-template-columns: none !important;
+    gap: 0 !important;
+  }
+
+  .mobile-filter-bar {
+    display: none !important;
+  }
+
+  .desktop-list-shell .controls,
+  .desktop-list-shell.progress-shell .controls {
+    position: relative !important;
+    inset: auto !important;
+    top: auto !important;
+    z-index: 20 !important;
+    visibility: visible !important;
+    transform: none !important;
+    display: grid !important;
+    grid-template-columns: minmax(300px, 1.35fr) minmax(220px, 0.42fr) minmax(300px, 0.78fr) auto;
+    align-items: end !important;
+    gap: 12px !important;
+    width: 100% !important;
+    max-height: none !important;
+    margin: 0 0 14px !important;
+    padding: 14px !important;
+    overflow: visible !important;
+    border-radius: 4px !important;
+    background: rgba(29, 30, 34, 0.72) !important;
+    backdrop-filter: blur(14px) !important;
+  }
+
+  .desktop-list-shell .controls .filter-title-row,
+  .desktop-list-shell.progress-shell .controls .filter-title-row {
+    position: static !important;
+    grid-column: 1 / -1 !important;
+    display: flex !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 0 10px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    background: transparent !important;
+  }
+
+  .desktop-list-shell .controls .filter-title-row strong,
+  .desktop-list-shell.progress-shell .controls .filter-title-row strong {
+    font-size: 15px !important;
+  }
+
+  .mobile-filter-close,
+  .mobile-filter-apply {
+    display: none !important;
+  }
+
+  .desktop-list-shell .controls .searchbox,
+  .desktop-list-shell.progress-shell .controls .searchbox,
+  .desktop-list-shell .controls .custom-select,
+  .desktop-list-shell.progress-shell .controls .custom-select {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  .desktop-list-shell .controls .tabs,
+  .desktop-list-shell.progress-shell .controls .tabs {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  .desktop-list-shell .controls .tabs button,
+  .desktop-list-shell.progress-shell .controls .tabs button {
+    flex: 0 0 auto !important;
+    min-width: 58px !important;
+    min-height: 38px !important;
+    padding: 0 13px !important;
+  }
+
+  .desktop-list-shell .controls .year-tabs,
+  .desktop-list-shell.progress-shell .controls .year-tabs {
+    grid-column: 1 / 4 !important;
+    margin-top: 0 !important;
+  }
+
+  .desktop-list-shell .controls .view-tabs,
+  .desktop-list-shell.progress-shell .controls .view-tabs {
+    grid-column: 4 !important;
+    justify-content: flex-end !important;
+  }
+
+  .desktop-list-shell .controls .filter-section-label,
+  .desktop-list-shell.progress-shell .controls .filter-section-label {
+    display: none !important;
+  }
+
+  .table-header {
+    min-height: 54px !important;
+    padding: 0 20px !important;
+  }
+
+  .demon-table {
+    min-width: 960px;
+  }
+}
+
+@media (min-width: 1600px) {
+  .demon-grid {
+    grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)) !important;
+  }
+}
+
+@media (min-width: 2100px) {
+  .demon-grid {
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)) !important;
+  }
+}
+
+@media (max-width: 1180px) and (min-width: 981px) {
+  .hero {
+    grid-template-columns: 1fr !important;
+    align-items: start !important;
+  }
+
+  .hero > div:last-child {
+    justify-content: flex-start !important;
+  }
+
+  .desktop-list-shell .controls,
+  .desktop-list-shell.progress-shell .controls {
+    grid-template-columns: minmax(260px, 1fr) minmax(220px, 0.45fr);
+  }
+
+  .desktop-list-shell .controls .year-tabs,
+  .desktop-list-shell.progress-shell .controls .year-tabs,
+  .desktop-list-shell .controls .view-tabs,
+  .desktop-list-shell.progress-shell .controls .view-tabs {
+    grid-column: 1 / -1 !important;
+    justify-content: flex-start !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .app {
+    padding-inline: 12px !important;
+  }
+
+  .hero {
+    padding-left: 56px !important;
+  }
+
+  .stats-grid {
+    border-radius: 4px !important;
+  }
+
+  .stat-card {
+    min-height: 92px !important;
+  }
+}
+
 
