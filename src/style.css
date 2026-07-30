@@ -6671,21 +6671,19 @@ textarea:focus-visible {
 
 .timeline-years {
   display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(165px, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
   align-items: center;
-  min-height: 230px;
+  min-height: 210px;
   margin: 0 0 42px;
   padding: 72px 6px 62px;
-  overflow-x: auto;
-  scrollbar-width: thin;
+  overflow: visible;
 }
 
 .timeline-year-node {
   position: relative;
   display: grid;
   place-items: center;
-  min-width: 132px;
+  min-width: 0;
   height: 74px;
   border: 0;
   background: transparent;
