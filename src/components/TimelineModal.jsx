@@ -121,11 +121,7 @@ function buildTimelineData(demons, timelineEntries) {
 
   return Array.from(yearMap.values())
     .sort((a, b) => a.year - b.year)
-    .map((yearBucket, index, buckets) => {
-      const cumulative = buckets
-        .slice(0, index + 1)
-        .reduce((sum, bucket) => sum + bucket.demons.length, 0);
-
+    .map(yearBucket => {
       yearBucket.demons.sort((a, b) => placementNumber(a.demon.placement) - placementNumber(b.demon.placement));
       yearBucket.exactDemons.sort((a, b) => a.date.sortValue - b.date.sortValue);
       yearBucket.months.forEach(month => {
@@ -133,8 +129,7 @@ function buildTimelineData(demons, timelineEntries) {
       });
 
       return {
-        ...yearBucket,
-        cumulative
+        ...yearBucket
       };
     });
 }
@@ -375,8 +370,8 @@ export function TimelinePage({
             type="button"
           >
             <span className="timeline-year-summary">
-              <strong>{pluralizeDemons(yearData.cumulative)}</strong>
-              <small>completed through {yearData.year}</small>
+              <strong>{pluralizeDemons(yearData.demons.length)}</strong>
+              <small>completed in {yearData.year}</small>
             </span>
             <span className="timeline-year-line" />
             <span className="timeline-year-circle">{yearData.year}</span>
