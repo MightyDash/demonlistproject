@@ -10,13 +10,14 @@ import { LogoutConfirm } from "./components/LogoutConfirm.jsx";
 import { MilestonesModal } from "./components/MilestonesModal.jsx";
 import { RecentChanges } from "./components/RecentChanges.jsx";
 import { RequestPanel } from "./components/RequestPanel.jsx";
-import { TimelineModal } from "./components/TimelineModal.jsx";
+import { TimelinePage } from "./components/TimelineModal.jsx";
 import { isInProgressDemon, normalizeDemon, placementNumber, segmentForPlacement } from "./demonUtils.js";
 
 const ROUTES = {
   home: "/",
   requests: "/demon-requests",
   history: "/recent-changes",
+  timeline: "/timeline",
   admin: "/admin-panel"
 };
 
@@ -66,6 +67,7 @@ export default function App() {
   const [viewMode, setViewMode] = useState("grid");
   const [requestView, setRequestView] = useState(false);
   const [historyView, setHistoryView] = useState(false);
+  const [timelineView, setTimelineView] = useState(false);
   const [requestForm, setRequestForm] = useState({
   levelId: "",
   type: "Classic",
@@ -83,7 +85,6 @@ export default function App() {
   const [requestError, setRequestError] = useState("");
   const [showLogin, setShowLogin] = useState(false);
   const [showMilestones, setShowMilestones] = useState(false);
-  const [showTimeline, setShowTimeline] = useState(false);
   const [historyChanges, setHistoryChanges] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState("");
@@ -100,6 +101,7 @@ export default function App() {
 
     setRequestView(route === ROUTES.requests);
     setHistoryView(route === ROUTES.history);
+    setTimelineView(route === ROUTES.timeline);
     setAdminView(route === ROUTES.admin);
   }
 
@@ -897,6 +899,7 @@ async function handleSaveRequestStatusChanges() {
           isAdmin={isAdmin}
           historyView={historyView}
           requestView={requestView}
+          timelineView={timelineView}
           onOpenRequests={() => {
             navigateTo(ROUTES.requests);
           }}
@@ -906,7 +909,9 @@ async function handleSaveRequestStatusChanges() {
           onOpenLogin={() => setShowLogin(true)}
           onOpenAdmin={() => navigateTo(ROUTES.admin)}
           onOpenMilestones={() => setShowMilestones(true)}
-          onOpenTimeline={() => setShowTimeline(true)}
+          onOpenTimeline={() => {
+            navigateTo(timelineView ? ROUTES.home : ROUTES.timeline);
+          }}
           onCloseAdmin={() => navigateTo(ROUTES.home)}
           onOpenLogout={() => setShowLogoutConfirm(true)}
           siteVersion={siteVersion}
@@ -966,6 +971,11 @@ async function handleSaveRequestStatusChanges() {
           loading={historyLoading}
           error={historyError}
           onBack={() => navigateTo(ROUTES.home)}
+        />
+      ) : timelineView ? (
+        <TimelinePage
+          demons={demons}
+          onSelectDemon={setSelected}
         />
       ) : (
         <DemonListContent
@@ -1030,13 +1040,6 @@ async function handleSaveRequestStatusChanges() {
         />
       )}
 
-      {showTimeline && (
-        <TimelineModal
-          demons={demons}
-          onClose={() => setShowTimeline(false)}
-          onSelectDemon={setSelected}
-        />
-      )}
     </div>
   );
 }

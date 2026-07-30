@@ -15,6 +15,7 @@ export function AppHeader({
   isAdmin,
   historyView,
   requestView,
+  timelineView,
   onOpenRequests,
   onOpenHistory,
   onOpenLogin,
@@ -46,14 +47,18 @@ export function AppHeader({
       ? "Demon Requests"
       : historyView
         ? "List Changes"
-        : "Demon List";
+        : timelineView
+          ? "Completion Timeline"
+          : "Demon List";
   const pageSubtitle = adminView
     ? "Manage your demon list tools and admin actions."
     : requestView
       ? "Community requests to add new demons to the list."
       : historyView
         ? "Browse all changes made to the demon list."
-        : "A clean, searchable demon list powered by my Google Spreadsheet.";
+        : timelineView
+          ? "A year-by-year view of when demons were completed."
+          : "A clean, searchable demon list powered by my Google Spreadsheet.";
 
   function openVersionInfo() {
     setVersionDraft(resolvedVersion);
@@ -121,7 +126,7 @@ export function AppHeader({
             </p>
             <div className="hero-title-row">
               <h1>{pageTitle}</h1>
-              {!adminView && !requestView && !historyView && (
+              {!adminView && !requestView && !historyView && !timelineView && (
                 <button
                   className="hero-info-button"
                   onClick={() => setShowListInfo(true)}
@@ -250,7 +255,7 @@ export function AppHeader({
               </button>
             )}
 
-            {!adminView && !historyView && (
+            {!adminView && !historyView && !timelineView && (
               <button className="admin-button panel-button" onClick={onOpenMilestones} type="button">
                 <Award size={16} />
                 Milestones
@@ -260,11 +265,11 @@ export function AppHeader({
             {!adminView && !historyView && (
               <button className="admin-button panel-button" onClick={onOpenTimeline} type="button">
                 <CalendarDays size={16} />
-                Timeline
+                {timelineView ? "Back to list" : "Timeline"}
               </button>
             )}
 
-            {!adminView && !historyView && (
+            {!adminView && !historyView && !timelineView && (
               <button className="admin-button panel-button" onClick={onOpenRequests} type="button">
                 Demon Requests
               </button>

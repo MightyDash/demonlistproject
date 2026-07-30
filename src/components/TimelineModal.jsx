@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { CalendarDays, X } from "lucide-react";
+import { CalendarDays } from "lucide-react";
 import { isInProgressDemon, placementNumber } from "../demonUtils.js";
 
 const MONTHS = [
@@ -71,7 +71,7 @@ function TimelineDemonCard({ demon, onSelectDemon }) {
   );
 }
 
-export function TimelineModal({ demons, onClose, onSelectDemon }) {
+export function TimelinePage({ demons, onSelectDemon }) {
   const timeline = useMemo(() => {
     const completed = demons
       .filter(demon => !isInProgressDemon(demon))
@@ -137,20 +137,7 @@ export function TimelineModal({ demons, onClose, onSelectDemon }) {
   }
 
   return (
-    <div className="progress-info-backdrop" onClick={onClose}>
-      <section
-        className="progress-info-modal timeline-modal"
-        onClick={event => event.stopPropagation()}
-      >
-        <button
-          className="progress-info-close"
-          onClick={onClose}
-          type="button"
-          aria-label="Close timeline"
-        >
-          <X size={20} />
-        </button>
-
+      <section className="timeline-page">
         <div className="timeline-header">
           <span className="timeline-icon"><CalendarDays size={24} /></span>
           <div>
@@ -226,6 +213,5 @@ export function TimelineModal({ demons, onClose, onSelectDemon }) {
           </>
         )}
       </section>
-    </div>
   );
 }
