@@ -79,6 +79,34 @@ function getInitialSiteTheme() {
   }
 }
 
+async function readJsonResponse(response) {
+  const text = await response.text();
+
+  try {
+    const data = text ? JSON.parse(text) : {};
+    if (!response.ok && !data.message) {
+      return {
+        success: false,
+        message: `Server returned HTTP ${response.status}.`
+      };
+    }
+
+    return data;
+  } catch {
+    const snippet = text
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 140);
+
+    return {
+      success: false,
+      message: snippet
+        ? `Server returned an unreadable response: ${snippet}`
+        : `Server returned HTTP ${response.status}.`
+    };
+  }
+}
+
 export default function App() {
   const [demons, setDemons] = useState([]);
   const [source, setSource] = useState("loading");
@@ -495,7 +523,7 @@ export default function App() {
           levelId
         })
       });
-      const data = await response.json();
+      const data = await readJsonResponse(response);
 
       if (!data.success) {
         return { success: false, message: data.message || "Could not add demon to timeline." };
@@ -503,8 +531,13 @@ export default function App() {
 
       setTimelineEntries(Array.isArray(data.timelineEntries) ? data.timelineEntries : []);
       return { success: true, message: data.message || "Demon added to timeline." };
-    } catch {
-      return { success: false, message: "Could not connect." };
+    } catch (error) {
+      return {
+        success: false,
+        message: error?.message
+          ? `Could not connect: ${error.message}`
+          : "Could not connect."
+      };
     }
   }
 
@@ -527,7 +560,7 @@ export default function App() {
           levelId
         })
       });
-      const data = await response.json();
+      const data = await readJsonResponse(response);
 
       if (!data.success) {
         return { success: false, message: data.message || "Could not remove demon from timeline." };
@@ -535,8 +568,13 @@ export default function App() {
 
       setTimelineEntries(Array.isArray(data.timelineEntries) ? data.timelineEntries : []);
       return { success: true, message: data.message || "Demon removed from timeline." };
-    } catch {
-      return { success: false, message: "Could not connect." };
+    } catch (error) {
+      return {
+        success: false,
+        message: error?.message
+          ? `Could not connect: ${error.message}`
+          : "Could not connect."
+      };
     }
   }
 
