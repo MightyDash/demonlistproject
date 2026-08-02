@@ -285,38 +285,42 @@ export default function App() {
       .catch(() => localStorage.removeItem("admin_token"));
   }, []);
 
-  useEffect(() => {
-    async function loadData() {
-      if (!SHEET_API_URL) {
-        setDemons(mockDemons.map(normalizeDemon));
-        setSource("mock");
-        return;
-      }
+  async function loadDemonData({ silent = false } = {}) {
+    if (!SHEET_API_URL) {
+      setDemons(mockDemons.map(normalizeDemon));
+      setSource("mock");
+      return;
+    }
 
-      try {
-        const response = await fetch(SHEET_API_URL);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    if (!silent) setSource("loading");
 
-        const json = await response.json();
-        const rows = Array.isArray(json) ? json : json.demons || json.data || [];
+    try {
+      const response = await fetch(SHEET_API_URL);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-        setApiLatestDemon(json.latestDemon || "");
-        setApiNextDemon(json.nextDemon || null);
-        setListUpdatedAt(json.listUpdatedAt || json.updatedAt || "");
-        setSiteVersion(json.siteVersion || DEFAULT_SITE_VERSION);
-        setSiteChangelog(Array.isArray(json.siteChangelog) ? json.siteChangelog : DEFAULT_SITE_CHANGELOG);
-        setFutureListIds(Array.isArray(json.futureListIds) ? json.futureListIds.map(String) : []);
-        setTimelineEntries(Array.isArray(json.timelineEntries) ? json.timelineEntries : []);
-        setDemons(rows.map(normalizeDemon));
-        setSource("live");
-      } catch (error) {
-        console.warn("Could not load live sheet data. Using mock data.", error);
+      const json = await response.json();
+      const rows = Array.isArray(json) ? json : json.demons || json.data || [];
+
+      setApiLatestDemon(json.latestDemon || "");
+      setApiNextDemon(json.nextDemon || null);
+      setListUpdatedAt(json.listUpdatedAt || json.updatedAt || "");
+      setSiteVersion(json.siteVersion || DEFAULT_SITE_VERSION);
+      setSiteChangelog(Array.isArray(json.siteChangelog) ? json.siteChangelog : DEFAULT_SITE_CHANGELOG);
+      setFutureListIds(Array.isArray(json.futureListIds) ? json.futureListIds.map(String) : []);
+      setTimelineEntries(Array.isArray(json.timelineEntries) ? json.timelineEntries : []);
+      setDemons(rows.map(normalizeDemon));
+      setSource("live");
+    } catch (error) {
+      console.warn("Could not load live sheet data. Using mock data.", error);
+      if (!silent) {
         setDemons(mockDemons.map(normalizeDemon));
         setSource("mock");
       }
     }
+  }
 
-    loadData();
+  useEffect(() => {
+    loadDemonData();
   }, []);
 
   // ✅ FIXED: Login now sends credentials to the server for validation
@@ -1038,7 +1042,7 @@ async function handleSaveRequestStatusChanges() {
       {adminView ? (
         <AdminPanel
           onBack={() => navigateTo(ROUTES.home)}
-          onDataChanged={() => window.location.reload()}
+          onDataChanged={() => loadDemonData({ silent: true })}
           demons={demons}
           requests={requests}
           onOpenRequests={() => navigateTo(ROUTES.requests)}
