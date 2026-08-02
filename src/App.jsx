@@ -109,7 +109,7 @@ export default function App() {
   const [siteChangelog, setSiteChangelog] = useState(DEFAULT_SITE_CHANGELOG);
   const [futureListIds, setFutureListIds] = useState([]);
   const [timelineEntries, setTimelineEntries] = useState([]);
-  const [viewMode, setViewMode] = useState("grid");
+  const [viewMode, setViewMode] = useState("banner");
   const [requestView, setRequestView] = useState(false);
   const [historyView, setHistoryView] = useState(false);
   const [timelineView, setTimelineView] = useState(false);

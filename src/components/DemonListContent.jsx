@@ -84,7 +84,7 @@ export function DemonListContent({
     setDifficulty("all");
     setSegment("all");
     setYearView("all");
-    setViewMode("grid");
+    setViewMode("banner");
   }
 
   function handleOpenKey(event, demon) {
