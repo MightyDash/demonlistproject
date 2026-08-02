@@ -4763,6 +4763,61 @@ textarea:focus-visible {
   font-weight: 800;
 }
 
+.admin-toast {
+  position: fixed;
+  top: 22px;
+  right: 22px;
+  z-index: 12000;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 14px;
+  width: min(520px, calc(100vw - 32px));
+  padding: 16px 16px 16px 18px;
+  border: 1px solid rgba(167, 139, 250, 0.58);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(167, 139, 250, 0.18), transparent 52%),
+    rgba(24, 25, 29, 0.98);
+  color: var(--text);
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.46),
+    0 0 0 1px rgba(255, 255, 255, 0.04);
+  animation: admin-toast-in 0.22s ease both;
+}
+
+.admin-toast p {
+  margin: 0;
+  line-height: 1.45;
+  font-weight: 900;
+}
+
+.admin-toast button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  font-weight: 950;
+  cursor: pointer;
+}
+
+@keyframes admin-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .tier-update-summary {
   display: grid;
   gap: 8px;
@@ -7716,6 +7771,13 @@ body,
 @media (max-width: 760px) {
   .hero {
     padding-left: 0 !important;
+  }
+
+  .admin-toast {
+    top: 12px;
+    right: 12px;
+    left: 12px;
+    width: auto;
   }
 }
 

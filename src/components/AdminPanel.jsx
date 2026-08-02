@@ -63,7 +63,6 @@ export function AdminPanel({
   });
 
   const [removeLevelId, setRemoveLevelId] = useState("");
-  const [removeConfirm, setRemoveConfirm] = useState(false);
 
   // Edit Demon state
   const [editSearch, setEditSearch] = useState("");
@@ -78,10 +77,10 @@ export function AdminPanel({
     status: "COMPLETED",
     progressPercent: ""
   });
-  const [editConfirm, setEditConfirm] = useState(false);
 
   const [adminMessage, setAdminMessage] = useState("");
   const [adminError, setAdminError] = useState("");
+  const [adminToast, setAdminToast] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [refreshListToken, setRefreshListToken] = useState("");
   const [pendingAdminPreview, setPendingAdminPreview] = useState(null);
@@ -94,6 +93,16 @@ export function AdminPanel({
   useEffect(() => {
     handleCheckTierUpdates();
   }, []);
+
+  useEffect(() => {
+    if (!adminToast) return;
+
+    const timeoutId = window.setTimeout(() => {
+      setAdminToast(null);
+    }, 9000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [adminToast]);
 
   const noteManagerDemons = useMemo(() => {
     const query = noteSearch.trim().toLowerCase();
@@ -116,11 +125,10 @@ export function AdminPanel({
     setShowNoteManager(false);
     setEditFound(null);
     setEditNotFound(false);
-    setEditConfirm(false);
-    setRemoveConfirm(false);
     setPendingAdminPreview(null);
     setAdminMessage("");
     setAdminError("");
+    setAdminToast(null);
   }
 
   function showAdminPreview(type, title, details, warning) {
@@ -129,15 +137,15 @@ export function AdminPanel({
     setPendingAdminPreview({ type, title, details, warning });
   }
 
+  function showAdminToast(message) {
+    setAdminToast({ message });
+  }
+
   function handleConfirmAdminPreview() {
     const type = pendingAdminPreview?.type;
     setPendingAdminPreview(null);
 
-    if (type === "addDemon") return handleAddDemon({ skipPreview: true });
-    if (type === "removeDemon") return handleRemoveDemon({ skipPreview: true });
-    if (type === "editDemon") return handleEditDemon({ skipPreview: true });
     if (type === "refreshList") return handleRefreshList({ skipPreview: true });
-    if (type === "revertRefresh") return handleRevertRefresh({ skipPreview: true });
   }
 
   function openNoteManager() {
@@ -227,7 +235,6 @@ export function AdminPanel({
     setAdminError("");
     setEditFound(null);
     setEditNotFound(false);
-    setEditConfirm(false);
 
     const q = editSearch.trim();
     if (!q) {
@@ -261,9 +268,10 @@ export function AdminPanel({
     }
   }
 
-  async function handleEditDemon({ skipPreview = false } = {}) {
+  async function handleEditDemon() {
     setAdminMessage("");
     setAdminError("");
+    setAdminToast(null);
 
     const dateInput = normalizeDateInput(editForm.date);
     const attempts = Number(editForm.attempts);
@@ -290,24 +298,6 @@ export function AdminPanel({
       return;
     }
 
-    if (!skipPreview) {
-      showAdminPreview(
-        "editDemon",
-        `Edit ${editForm.name.trim()}`,
-        [
-          ["Level ID", editFound.id],
-          ["Difficulty", editForm.difficulty.trim()],
-          ["Creator(s)", editForm.creator.trim()],
-          ["Date", dateInput.value],
-          ["Attempts", attempts],
-          ["Status", editForm.status],
-          ["Progress", editForm.status === "IN PROGRESS" ? `${progressPercent}%` : "Not in progress"]
-        ],
-        "This will update the demon row in the spreadsheet."
-      );
-      return;
-    }
-
     setIsSubmitting(true);
     try {
       const data = await sendAdminRequest({
@@ -327,10 +317,9 @@ export function AdminPanel({
         return;
       }
 
-      setAdminMessage(data.message || "Demon updated.");
+      showAdminToast(`${editForm.name.trim()} has been edited.`);
       setEditFound(null);
       setEditSearch("");
-      setEditConfirm(false);
       setShowEditForm(false);
       if (onDataChanged) onDataChanged();
     } catch (error) {
@@ -363,9 +352,10 @@ export function AdminPanel({
     return response.json();
   }
 
-  async function handleAddDemon({ skipPreview = false } = {}) {
+  async function handleAddDemon() {
     setAdminMessage("");
     setAdminError("");
+    setAdminToast(null);
 
     const levelId = String(addForm.levelId || "").trim();
     const attempts = Number(addForm.attempts);
@@ -393,22 +383,6 @@ export function AdminPanel({
       return;
     }
 
-    if (!skipPreview) {
-      showAdminPreview(
-        "addDemon",
-        "Add demon",
-        [
-          ["Level ID", levelId],
-          ["Attempts", attempts],
-          ["Date", dateInput.value],
-          ["Status", status],
-          ["Progress", status === "IN PROGRESS" ? `${progressPercent}%` : "Completed"]
-        ],
-        "This will fetch the demon and add it to the spreadsheet."
-      );
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
@@ -426,7 +400,17 @@ export function AdminPanel({
         return;
       }
 
-      setAdminMessage(data.message || "Demon added.");
+      const addedDemon = data.demon || {};
+      const demonName = addedDemon.name || `Level ${levelId}`;
+      const placement = addedDemon.placement || "";
+      const lowerPlacementDemon = addedDemon.below || "nothing";
+      const higherPlacementDemon = addedDemon.above || "nothing";
+
+      showAdminToast(
+        placement
+          ? `${demonName} has been placed at ${placement}, above ${lowerPlacementDemon} and below ${higherPlacementDemon}.`
+          : `${demonName} has been placed in In Progress.`
+      );
       setAddForm({
         levelId: "",
         attempts: "",
@@ -444,24 +428,15 @@ export function AdminPanel({
     }
   }
 
-  async function handleRemoveDemon({ skipPreview = false } = {}) {
+  async function handleRemoveDemon() {
     setAdminMessage("");
     setAdminError("");
+    setAdminToast(null);
 
     const levelId = String(removeLevelId || "").trim();
 
     if (!levelId) {
       setAdminError("Level ID is required.");
-      return;
-    }
-
-    if (!skipPreview) {
-      showAdminPreview(
-        "removeDemon",
-        "Remove demon",
-        [["Level ID", levelId]],
-        "This cannot be undone from the website. Make sure this is the correct level."
-      );
       return;
     }
 
@@ -478,9 +453,9 @@ export function AdminPanel({
         return;
       }
 
-      setAdminMessage(data.message || "Demon removed.");
+      const removedName = data.removed?.name || `Level ${levelId}`;
+      showAdminToast(`${removedName} has been removed.`);
       setRemoveLevelId("");
-      setRemoveConfirm(false);
       setShowRemoveForm(false);
 
       if (onDataChanged) onDataChanged();
@@ -519,8 +494,6 @@ export function AdminPanel({
 
     setEditFound(null);
     setEditNotFound(false);
-    setEditConfirm(false);
-    setRemoveConfirm(false);
     setIsSubmitting(true);
 
     try {
@@ -569,22 +542,10 @@ export function AdminPanel({
     }
   }
 
-  async function handleRevertRefresh({ skipPreview = false } = {}) {
+  async function handleRevertRefresh() {
     setAdminMessage("");
     setAdminError("");
-
-    if (!skipPreview) {
-      showAdminPreview(
-        "revertRefresh",
-        "Revert refresh",
-        [
-          ["Action", "Restore latest pre-refresh backup"],
-          ["Applies to", "Refresh List or Update All backups"]
-        ],
-        "This replaces the current demon rows with the latest refresh backup. Only continue if the latest refresh/update was wrong."
-      );
-      return;
-    }
+    setAdminToast(null);
 
     setIsSubmitting(true);
 
@@ -621,6 +582,18 @@ export function AdminPanel({
 
       {adminMessage && <p className="admin-success">{adminMessage}</p>}
       {adminError && <p className="admin-error">{adminError}</p>}
+      {adminToast && (
+        <div className="admin-toast" role="status" aria-live="polite">
+          <p>{adminToast.message}</p>
+          <button
+            type="button"
+            onClick={() => setAdminToast(null)}
+            aria-label="Close notification"
+          >
+            X
+          </button>
+        </div>
+      )}
       {pendingAdminPreview && (
         <section className="admin-preview-card">
           <div>
@@ -670,8 +643,6 @@ export function AdminPanel({
             setShowNoteManager(false);
             setEditFound(null);
             setEditNotFound(false);
-            setEditConfirm(false);
-            setRemoveConfirm(false);
             setAdminMessage("");
             setAdminError("");
           }}
@@ -693,8 +664,6 @@ export function AdminPanel({
             setShowNoteManager(false);
             setEditFound(null);
             setEditNotFound(false);
-            setEditConfirm(false);
-            setRemoveConfirm(false);
             setAdminMessage("");
             setAdminError("");
           }}
@@ -716,8 +685,6 @@ export function AdminPanel({
             setShowNoteManager(false);
             setEditFound(null);
             setEditNotFound(false);
-            setEditConfirm(false);
-            setRemoveConfirm(false);
             setAdminMessage("");
             setAdminError("");
           }}
@@ -739,8 +706,6 @@ export function AdminPanel({
             setShowNoteManager(false);
             setEditFound(null);
             setEditNotFound(false);
-            setEditConfirm(false);
-            setRemoveConfirm(false);
             setAdminMessage("");
             setAdminError("");
           }}
@@ -1048,70 +1013,32 @@ export function AdminPanel({
             Level ID
             <input
               value={removeLevelId}
-              onChange={e => {
-                setRemoveLevelId(e.target.value);
-                setRemoveConfirm(false);
-              }}
+              onChange={e => setRemoveLevelId(e.target.value)}
               placeholder="Example: 10565740"
             />
           </label>
 
-          {!removeConfirm ? (
-            <div className="admin-form-actions">
-              <button
-                className="logout-confirm-button"
-                onClick={() => {
-                  if (!String(removeLevelId || "").trim()) {
-                    setAdminError("Level ID is required.");
-                    return;
-                  }
-                  setAdminError("");
-                  setRemoveConfirm(true);
-                }}
-                type="button"
-              >
-                Prepare Remove
-              </button>
+          <div className="admin-form-actions">
+            <button
+              className="logout-confirm-button"
+              onClick={handleRemoveDemon}
+              disabled={isSubmitting}
+              type="button"
+            >
+              {isSubmitting ? "Removing..." : "Remove Demon"}
+            </button>
 
-              <button
-                className="close-button"
-                onClick={() => {
-                  setShowRemoveForm(false);
-                  setRemoveConfirm(false);
-                  setRemoveLevelId("");
-                }}
-                type="button"
-              >
-                Cancel
-              </button>
-            </div>
-          ) : (
-            <div className="remove-confirm-box">
-              <p>
-                Are you sure you want to remove the demon with Level ID{" "}
-                remove <strong>{removeLevelId}</strong>?
-              </p>
-
-              <div className="admin-form-actions">
-                <button
-                  className="logout-confirm-button"
-                  onClick={handleRemoveDemon}
-                  disabled={isSubmitting}
-                  type="button"
-                >
-                  {isSubmitting ? "Removing..." : "Yes, remove"}
-                </button>
-
-                <button
-                  className="close-button"
-                  onClick={() => setRemoveConfirm(false)}
-                  type="button"
-                >
-                  No, go back
-                </button>
-              </div>
-            </div>
-          )}
+            <button
+              className="close-button"
+              onClick={() => {
+                setShowRemoveForm(false);
+                setRemoveLevelId("");
+              }}
+              type="button"
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       )}
 
@@ -1126,7 +1053,6 @@ export function AdminPanel({
                 setEditSearch(e.target.value);
                 setEditFound(null);
                 setEditNotFound(false);
-                setEditConfirm(false);
               }}
               onKeyDown={e => { if (e.key === "Enter") handleSearchEdit(); }}
               placeholder="Exact name or Level ID..."
@@ -1151,7 +1077,7 @@ export function AdminPanel({
             </p>
           )}
 
-          {editFound && !editConfirm && (
+          {editFound && (
             <>
               <div className="edit-found-badge">
                 <span className="edit-found-dot" />
@@ -1243,10 +1169,11 @@ export function AdminPanel({
               <div className="admin-form-actions" style={{ marginTop: "8px" }}>
                 <button
                   className="login-button"
-                  onClick={() => setEditConfirm(true)}
+                  onClick={handleEditDemon}
+                  disabled={isSubmitting}
                   type="button"
                 >
-                  Save
+                  {isSubmitting ? "Saving..." : "Save"}
                 </button>
                 <button
                   className="close-button"
@@ -1261,31 +1188,6 @@ export function AdminPanel({
                 </button>
               </div>
             </>
-          )}
-
-          {editFound && editConfirm && (
-            <div className="remove-confirm-box" style={{ borderColor: "rgba(94,161,255,0.35)", background: "rgba(94,161,255,0.08)" }}>
-              <p style={{ color: "var(--text)" }}>
-                Are you sure you want to update <strong style={{ color: "var(--blue)" }}>{editFound.name}</strong> with the new information?
-              </p>
-              <div className="admin-form-actions">
-                <button
-                  className="login-button"
-                  onClick={handleEditDemon}
-                  disabled={isSubmitting}
-                  type="button"
-                >
-                  {isSubmitting ? "Saving..." : "Yes, save"}
-                </button>
-                <button
-                  className="close-button"
-                  onClick={() => setEditConfirm(false)}
-                  type="button"
-                >
-                  Back
-                </button>
-              </div>
-            </div>
           )}
         </div>
       )}
