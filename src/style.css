@@ -7752,6 +7752,176 @@ body,
   background: linear-gradient(90deg, #7c3aed, #a78bfa) !important;
 }
 
+.demon-banner-list {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+}
+
+.banner-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(82px, 0.18fr) minmax(260px, 1fr) minmax(260px, 0.42fr);
+  align-items: center;
+  min-height: 118px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: #17181c;
+  color: var(--text);
+  cursor: pointer;
+  isolation: isolate;
+  animation: card-in 0.24s ease both;
+  transition: border-color 170ms ease, box-shadow 170ms ease, transform 170ms ease;
+}
+
+.banner-card::before {
+  content: "";
+  position: absolute;
+  z-index: 4;
+  top: 0;
+  left: 0;
+  width: 42px;
+  height: 3px;
+  background: linear-gradient(90deg, #7c3aed, #d8b4fe);
+  transition: width 180ms ease;
+}
+
+.banner-card:hover,
+.banner-card:focus-visible {
+  border-color: rgba(167, 139, 250, 0.68);
+  box-shadow: 0 18px 46px rgba(88, 28, 135, 0.26);
+  outline: none;
+  transform: translateY(-2px);
+}
+
+.banner-card:hover::before,
+.banner-card:focus-visible::before {
+  width: 100%;
+}
+
+.banner-thumb {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.78) contrast(1.04) brightness(0.78);
+  transform: scale(1.01);
+  transition: transform 260ms ease, filter 260ms ease;
+}
+
+.banner-card:hover .banner-thumb,
+.banner-card:focus-visible .banner-thumb {
+  filter: saturate(0.95) contrast(1.08) brightness(0.86);
+  transform: scale(1.035);
+}
+
+.banner-shade {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(90deg, rgba(10, 10, 13, 0.9), rgba(10, 10, 13, 0.54) 34%, rgba(10, 10, 13, 0.74) 72%, rgba(10, 10, 13, 0.94)),
+    linear-gradient(180deg, rgba(167, 139, 250, 0.18), transparent 34%, rgba(0, 0, 0, 0.28));
+}
+
+.banner-placement {
+  z-index: 1;
+  padding: 0 28px;
+  color: #ffffff;
+  font-size: clamp(28px, 3vw, 48px);
+  font-weight: 950;
+  line-height: 1;
+  text-shadow: 0 4px 22px rgba(0, 0, 0, 0.75);
+  white-space: nowrap;
+}
+
+.banner-main {
+  z-index: 1;
+  min-width: 0;
+  padding: 22px 18px;
+}
+
+.banner-main h3 {
+  margin: 0;
+  max-width: 100%;
+  overflow: hidden;
+  color: #ffffff;
+  font-size: clamp(24px, 2.2vw, 38px);
+  line-height: 1.04;
+  text-overflow: ellipsis;
+  text-shadow: 0 4px 22px rgba(0, 0, 0, 0.76);
+  white-space: nowrap;
+}
+
+.banner-main p {
+  margin: 6px 0 0;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: clamp(13px, 1vw, 16px);
+  text-overflow: ellipsis;
+  text-shadow: 0 3px 18px rgba(0, 0, 0, 0.8);
+  white-space: nowrap;
+}
+
+.banner-side {
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+  padding: 18px 24px 18px 10px;
+  text-align: right;
+}
+
+.banner-side span,
+.banner-side strong {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  max-width: 100%;
+  padding: 0 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  background: rgba(12, 13, 16, 0.74);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 12px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.banner-side strong.extreme,
+.banner-side strong.insane,
+.banner-side strong.hard,
+.banner-side strong.medium,
+.banner-side strong.easy {
+  color: #d8b4fe;
+}
+
+.progress-side {
+  display: grid;
+  justify-items: end;
+}
+
+.banner-progress-bar {
+  width: min(280px, 100%);
+  height: 9px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.banner-progress-bar span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #7c3aed, #d8b4fe);
+}
+
 .eyebrow,
 .latest-link,
 .placement-large,
@@ -7778,6 +7948,55 @@ body,
     right: 12px;
     left: 12px;
     width: auto;
+  }
+
+  .demon-banner-list {
+    gap: 9px;
+    padding: 12px;
+  }
+
+  .banner-card {
+    grid-template-columns: 1fr;
+    min-height: 176px;
+    align-items: end;
+  }
+
+  .banner-placement {
+    position: absolute;
+    top: 18px;
+    left: 16px;
+    padding: 0;
+    font-size: 34px;
+  }
+
+  .banner-main {
+    padding: 66px 16px 10px;
+  }
+
+  .banner-main h3 {
+    font-size: 26px;
+    white-space: normal;
+  }
+
+  .banner-side {
+    justify-content: flex-start;
+    padding: 0 16px 16px;
+    text-align: left;
+  }
+
+  .progress-side {
+    justify-items: start;
+  }
+
+  .desktop-list-shell .controls .view-tabs,
+  .desktop-list-shell.progress-shell .controls .view-tabs {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .desktop-list-shell .controls .view-tabs button,
+  .desktop-list-shell.progress-shell .controls .view-tabs button {
+    min-width: 0 !important;
+    padding-inline: 8px !important;
   }
 }
 

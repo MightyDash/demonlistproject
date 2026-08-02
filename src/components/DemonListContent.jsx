@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { BarChart3, Check, Grid3X3, Info, List, Search, SlidersHorizontal, Target, Trophy, X } from "lucide-react";
+import { BarChart3, Check, Grid3X3, Info, List, Rows3, Search, SlidersHorizontal, Target, Trophy, X } from "lucide-react";
 import { StatCard } from "./StatCard.jsx";
 import { difficultyClass, formatNumber, formatTier, isInProgressDemon } from "../demonUtils.js";
 
@@ -235,7 +235,8 @@ export function DemonListContent({
               <div className="tabs view-tabs">
                 {[
                   ["grid", "Grid", <Grid3X3 size={15} />],
-                  ["list", "List", <List size={15} />]
+                  ["list", "List", <List size={15} />],
+                  ["banner", "Banner", <Rows3 size={15} />]
                 ].map(([value, label, icon]) => (
                   <button
                     key={value}
@@ -350,6 +351,80 @@ export function DemonListContent({
                       <div>{formatNumber(demon.attempts)}</div>
                       <div>{demon.date || demon.year || ""}</div>
                     </div>
+                    );
+                  })}
+                </div>
+              ) : viewMode === "banner" ? (
+                <div className="demon-banner-list">
+                  {filtered.map(demon => {
+                    const isInProgress = isInProgressDemon(demon);
+                    const renderAsProgress = isInProgress && isProgressView;
+                    const progressPercent = Math.max(0, Math.min(100, Number(demon.progressPercent || 0)));
+                    const isFuturePick = futureIds.has(String(demon.id));
+                    const placementLabel = isFutureView ? (demon.futurePlacement || demon.placement) : demon.placement;
+                    const trendClass = placementTrendClass(demon);
+
+                    return (
+                      <article
+                        className={`banner-card ${renderAsProgress ? "in-progress-banner" : ""} ${trendClass}`}
+                        key={`${demon.id}-${demon.name}`}
+                        data-demon-id={demon.id}
+                        onClick={() => setSelected(demon)}
+                        onKeyDown={event => handleOpenKey(event, demon)}
+                        role="button"
+                        tabIndex={0}
+                      >
+                        <img
+                          src={demon.thumbnail}
+                          alt={demon.name}
+                          className="banner-thumb"
+                          loading="lazy"
+                          decoding="async"
+                          onError={e => {
+                            e.currentTarget.style.display = "none";
+                          }}
+                        />
+
+                        <div className="banner-shade" />
+
+                        <div className="banner-placement">
+                          {renderAsProgress ? `${progressPercent}%` : placementLabel}
+                        </div>
+
+                        <div className="banner-main">
+                          <h3>{demon.name}</h3>
+                          <p>by {demon.creator || "Unknown creator"}</p>
+                          {isProgressView && isFuturePick && <span className="future-list-badge">Future List</span>}
+                        </div>
+
+                        {renderAsProgress ? (
+                          <div className="banner-side progress-side">
+                            {isAdmin && (
+                              <label className="future-list-toggle" onClick={event => event.stopPropagation()}>
+                                <input
+                                  type="checkbox"
+                                  checked={isFuturePick}
+                                  onChange={() => onToggleFutureListDemon?.(demon)}
+                                />
+                                <span>Future List</span>
+                              </label>
+                            )}
+                            <span className={`difficulty ${difficultyClass(demon.difficulty)}`}>
+                              {demon.difficulty || "Unknown"}
+                            </span>
+                            <div className="banner-progress-bar">
+                              <span style={{ width: `${progressPercent}%` }} />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="banner-side">
+                            <span>Tier {formatTier(demon.tier)}</span>
+                            <strong className={difficultyClass(demon.difficulty)}>{demon.difficulty || "Unknown"}</strong>
+                            <span>{formatNumber(demon.attempts)} attempts</span>
+                            <span>{demon.date || demon.year || "Unknown"}</span>
+                          </div>
+                        )}
+                      </article>
                     );
                   })}
                 </div>
