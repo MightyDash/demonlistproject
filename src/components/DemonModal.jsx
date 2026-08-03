@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { formatNumber, formatTier } from "../demonUtils.js";
 import { SHEET_API_URL } from "../config.js";
+import { requestJson } from "../api.js";
 
 const SKILLSET_COLORS = [
   "#1495df",
@@ -108,10 +109,9 @@ export function DemonModal({
 
       try {
         const separator = SHEET_API_URL.includes("?") ? "&" : "?";
-        const response = await fetch(
+        const data = await requestJson(
           `${SHEET_API_URL}${separator}view=skillsets&levelId=${encodeURIComponent(demon.id)}`
         );
-        const data = await response.json();
 
         if (!cancelled && Array.isArray(data.skillsetDistribution)) {
           setSkillsetDistribution(data.skillsetDistribution);

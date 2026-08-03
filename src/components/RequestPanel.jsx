@@ -36,11 +36,11 @@ export function RequestPanel({
 
   const sortedRequests = [...filteredRequests].sort((a, b) => {
   if (requestSort === "newest") {
-    return new Date(b.timestamp) - new Date(a.timestamp);
+    return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
   }
 
   if (requestSort === "oldest") {
-    return new Date(a.timestamp) - new Date(b.timestamp);
+    return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
   }
 
   if (requestSort === "weight") {

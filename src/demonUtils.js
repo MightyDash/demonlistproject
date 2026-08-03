@@ -1,12 +1,13 @@
-export function normalizeDemon(row, index) {
+export function normalizeDemon(row) {
   const id = String(row.id ?? row.ID ?? "");
   const name = row.name ?? row.demon ?? row.Demon ?? "";
   const rawDate = row.date ?? row.Date ?? row.dateBeaten ?? row["Date beaten"] ?? row.year ?? row.Year ?? "";
   const dateLabel = formatDateLabel(rawDate);
   const dateYear = extractDateYear(rawDate);
+  const placement = normalizePlacement(row.placement ?? row.Placement ?? row["#"]);
 
   return {
-    placement: row.placement ?? row.Placement ?? row["#"] ?? `#${index + 1}`,
+    placement,
     name,
     creator: row.creator ?? row.creators ?? row["Creator(s)"] ?? "",
     id,
@@ -36,56 +37,44 @@ export function extractDateYear(value) {
     return value.getFullYear();
   }
 
-  const text = String(value).trim();
-  if (/^\d{4}$/.test(text)) return Number(text);
-
-  const slashMatch = text.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2}|\d{4})$/);
-  if (slashMatch) {
-    const yearText = slashMatch[3];
-    const year = Number(yearText.length === 2 ? `20${yearText}` : yearText);
-    return year >= 1900 && year <= 2100 ? year : 0;
-  }
-
-  const parsed = new Date(text);
-  return Number.isNaN(parsed.getTime()) ? 0 : parsed.getFullYear();
+  return parseSupportedDate(value)?.year || 0;
 }
 
 export function formatDateLabel(value) {
   if (value === null || value === undefined || value === "") return "";
 
   if (value instanceof Date && !Number.isNaN(value.getTime())) {
-    return new Intl.DateTimeFormat("en-GB").format(value);
+    return formatCalendarDate(value.getFullYear(), value.getMonth() + 1, value.getDate());
   }
 
-  const text = String(value).trim();
-  if (/^\d{4}$/.test(text)) return text;
-
-  const slashMatch = text.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2}|\d{4})$/);
-  if (slashMatch) {
-    const day = slashMatch[1].padStart(2, "0");
-    const month = slashMatch[2].padStart(2, "0");
-    const year = slashMatch[3].length === 2 ? `20${slashMatch[3]}` : slashMatch[3];
-    return `${day}/${month}/${year}`;
-  }
-
-  const parsed = new Date(text);
-  if (Number.isNaN(parsed.getTime())) return text;
-
-  return new Intl.DateTimeFormat("en-GB").format(parsed);
+  const parsed = parseSupportedDate(value);
+  if (!parsed) return "";
+  if (parsed.yearOnly) return String(parsed.year);
+  return formatCalendarDate(parsed.year, parsed.month, parsed.day);
 }
 
 export function placementNumber(placement) {
-  const match = String(placement || "").match(/\d+/);
-  return match ? Number(match[0]) : 999999;
+  return parsePlacementNumber(placement);
+}
+
+export function placementSortValue(placement) {
+  return parsePlacementNumber(placement) ?? Number.POSITIVE_INFINITY;
+}
+
+export function comparePlacements(a, b) {
+  const first = placementSortValue(a);
+  const second = placementSortValue(b);
+  if (first === second) return 0;
+  return first - second;
 }
 
 export function hasPlacement(placement) {
-  return /\d+/.test(String(placement || ""));
+  return parsePlacementNumber(placement) !== null;
 }
 
 export function isInProgressDemon(demon) {
   const status = String(demon?.status || "").toUpperCase().trim();
-  return status === "IN PROGRESS" || !hasPlacement(demon?.placement);
+  return status === "IN PROGRESS";
 }
 
 export function difficultyClass(diff) {
@@ -100,6 +89,7 @@ export function difficultyClass(diff) {
 
 export function segmentForPlacement(placement) {
   const n = placementNumber(placement);
+  if (n === null) return null;
   if (n <= 100) return "main";
   if (n <= 200) return "extended";
   return "legacy";
@@ -116,6 +106,10 @@ export function formatTier(value) {
   });
 }
 
+export function parseDemonDate(value) {
+  return parseSupportedDate(value);
+}
+
 const FORMER_TOP_1 = {
   "Deadlocked": 2019,
   "The Behemoth": 2020,
@@ -124,4 +118,111 @@ const FORMER_TOP_1 = {
   "Acu": 2023,
   "Make It Drop": 2025
 };
+
+function normalizePlacement(value) {
+  if (value === null || value === undefined) return "";
+  if (typeof value !== "string" && typeof value !== "number") return "";
+
+  const text = String(value).trim();
+  return parsePlacementNumber(value) === null ? "" : text;
+}
+
+function parsePlacementNumber(value) {
+  if (typeof value === "number") {
+    return Number.isInteger(value) && value > 0 ? value : null;
+  }
+
+  if (typeof value !== "string") return null;
+
+  const text = value.trim();
+  if (!text) return null;
+
+  const match = text.match(/^#?\s*(\d+)(?:\s*[\u2022\u25b2\u25bc])?$/u);
+  if (!match) return null;
+
+  const placement = Number(match[1]);
+  return Number.isInteger(placement) && placement > 0 ? placement : null;
+}
+
+function parseSupportedDate(value) {
+  if (value === null || value === undefined) return null;
+
+  if (typeof value === "number") {
+    if (Number.isInteger(value) && value >= 1900 && value <= 2100) {
+      return { year: value, month: null, day: null, yearOnly: true, timestamp: null };
+    }
+
+    if (Number.isFinite(value) && value > 0) {
+      const date = new Date(value);
+      if (!Number.isNaN(date.getTime())) {
+        return {
+          year: date.getUTCFullYear(),
+          month: date.getUTCMonth() + 1,
+          day: date.getUTCDate(),
+          yearOnly: false,
+          timestamp: date.getTime()
+        };
+      }
+    }
+
+    return null;
+  }
+
+  if (typeof value !== "string") return null;
+
+  const text = String(value).trim();
+  if (!text) return null;
+  if (/^\d{4}$/.test(text)) {
+    const year = Number(text);
+    return year >= 1900 && year <= 2100
+      ? { year, month: null, day: null, yearOnly: true, timestamp: null }
+      : null;
+  }
+
+  const dayMonthYear = text.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+  if (dayMonthYear) {
+    return buildCalendarDate(Number(dayMonthYear[3]), Number(dayMonthYear[2]), Number(dayMonthYear[1]));
+  }
+
+  const isoDate = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (isoDate) {
+    return buildCalendarDate(Number(isoDate[1]), Number(isoDate[2]), Number(isoDate[3]));
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}T/.test(text)) {
+    const date = new Date(text);
+    if (Number.isNaN(date.getTime())) return null;
+    return {
+      year: date.getUTCFullYear(),
+      month: date.getUTCMonth() + 1,
+      day: date.getUTCDate(),
+      yearOnly: false,
+      timestamp: date.getTime()
+    };
+  }
+
+  return null;
+}
+
+function buildCalendarDate(year, month, day) {
+  if (year < 1900 || year > 2100) return null;
+  if (month < 1 || month > 12) return null;
+  if (day < 1 || day > daysInMonth(year, month)) return null;
+
+  return {
+    year,
+    month,
+    day,
+    yearOnly: false,
+    timestamp: new Date(year, month - 1, day).getTime()
+  };
+}
+
+function daysInMonth(year, month) {
+  return new Date(year, month, 0).getDate();
+}
+
+function formatCalendarDate(year, month, day) {
+  return `${String(day).padStart(2, "0")}/${String(month).padStart(2, "0")}/${year}`;
+}
 

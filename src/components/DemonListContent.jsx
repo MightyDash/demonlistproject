@@ -3,6 +3,9 @@ import { BarChart3, Check, Grid3X3, Info, List, Rows3, Search, SlidersHorizontal
 import { StatCard } from "./StatCard.jsx";
 import { difficultyClass, formatNumber, formatTier, isInProgressDemon } from "../demonUtils.js";
 
+function displayPlacement(value) {
+  return String(value || "").trim() || "Unplaced";
+}
 export function DemonListContent({
   stats,
   setSelected,
@@ -26,6 +29,8 @@ export function DemonListContent({
   apiLatestDemon,
   listUpdatedAt,
   onLatestDemonClick,
+  demonListError,
+  onRetryDemonList,
   isAdmin,
   futureListIds = [],
   onToggleFutureListDemon
@@ -97,8 +102,8 @@ export function DemonListContent({
     if (isProgressView || isFutureView) return "";
 
     const placement = String(demon.placement || "");
-    if (placement.includes("▲")) return "placement-moved-up";
-    if (placement.includes("▼")) return "placement-moved-down";
+    if (placement.includes("\u25b2")) return "placement-moved-up";
+    if (placement.includes("\u25bc")) return "placement-moved-down";
     return "";
   }
 
@@ -305,6 +310,17 @@ export function DemonListContent({
               </section>
             </div>
           )}
+
+          {demonListError && (
+            <div className="admin-error">
+              {demonListError}
+              {onRetryDemonList && (
+                <button className="close-button" onClick={onRetryDemonList} type="button">
+                  Try again
+                </button>
+              )}
+            </div>
+          )}
     
               {viewMode === "list" ? (
                 <div className="demon-table">
@@ -323,7 +339,7 @@ export function DemonListContent({
                     const renderAsProgress = isInProgress && isProgressView;
                     const progressPercent = Math.max(0, Math.min(100, Number(demon.progressPercent || 0)));
                     const isFuturePick = futureIds.has(String(demon.id));
-                    const placementLabel = isFutureView ? (demon.futurePlacement || demon.placement) : demon.placement;
+                    const placementLabel = displayPlacement(isFutureView ? (demon.futurePlacement || demon.placement) : demon.placement);
                     const trendClass = placementTrendClass(demon);
 
                     return (
@@ -361,7 +377,7 @@ export function DemonListContent({
                     const renderAsProgress = isInProgress && isProgressView;
                     const progressPercent = Math.max(0, Math.min(100, Number(demon.progressPercent || 0)));
                     const isFuturePick = futureIds.has(String(demon.id));
-                    const placementLabel = isFutureView ? (demon.futurePlacement || demon.placement) : demon.placement;
+                    const placementLabel = displayPlacement(isFutureView ? (demon.futurePlacement || demon.placement) : demon.placement);
                     const trendClass = placementTrendClass(demon);
 
                     return (
@@ -435,7 +451,7 @@ export function DemonListContent({
                     const renderAsProgress = isInProgress && isProgressView;
                     const progressPercent = Math.max(0, Math.min(100, Number(demon.progressPercent || 0)));
                     const isFuturePick = futureIds.has(String(demon.id));
-                    const placementLabel = isFutureView ? (demon.futurePlacement || demon.placement) : demon.placement;
+                    const placementLabel = displayPlacement(isFutureView ? (demon.futurePlacement || demon.placement) : demon.placement);
                     const trendClass = placementTrendClass(demon);
 
                     return (
@@ -520,4 +536,3 @@ export function DemonListContent({
           </>
   );
 }
-

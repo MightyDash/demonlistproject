@@ -35,7 +35,7 @@ function getMilestoneNumber(ordinal) {
   return match ? Number(match[0]) : 0;
 }
 
-function MilestoneRow({ item, demonByName, completedCount }) {
+function MilestoneRow({ item, demonByName, completedCount, key: _key }) {
   const targetNumber = getMilestoneNumber(item.ordinal);
   const reached = targetNumber > 0 && completedCount >= targetNumber;
   const demon = item.name ? demonByName.get(normalizeName(item.name)) : null;

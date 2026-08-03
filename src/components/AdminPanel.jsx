@@ -10,6 +10,7 @@ import {
   RotateCcw,
   Trash2
 } from "lucide-react";
+import { requestJson } from "../api.js";
 
 function normalizeDateInput(value) {
   const text = String(value || "").trim();
@@ -341,15 +342,13 @@ export function AdminPanel({
       throw new Error("You are not logged in.");
     }
 
-    const response = await fetch(adminUrl, {
+    return requestJson(adminUrl, {
       method: "POST",
       body: JSON.stringify({
         ...payload,
         token
       })
     });
-
-    return response.json();
   }
 
   async function handleAddDemon() {

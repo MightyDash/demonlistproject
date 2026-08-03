@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { CalendarDays, Plus, Search, X } from "lucide-react";
-import { isInProgressDemon, placementNumber } from "../demonUtils.js";
+import { comparePlacements, isInProgressDemon, parseDemonDate, placementSortValue } from "../demonUtils.js";
 
 const MONTHS = [
   { name: "January", slug: "january" },
@@ -27,27 +27,20 @@ const HARDEST_MONTH_HIGHLIGHTS = {
 const TIMELINE_START_YEAR = 2018;
 
 function parseTimelineDate(demon) {
-  const dateText = String(demon?.date || "").trim();
-  const exactMatch = dateText.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  const parsedDate = parseDemonDate(demon?.date);
 
-  if (exactMatch) {
-    const day = Number(exactMatch[1]);
-    const month = Number(exactMatch[2]);
-    const year = Number(exactMatch[3]);
-
-    if (year >= 2013 && year <= 2100 && month >= 1 && month <= 12 && day >= 1 && day <= 31) {
-      return {
-        year,
-        month: MONTHS[month - 1].slug,
-        day,
-        exact: true,
-        source: "date",
-        sortValue: new Date(year, month - 1, day).getTime()
-      };
-    }
+  if (parsedDate && !parsedDate.yearOnly && parsedDate.month && parsedDate.day) {
+    return {
+      year: parsedDate.year,
+      month: MONTHS[parsedDate.month - 1].slug,
+      day: parsedDate.day,
+      exact: true,
+      source: "date",
+      sortValue: parsedDate.timestamp
+    };
   }
 
-  const year = Number(demon?.dateYear || demon?.year || 0);
+  const year = Number(parsedDate?.year || demon?.dateYear || demon?.year || 0);
 
   if (year >= 2013 && year <= 2100) {
     return {
@@ -126,7 +119,7 @@ function buildTimelineData(demons, timelineEntries) {
         month: monthSlug,
         exact: true,
         source: "manual",
-        sortValue: placementNumber(demon.placement)
+        sortValue: placementSortValue(demon.placement)
       }
     };
 
@@ -137,7 +130,7 @@ function buildTimelineData(demons, timelineEntries) {
   return Array.from(yearMap.values())
     .sort((a, b) => a.year - b.year)
     .map(yearBucket => {
-      yearBucket.demons.sort((a, b) => placementNumber(a.demon.placement) - placementNumber(b.demon.placement));
+      yearBucket.demons.sort((a, b) => comparePlacements(a.demon.placement, b.demon.placement));
       yearBucket.exactDemons.sort((a, b) => a.date.sortValue - b.date.sortValue);
       yearBucket.months.forEach(month => {
         month.demons.sort((a, b) => a.date.sortValue - b.date.sortValue);
@@ -149,7 +142,7 @@ function buildTimelineData(demons, timelineEntries) {
     });
 }
 
-function TimelineDemonCard({ demon, canRemove, onSelectDemon, onRemove }) {
+function TimelineDemonCard({ demon, canRemove, onSelectDemon, onRemove, key: _key }) {
   return (
     <button
       className="timeline-demon-card"

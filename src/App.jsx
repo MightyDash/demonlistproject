@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { SHEET_API_URL } from "./config.js";
 import { mockDemons } from "./mockData.js";
 import { AdminPanel } from "./components/AdminPanel.jsx";
@@ -11,30 +11,9 @@ import { MilestonesModal } from "./components/MilestonesModal.jsx";
 import { RecentChanges } from "./components/RecentChanges.jsx";
 import { RequestPanel } from "./components/RequestPanel.jsx";
 import { TimelinePage } from "./components/TimelineModal.jsx";
-import { isInProgressDemon, normalizeDemon, placementNumber, segmentForPlacement } from "./demonUtils.js";
-
-const ROUTES = {
-  home: "/",
-  requests: "/demon-requests",
-  history: "/recent-changes",
-  timeline: "/timeline",
-  admin: "/admin-panel"
-};
-
-const TIMELINE_MONTH_SLUGS = new Set([
-  "january",
-  "february",
-  "march",
-  "april",
-  "may",
-  "june",
-  "july",
-  "august",
-  "september",
-  "october",
-  "november",
-  "december"
-]);
+import { comparePlacements, isInProgressDemon, normalizeDemon, segmentForPlacement } from "./demonUtils.js";
+import { requestJson } from "./api.js";
+import { normalizeRoute, parseTimelineRoute, ROUTES } from "./routeUtils.js";
 
 const DEFAULT_SITE_VERSION = "v0.62";
 const DEFAULT_SITE_CHANGELOG = [
@@ -43,55 +22,6 @@ const DEFAULT_SITE_CHANGELOG = [
   "Added safer admin tools with previews before heavy actions.",
   "Improved the desktop demon list, request page and list changes layout."
 ];
-
-function normalizeRoute(pathname) {
-  const path = pathname.replace(/\/+$/, "") || ROUTES.home;
-  if (/^\/timeline\/\d{4}\/[a-z]+$/i.test(path)) {
-    const month = path.split("/")[3].toLowerCase();
-    return TIMELINE_MONTH_SLUGS.has(month) ? path.toLowerCase() : ROUTES.timeline;
-  }
-  return Object.values(ROUTES).includes(path) ? path : ROUTES.home;
-}
-
-function parseTimelineRoute(pathname) {
-  const path = pathname.replace(/\/+$/, "") || ROUTES.home;
-  const match = path.match(/^\/timeline\/(\d{4})\/([a-z]+)$/i);
-
-  if (!match) return { year: null, month: null };
-
-  const month = match[2].toLowerCase();
-  return TIMELINE_MONTH_SLUGS.has(month)
-    ? { year: Number(match[1]), month }
-    : { year: null, month: null };
-}
-
-async function readJsonResponse(response) {
-  const text = await response.text();
-
-  try {
-    const data = text ? JSON.parse(text) : {};
-    if (!response.ok && !data.message) {
-      return {
-        success: false,
-        message: `Server returned HTTP ${response.status}.`
-      };
-    }
-
-    return data;
-  } catch {
-    const snippet = text
-      .replace(/\s+/g, " ")
-      .trim()
-      .slice(0, 140);
-
-    return {
-      success: false,
-      message: snippet
-        ? `Server returned an unreadable response: ${snippet}`
-        : `Server returned HTTP ${response.status}.`
-    };
-  }
-}
 
 export default function App() {
   const [demons, setDemons] = useState([]);
@@ -103,7 +33,6 @@ export default function App() {
   const [selected, setSelected] = useState(null);
   const [yearView, setYearView] = useState("all");
   const [apiLatestDemon, setApiLatestDemon] = useState("");
-  const [apiNextDemon, setApiNextDemon] = useState(null);
   const [listUpdatedAt, setListUpdatedAt] = useState("");
   const [siteVersion, setSiteVersion] = useState(DEFAULT_SITE_VERSION);
   const [siteChangelog, setSiteChangelog] = useState(DEFAULT_SITE_CHANGELOG);
@@ -141,6 +70,11 @@ export default function App() {
   const [adminView, setAdminView] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
   const [visibleDemonCount, setVisibleDemonCount] = useState(60);
+  const [demonListError, setDemonListError] = useState("");
+  const requestsLoadRef = useRef({ id: 0, controller: null });
+  const historyLoadRef = useRef({ id: 0, controller: null });
+  const demonDataLoadRef = useRef({ id: 0, controller: null });
+  const hasLoadedLiveDemonDataRef = useRef(false);
 
   function applyRoute(pathname) {
     const route = normalizeRoute(pathname);
@@ -167,34 +101,82 @@ export default function App() {
     applyRoute(route);
   }
 
+  function abortRequestsLoad() {
+    requestsLoadRef.current.controller?.abort();
+    requestsLoadRef.current = {
+      id: requestsLoadRef.current.id + 1,
+      controller: null
+    };
+    setRequestsLoading(false);
+  }
+
+  function abortHistoryLoad() {
+    historyLoadRef.current.controller?.abort();
+    historyLoadRef.current = {
+      id: historyLoadRef.current.id + 1,
+      controller: null
+    };
+  }
+
+  function abortDemonDataLoad() {
+    demonDataLoadRef.current.controller?.abort();
+    demonDataLoadRef.current = {
+      id: demonDataLoadRef.current.id + 1,
+      controller: null
+    };
+  }
+
   async function loadRequests({ silent = false } = {}) {
+  if (silent && requestsLoadRef.current.controller) return;
+
+  requestsLoadRef.current.controller?.abort();
+  const controller = new AbortController();
+  const requestId = requestsLoadRef.current.id + 1;
+  requestsLoadRef.current = { id: requestId, controller };
+
   if (!silent) setRequestsLoading(true);
 
   try {
-    const response = await fetch(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
+    const data = await requestJson(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
       method: "POST",
+      signal: controller.signal,
       body: JSON.stringify({
         action: "getRequests"
       })
     });
 
-    const data = await response.json();
+      if (data.aborted || requestsLoadRef.current.id !== requestId) return;
 
       if (data.success) {
-        setRequests(data.requests || []);
+        const nextRequests = Array.isArray(data.requests) ? data.requests : [];
+        setRequests(nextRequests);
         setSelectedRejectedRequests(selected =>
           selected.filter(rowNumber =>
-            (data.requests || []).some(request => request.rowNumber === rowNumber)
+            nextRequests.some(request => request.rowNumber === rowNumber)
           )
         );
+      } else if (!silent) {
+        setRequestError(data.message || "Could not load requests.");
       }
+    } catch {
+      if (!silent && requestsLoadRef.current.id === requestId) setRequestError("Could not load requests.");
     } finally {
-      if (!silent) setRequestsLoading(false);
+      if (requestsLoadRef.current.id === requestId) {
+        requestsLoadRef.current.controller = null;
+        if (!silent) setRequestsLoading(false);
+      }
     }
   }
 
   async function loadHistoryChanges({ silent = false } = {}) {
     if (!SHEET_API_URL) return;
+    if (silent && historyLoadRef.current.controller) return;
+
+    historyLoadRef.current.controller?.abort();
+    const controller = new AbortController();
+    const requestId = historyLoadRef.current.id + 1;
+    historyLoadRef.current = { id: requestId, controller };
+
     if (!silent) {
       setHistoryLoading(true);
       setHistoryError("");
@@ -202,17 +184,24 @@ export default function App() {
 
     try {
       const separator = SHEET_API_URL.includes("?") ? "&" : "?";
-      const response = await fetch(`${SHEET_API_URL}${separator}view=history&limit=1000`);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-      const data = await response.json();
+      const data = await requestJson(`${SHEET_API_URL}${separator}view=history&limit=1000`, {
+        signal: controller.signal
+      });
+      if (data.aborted || historyLoadRef.current.id !== requestId) return;
+      if (data.success === false) throw new Error(data.message || "Could not load recent changes.");
       if (data.siteVersion) setSiteVersion(data.siteVersion);
       if (Array.isArray(data.siteChangelog)) setSiteChangelog(data.siteChangelog);
       setHistoryChanges(data.changes || []);
-    } catch (error) {
-      setHistoryError("Could not load recent changes.");
+      setHistoryError("");
+    } catch {
+      if (!silent && historyLoadRef.current.id === requestId) {
+        setHistoryError("Could not load recent changes.");
+      }
     } finally {
-      if (!silent) setHistoryLoading(false);
+      if (historyLoadRef.current.id === requestId) {
+        historyLoadRef.current.controller = null;
+        if (!silent) setHistoryLoading(false);
+      }
     }
   }
 
@@ -235,7 +224,10 @@ export default function App() {
       loadRequests({ silent: true });
     }, 15000);
 
-    return () => window.clearInterval(intervalId);
+    return () => {
+      window.clearInterval(intervalId);
+      abortRequestsLoad();
+    };
   }, [requestView]);
 
   useEffect(() => {
@@ -246,7 +238,10 @@ export default function App() {
       loadHistoryChanges({ silent: true });
     }, 30000);
 
-    return () => window.clearInterval(intervalId);
+    return () => {
+      window.clearInterval(intervalId);
+      abortHistoryLoad();
+    };
   }, [historyView]);
   
   useEffect(() => {
@@ -270,57 +265,84 @@ export default function App() {
     const adminUrl = import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL;
     if (!adminUrl) return;
 
-    fetch(adminUrl, {
+    requestJson(adminUrl, {
       method: "POST",
       body: JSON.stringify({ action: "verifyToken", token: savedToken }),
     })
-      .then(r => r.json())
       .then(data => {
         if (data.success) {
           setIsAdmin(true);
-        } else {
+        } else if (String(data.message || "").toLowerCase().includes("invalid token")) {
           localStorage.removeItem("admin_token");
         }
       })
-      .catch(() => localStorage.removeItem("admin_token"));
+      .catch(() => {});
   }, []);
 
   async function loadDemonData({ silent = false } = {}) {
     if (!SHEET_API_URL) {
       setDemons(mockDemons.map(normalizeDemon));
       setSource("mock");
+      setDemonListError("");
       return;
     }
+
+    demonDataLoadRef.current.controller?.abort();
+    const controller = new AbortController();
+    const requestId = demonDataLoadRef.current.id + 1;
+    demonDataLoadRef.current = { id: requestId, controller };
 
     if (!silent) setSource("loading");
 
     try {
-      const response = await fetch(SHEET_API_URL);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-      const json = await response.json();
-      const rows = Array.isArray(json) ? json : json.demons || json.data || [];
+      const json = await requestJson(SHEET_API_URL, { signal: controller.signal });
+      if (json.aborted || demonDataLoadRef.current.id !== requestId) return;
+      if (json.success === false) throw new Error(json.message || "Could not load live sheet data.");
+      const rows = Array.isArray(json)
+        ? json
+        : Array.isArray(json.demons)
+          ? json.demons
+          : Array.isArray(json.data)
+            ? json.data
+            : null;
+      if (!rows) throw new Error("Live demon list response was missing demon rows.");
+      const nextDemons = rows.map(normalizeDemon);
+      const nextFutureListIds = Array.isArray(json.futureListIds) ? json.futureListIds.map(String) : [];
+      const nextTimelineEntries = Array.isArray(json.timelineEntries) ? json.timelineEntries : [];
+      const nextSiteChangelog = Array.isArray(json.siteChangelog) ? json.siteChangelog : DEFAULT_SITE_CHANGELOG;
 
       setApiLatestDemon(json.latestDemon || "");
-      setApiNextDemon(json.nextDemon || null);
       setListUpdatedAt(json.listUpdatedAt || json.updatedAt || "");
       setSiteVersion(json.siteVersion || DEFAULT_SITE_VERSION);
-      setSiteChangelog(Array.isArray(json.siteChangelog) ? json.siteChangelog : DEFAULT_SITE_CHANGELOG);
-      setFutureListIds(Array.isArray(json.futureListIds) ? json.futureListIds.map(String) : []);
-      setTimelineEntries(Array.isArray(json.timelineEntries) ? json.timelineEntries : []);
-      setDemons(rows.map(normalizeDemon));
+      setSiteChangelog(nextSiteChangelog);
+      setFutureListIds(nextFutureListIds);
+      setTimelineEntries(nextTimelineEntries);
+      setDemons(nextDemons);
+      setDemonListError("");
       setSource("live");
+      hasLoadedLiveDemonDataRef.current = true;
     } catch (error) {
-      console.warn("Could not load live sheet data. Using mock data.", error);
-      if (!silent) {
-        setDemons(mockDemons.map(normalizeDemon));
-        setSource("mock");
+      if (demonDataLoadRef.current.id !== requestId) return;
+      console.warn("Could not load live sheet data.", error);
+
+      if (!hasLoadedLiveDemonDataRef.current) {
+        setDemons([]);
+        setSource("error");
+        setDemonListError("Live demon list could not be loaded. This might be temporary, so try again or check back later.");
+      } else if (!silent) {
+        setDemonListError("Live demon list could not be refreshed. The current list is still shown.");
+        setSource("live");
+      }
+    } finally {
+      if (demonDataLoadRef.current.id === requestId) {
+        demonDataLoadRef.current.controller = null;
       }
     }
   }
 
   useEffect(() => {
     loadDemonData();
+    return () => abortDemonDataLoad();
   }, []);
 
   // ✅ FIXED: Login now sends credentials to the server for validation
@@ -335,7 +357,7 @@ export default function App() {
     }
 
     try {
-      const response = await fetch(adminUrl, {
+      const data = await requestJson(adminUrl, {
         method: "POST",
         body: JSON.stringify({
           action: "login",
@@ -343,7 +365,6 @@ export default function App() {
           password: loginData.password,
         }),
       });
-      const data = await response.json();
 
       if (data.success && data.token) {
         setIsAdmin(true);
@@ -351,7 +372,7 @@ export default function App() {
         localStorage.setItem("admin_token", data.token);
         navigateTo(ROUTES.admin, { replace: true });
       } else {
-        setLoginError("Wrong login");
+        setLoginError(data.message || "Wrong login");
       }
     } catch {
       setLoginError("Could not reach server.");
@@ -367,7 +388,7 @@ export default function App() {
     }
 
     try {
-      const response = await fetch(adminUrl, {
+      const data = await requestJson(adminUrl, {
         method: "POST",
         body: JSON.stringify({
           action: "updateDemonNote",
@@ -377,7 +398,6 @@ export default function App() {
         })
       });
 
-      const data = await response.json();
       if (!data.success) {
         return { success: false, message: data.message || "Could not save note." };
       }
@@ -410,7 +430,7 @@ export default function App() {
     }
 
     try {
-      const response = await fetch(adminUrl, {
+      const data = await requestJson(adminUrl, {
         method: "POST",
         body: JSON.stringify({
           action: "setSiteChangelog",
@@ -420,7 +440,6 @@ export default function App() {
         })
       });
 
-      const data = await response.json();
       if (!data.success) {
         return { success: false, message: data.message || "Could not save changelog." };
       }
@@ -450,7 +469,7 @@ export default function App() {
     );
 
     try {
-      const response = await fetch(adminUrl, {
+      const data = await requestJson(adminUrl, {
         method: "POST",
         body: JSON.stringify({
           action: "setFutureListDemon",
@@ -459,7 +478,6 @@ export default function App() {
           enabled
         })
       });
-      const data = await response.json();
 
       if (!data.success) {
         setFutureListIds(previous =>
@@ -489,7 +507,7 @@ export default function App() {
     }
 
     try {
-      const response = await fetch(adminUrl, {
+      const data = await requestJson(adminUrl, {
         method: "POST",
         body: JSON.stringify({
           action: "addTimelineEntry",
@@ -499,7 +517,6 @@ export default function App() {
           levelId
         })
       });
-      const data = await readJsonResponse(response);
 
       if (!data.success) {
         return { success: false, message: data.message || "Could not add demon to timeline." };
@@ -526,7 +543,7 @@ export default function App() {
     }
 
     try {
-      const response = await fetch(adminUrl, {
+      const data = await requestJson(adminUrl, {
         method: "POST",
         body: JSON.stringify({
           action: "removeTimelineEntry",
@@ -536,7 +553,6 @@ export default function App() {
           levelId
         })
       });
-      const data = await readJsonResponse(response);
 
       if (!data.success) {
         return { success: false, message: data.message || "Could not remove demon from timeline." };
@@ -568,7 +584,8 @@ export default function App() {
   setRequestError("");
 
   try {
-    const response = await fetch(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
+    abortRequestsLoad();
+    const data = await requestJson(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
       method: "POST",
       body: JSON.stringify({
         action: "submitRequest",
@@ -577,8 +594,6 @@ export default function App() {
         notes: requestForm.notes
       })
     });
-
-    const data = await response.json();
 
     if (!data.success) {
       setRequestError(data.message || "Request failed.");
@@ -593,7 +608,7 @@ export default function App() {
       notes: ""
     });
     await loadRequests({ silent: true });
-  } catch (error) {
+  } catch {
     setRequestError("Could not connect.");
   } finally {
     setRequestLoading(false);
@@ -620,8 +635,9 @@ async function handleSaveRequestStatusChanges() {
   setRequestStatusSaving(true);
 
   try {
+    abortRequestsLoad();
     for (const [rowNumber, status] of changes) {
-      const response = await fetch(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
+      const data = await requestJson(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
         method: "POST",
         body: JSON.stringify({
           action: "updateRequestStatus",
@@ -630,8 +646,6 @@ async function handleSaveRequestStatusChanges() {
           token: localStorage.getItem("admin_token")
         })
       });
-
-      const data = await response.json();
 
       if (!data.success) {
         setRequestError(data.message || "Could not update the status.");
@@ -642,7 +656,7 @@ async function handleSaveRequestStatusChanges() {
     setRequestStatusDrafts({});
     setRequestMessage("Status changes saved.");
     await loadRequests({ silent: true });
-  } catch (error) {
+  } catch {
     setRequestError("Could not connect.");
   } finally {
     setRequestStatusSaving(false);
@@ -656,7 +670,8 @@ async function handleSaveRequestStatusChanges() {
   if (!confirmDelete) return;
 
   try {
-    const response = await fetch(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
+    abortRequestsLoad();
+    const data = await requestJson(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
       method: "POST",
       body: JSON.stringify({
         action: "deleteRequest",
@@ -664,8 +679,6 @@ async function handleSaveRequestStatusChanges() {
         token: localStorage.getItem("admin_token")
       })
     });
-
-    const data = await response.json();
 
     if (!data.success) {
       setRequestError(data.message || "Could not delete the request.");
@@ -683,7 +696,8 @@ async function handleSaveRequestStatusChanges() {
   setRequestMessage("");
 
   try {
-    const response = await fetch(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
+    abortRequestsLoad();
+    const data = await requestJson(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
       method: "POST",
       body: JSON.stringify({
         action: "allowWeightIncrease",
@@ -691,8 +705,6 @@ async function handleSaveRequestStatusChanges() {
         token: localStorage.getItem("admin_token")
       })
     });
-
-    const data = await response.json();
 
     if (!data.success) {
       setRequestError(data.message || "Could not allow the weight increase.");
@@ -713,15 +725,14 @@ async function handleSaveRequestStatusChanges() {
   if (!confirmOpen) return;
 
   try {
-    const response = await fetch(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
+    abortRequestsLoad();
+    const data = await requestJson(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
       method: "POST",
       body: JSON.stringify({
         action: "allowWeightIncreaseForAll",
         token: localStorage.getItem("admin_token")
       })
     });
-
-    const data = await response.json();
 
     if (!data.success) {
       setRequestError(data.message || "Could not allow all weight increases.");
@@ -764,7 +775,8 @@ async function handleSaveRequestStatusChanges() {
   if (!confirmDelete) return;
 
   try {
-    const response = await fetch(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
+    abortRequestsLoad();
+    const data = await requestJson(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
       method: "POST",
       body: JSON.stringify({
         action: "deleteRequests",
@@ -772,8 +784,6 @@ async function handleSaveRequestStatusChanges() {
         token: localStorage.getItem("admin_token")
       })
     });
-
-    const data = await response.json();
 
     if (!data.success) {
       setRequestError(data.message || "Could not delete the selected requests.");
@@ -853,7 +863,7 @@ async function handleSaveRequestStatusChanges() {
           return Number(b.progressPercent || 0) - Number(a.progressPercent || 0);
         }
 
-        return placementNumber(a.placement) - placementNumber(b.placement);
+        return comparePlacements(a.placement, b.placement);
       });
   }, [demons, query, difficulty, segment, yearView, futureListIds]);
 
@@ -865,12 +875,14 @@ async function handleSaveRequestStatusChanges() {
   }, [selected, filtered]);
 
   const displayedDemons = useMemo(() => {
+    if (viewMode === "banner") return filtered.slice(0, visibleDemonCount);
     if (!isMobileView || viewMode !== "grid") return filtered;
     return filtered.slice(0, visibleDemonCount);
   }, [filtered, isMobileView, viewMode, visibleDemonCount]);
 
-  const hasMoreMobileDemons =
-    isMobileView && viewMode === "grid" && visibleDemonCount < filtered.length;
+  const hasMoreDemons =
+    (viewMode === "banner" || (isMobileView && viewMode === "grid")) &&
+    visibleDemonCount < filtered.length;
 
   function handleLatestDemonClick() {
     const latestName = String(apiLatestDemon || "").trim();
@@ -884,7 +896,7 @@ async function handleSaveRequestStatusChanges() {
 
     const sortedDemons = demons
       .slice()
-      .sort((a, b) => placementNumber(a.placement) - placementNumber(b.placement));
+      .sort((a, b) => comparePlacements(a.placement, b.placement));
     const latestIndex = sortedDemons.findIndex(
       demon => demon.id === latest.id && demon.name === latest.name
     );
@@ -901,35 +913,6 @@ async function handleSaveRequestStatusChanges() {
 
     window.setTimeout(() => {
       const escapedId = window.CSS?.escape ? window.CSS.escape(latest.id) : latest.id;
-      const card = document.querySelector(`[data-demon-id="${escapedId}"]`);
-      if (!card) return;
-
-      card.scrollIntoView({ behavior: "smooth", block: "center" });
-      card.classList.add("grid-card-highlight");
-      window.setTimeout(() => card.classList.remove("grid-card-highlight"), 1800);
-    }, 80);
-  }
-
-  function handleNextDemonClick() {
-    const nextLevelId = String(apiNextDemon?.levelId || "").trim();
-    const nextName = String(apiNextDemon?.name || "").trim();
-    if (!nextLevelId && !nextName) return;
-
-    const next = demons.find(demon =>
-      (nextLevelId && String(demon.id) === nextLevelId) ||
-      (nextName && demon.name.toLowerCase() === nextName.toLowerCase())
-    );
-
-    if (!next) return;
-
-    setQuery("");
-    setDifficulty("all");
-    setSegment("all");
-    setYearView("all");
-    setViewMode("grid");
-
-    window.setTimeout(() => {
-      const escapedId = window.CSS?.escape ? window.CSS.escape(next.id) : next.id;
       const card = document.querySelector(`[data-demon-id="${escapedId}"]`);
       if (!card) return;
 
@@ -1115,11 +1098,13 @@ async function handleSaveRequestStatusChanges() {
           setViewMode={setViewMode}
           filtered={displayedDemons}
           totalCount={filtered.length}
-          hasMoreDemons={hasMoreMobileDemons}
+          hasMoreDemons={hasMoreDemons}
           onLoadMore={() => setVisibleDemonCount(count => count + 60)}
           apiLatestDemon={apiLatestDemon}
           listUpdatedAt={listUpdatedAt}
           onLatestDemonClick={handleLatestDemonClick}
+          demonListError={demonListError}
+          onRetryDemonList={() => loadDemonData()}
           isAdmin={isAdmin}
           futureListIds={futureListIds}
           onToggleFutureListDemon={toggleFutureListDemon}
