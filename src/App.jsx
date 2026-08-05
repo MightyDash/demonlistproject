@@ -319,6 +319,12 @@ const [requestForm, setRequestForm] = useState({
   }, [query, difficulty, segment, yearView, viewMode, isMobileView]);
 
   useEffect(() => {
+    if (isMobileView && viewMode === "banner") {
+      setViewMode("grid");
+    }
+  }, [isMobileView, viewMode]);
+
+  useEffect(() => {
     const savedToken = localStorage.getItem("admin_token");
     if (!savedToken) return;
 
@@ -974,6 +980,7 @@ async function handleRequestQuickStatus(rowNumber, status) {
       demonListError={demonListError}
       onRetryDemonList={() => loadDemonData()}
       isAdmin={isAdmin}
+      isMobileView={isMobileView}
       futureListIds={futureListIds}
       onToggleFutureListDemon={toggleFutureListDemon}
       communityRequestedIds={communityRequestedIds}

@@ -32,6 +32,7 @@ export function DemonListContent({
   demonListError,
   onRetryDemonList,
   isAdmin,
+  isMobileView = false,
   futureListIds = [],
   onToggleFutureListDemon,
   communityRequestedIds = new Set()
@@ -93,7 +94,7 @@ export function DemonListContent({
     setDifficulty("all");
     setSegment("all");
     setYearView("all");
-    setViewMode("banner");
+    setViewMode(isMobileView ? "grid" : "banner");
   }
 
   function handleOpenKey(event, demon) {
@@ -245,7 +246,7 @@ export function DemonListContent({
                 {[
                   ["grid", "Grid", <Grid3X3 size={15} />],
                   ["list", "List", <List size={15} />],
-                  ["banner", "Banner", <Rows3 size={15} />]
+                  ...(isMobileView ? [] : [["banner", "Banner", <Rows3 size={15} />]])
                 ].map(([value, label, icon]) => (
                   <button
                     key={value}
