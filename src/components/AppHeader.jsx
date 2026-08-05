@@ -245,7 +245,13 @@ export function AppHeader({
           <div>
             <div className={`source-pill ${source}`}>
               {source === "live" && <Radio size={15} />}
-              {source === "live" ? "Live Sheet Data" : source === "mock" ? "Mock Data" : "Loading"}
+              {source === "live"
+                ? "Live Sheet Data"
+                : source === "cache"
+                  ? "Cached Sheet Data"
+                  : source === "mock"
+                    ? "Mock Data"
+                    : "Loading"}
             </div>
     
             {!adminView && (

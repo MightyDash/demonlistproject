@@ -22,22 +22,78 @@ const DEFAULT_SITE_CHANGELOG = [
   "Added safer admin tools with previews before heavy actions.",
   "Improved the desktop demon list, request page and list changes layout."
 ];
+const DEMON_DATA_CACHE_KEY = "moiks_demon_list_data_v1";
+
+function rowsFromDemonPayload(payload) {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.demons)) return payload.demons;
+  if (Array.isArray(payload?.data)) return payload.data;
+  return null;
+}
+
+function normalizeDemonPayload(payload) {
+  const rows = rowsFromDemonPayload(payload);
+  if (!rows) return null;
+
+  return {
+    demons: rows.map(normalizeDemon),
+    apiLatestDemon: payload?.latestDemon || "",
+    listUpdatedAt: payload?.listUpdatedAt || payload?.updatedAt || "",
+    siteVersion: payload?.siteVersion || DEFAULT_SITE_VERSION,
+    siteChangelog: Array.isArray(payload?.siteChangelog) ? payload.siteChangelog : DEFAULT_SITE_CHANGELOG,
+    futureListIds: Array.isArray(payload?.futureListIds) ? payload.futureListIds.map(String) : [],
+    timelineEntries: Array.isArray(payload?.timelineEntries) ? payload.timelineEntries : []
+  };
+}
+
+function readCachedDemonData() {
+  try {
+    const raw = window.localStorage.getItem(DEMON_DATA_CACHE_KEY);
+    if (!raw) return null;
+
+    const cached = JSON.parse(raw);
+    const normalized = normalizeDemonPayload(cached);
+    return normalized && normalized.demons.length > 0 ? normalized : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeCachedDemonData(payload) {
+  try {
+    window.localStorage.setItem(
+      DEMON_DATA_CACHE_KEY,
+      JSON.stringify({
+        cachedAt: new Date().toISOString(),
+        ...payload
+      })
+    );
+  } catch {
+    // Cache is a speed boost only. The live list should keep working without it.
+  }
+}
 
 export default function App() {
-  const [demons, setDemons] = useState([]);
-  const [source, setSource] = useState("loading");
+  const initialDemonDataRef = useRef(undefined);
+  if (initialDemonDataRef.current === undefined) {
+    initialDemonDataRef.current = readCachedDemonData();
+  }
+  const initialDemonData = initialDemonDataRef.current;
+
+  const [demons, setDemons] = useState(() => initialDemonData?.demons || []);
+  const [source, setSource] = useState(() => initialDemonData ? "cache" : "loading");
   const [query, setQuery] = useState("");
   const [difficulty, setDifficulty] = useState("all");
   const [difficultyOpen, setDifficultyOpen] = useState(false);
   const [segment, setSegment] = useState("all");
   const [selected, setSelected] = useState(null);
   const [yearView, setYearView] = useState("all");
-  const [apiLatestDemon, setApiLatestDemon] = useState("");
-  const [listUpdatedAt, setListUpdatedAt] = useState("");
-  const [siteVersion, setSiteVersion] = useState(DEFAULT_SITE_VERSION);
-  const [siteChangelog, setSiteChangelog] = useState(DEFAULT_SITE_CHANGELOG);
-  const [futureListIds, setFutureListIds] = useState([]);
-  const [timelineEntries, setTimelineEntries] = useState([]);
+  const [apiLatestDemon, setApiLatestDemon] = useState(() => initialDemonData?.apiLatestDemon || "");
+  const [listUpdatedAt, setListUpdatedAt] = useState(() => initialDemonData?.listUpdatedAt || "");
+  const [siteVersion, setSiteVersion] = useState(() => initialDemonData?.siteVersion || DEFAULT_SITE_VERSION);
+  const [siteChangelog, setSiteChangelog] = useState(() => initialDemonData?.siteChangelog || DEFAULT_SITE_CHANGELOG);
+  const [futureListIds, setFutureListIds] = useState(() => initialDemonData?.futureListIds || []);
+  const [timelineEntries, setTimelineEntries] = useState(() => initialDemonData?.timelineEntries || []);
   const [viewMode, setViewMode] = useState("banner");
   const [requestView, setRequestView] = useState(false);
   const [historyView, setHistoryView] = useState(false);
@@ -74,7 +130,7 @@ export default function App() {
   const requestsLoadRef = useRef({ id: 0, controller: null });
   const historyLoadRef = useRef({ id: 0, controller: null });
   const demonDataLoadRef = useRef({ id: 0, controller: null });
-  const hasLoadedLiveDemonDataRef = useRef(false);
+  const hasLoadedLiveDemonDataRef = useRef(Boolean(initialDemonData));
 
   function applyRoute(pathname) {
     const route = normalizeRoute(pathname);
@@ -298,28 +354,19 @@ export default function App() {
       const json = await requestJson(SHEET_API_URL, { signal: controller.signal });
       if (json.aborted || demonDataLoadRef.current.id !== requestId) return;
       if (json.success === false) throw new Error(json.message || "Could not load live sheet data.");
-      const rows = Array.isArray(json)
-        ? json
-        : Array.isArray(json.demons)
-          ? json.demons
-          : Array.isArray(json.data)
-            ? json.data
-            : null;
-      if (!rows) throw new Error("Live demon list response was missing demon rows.");
-      const nextDemons = rows.map(normalizeDemon);
-      const nextFutureListIds = Array.isArray(json.futureListIds) ? json.futureListIds.map(String) : [];
-      const nextTimelineEntries = Array.isArray(json.timelineEntries) ? json.timelineEntries : [];
-      const nextSiteChangelog = Array.isArray(json.siteChangelog) ? json.siteChangelog : DEFAULT_SITE_CHANGELOG;
+      const nextData = normalizeDemonPayload(json);
+      if (!nextData) throw new Error("Live demon list response was missing demon rows.");
 
-      setApiLatestDemon(json.latestDemon || "");
-      setListUpdatedAt(json.listUpdatedAt || json.updatedAt || "");
-      setSiteVersion(json.siteVersion || DEFAULT_SITE_VERSION);
-      setSiteChangelog(nextSiteChangelog);
-      setFutureListIds(nextFutureListIds);
-      setTimelineEntries(nextTimelineEntries);
-      setDemons(nextDemons);
+      setApiLatestDemon(nextData.apiLatestDemon);
+      setListUpdatedAt(nextData.listUpdatedAt);
+      setSiteVersion(nextData.siteVersion);
+      setSiteChangelog(nextData.siteChangelog);
+      setFutureListIds(nextData.futureListIds);
+      setTimelineEntries(nextData.timelineEntries);
+      setDemons(nextData.demons);
       setDemonListError("");
       setSource("live");
+      writeCachedDemonData(nextData);
       hasLoadedLiveDemonDataRef.current = true;
     } catch (error) {
       if (demonDataLoadRef.current.id !== requestId) return;
@@ -341,7 +388,7 @@ export default function App() {
   }
 
   useEffect(() => {
-    loadDemonData();
+    loadDemonData({ silent: Boolean(initialDemonDataRef.current) });
     return () => abortDemonDataLoad();
   }, []);
 

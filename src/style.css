@@ -757,6 +757,11 @@ h1 {
   border-color: rgba(255, 209, 102, 0.35);
 }
 
+.source-pill.cache {
+  color: #d8b4fe;
+  border-color: rgba(168, 85, 247, 0.45);
+}
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -7997,6 +8002,32 @@ body,
   .desktop-list-shell.progress-shell .controls .view-tabs button {
     min-width: 0 !important;
     padding-inline: 8px !important;
+  }
+
+  .timeline-month-page-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .timeline-month-page-grid .timeline-demon-card {
+    min-height: 92px;
+    border-radius: 7px;
+  }
+
+  .timeline-month-page-grid .timeline-demon-title {
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    font-size: 0.72rem;
+    line-height: 1.1;
+  }
+
+  .timeline-month-page-grid .timeline-remove-demon {
+    top: 6px;
+    right: 6px;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
   }
 }
 
