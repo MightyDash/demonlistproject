@@ -33,13 +33,17 @@ export function DemonListContent({
   onRetryDemonList,
   isAdmin,
   futureListIds = [],
-  onToggleFutureListDemon
+  onToggleFutureListDemon,
+  communityRequestedIds = new Set()
 }) {
   const [showProgressInfo, setShowProgressInfo] = useState(false);
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const isProgressView = yearView === "progress";
   const isFutureView = yearView === "future";
   const futureIds = new Set(futureListIds.map(id => String(id)));
+  const requestedIds = communityRequestedIds instanceof Set
+    ? communityRequestedIds
+    : new Set(Array.from(communityRequestedIds || []).map(String));
   const activeFilterCount = [
     query.trim(),
     difficulty !== "all",
@@ -339,6 +343,7 @@ export function DemonListContent({
                     const renderAsProgress = isInProgress && isProgressView;
                     const progressPercent = Math.max(0, Math.min(100, Number(demon.progressPercent || 0)));
                     const isFuturePick = futureIds.has(String(demon.id));
+                    const isCommunityRequested = requestedIds.has(String(demon.id));
                     const placementLabel = displayPlacement(isFutureView ? (demon.futurePlacement || demon.placement) : demon.placement);
                     const trendClass = placementTrendClass(demon);
 
@@ -355,6 +360,7 @@ export function DemonListContent({
                       <div className="name-cell">
                         <span className="demon-name">{demon.name}</span>
                         <span className="mobile-meta">{demon.creator}</span>
+                        {isCommunityRequested && <span className="community-requested-badge">Community Requested</span>}
                         {isProgressView && isFuturePick && <span className="future-list-badge">Future List</span>}
                       </div>
                       <div>{demon.creator}</div>
@@ -377,6 +383,7 @@ export function DemonListContent({
                     const renderAsProgress = isInProgress && isProgressView;
                     const progressPercent = Math.max(0, Math.min(100, Number(demon.progressPercent || 0)));
                     const isFuturePick = futureIds.has(String(demon.id));
+                    const isCommunityRequested = requestedIds.has(String(demon.id));
                     const placementLabel = displayPlacement(isFutureView ? (demon.futurePlacement || demon.placement) : demon.placement);
                     const trendClass = placementTrendClass(demon);
 
@@ -410,6 +417,7 @@ export function DemonListContent({
                         <div className="banner-main">
                           <h3>{demon.name}</h3>
                           <p>by {demon.creator || "Unknown creator"}</p>
+                          {isCommunityRequested && <span className="community-requested-badge">Community Requested</span>}
                           {isProgressView && isFuturePick && <span className="future-list-badge">Future List</span>}
                         </div>
 
@@ -451,6 +459,7 @@ export function DemonListContent({
                     const renderAsProgress = isInProgress && isProgressView;
                     const progressPercent = Math.max(0, Math.min(100, Number(demon.progressPercent || 0)));
                     const isFuturePick = futureIds.has(String(demon.id));
+                    const isCommunityRequested = requestedIds.has(String(demon.id));
                     const placementLabel = displayPlacement(isFutureView ? (demon.futurePlacement || demon.placement) : demon.placement);
                     const trendClass = placementTrendClass(demon);
 
@@ -479,6 +488,7 @@ export function DemonListContent({
                         <div>
                           <h3>{demon.name}</h3>
                           <p>by {demon.creator || "Unknown creator"}</p>
+                          {isCommunityRequested && <span className="community-requested-badge">Community Requested</span>}
                           {!renderAsProgress && <span className="grid-rank-inline">{placementLabel}</span>}
                         </div>
 

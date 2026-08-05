@@ -99,16 +99,13 @@ export default function App() {
   const [historyView, setHistoryView] = useState(false);
   const [timelineView, setTimelineView] = useState(false);
   const [timelineRoute, setTimelineRoute] = useState({ year: null, month: null });
-  const [requestForm, setRequestForm] = useState({
+const [requestForm, setRequestForm] = useState({
   levelId: "",
-  type: "Classic",
+  type: "Demon",
   notes: ""
 });
-  const [requestSort, setRequestSort] = useState("weight");
+  const [requestSort, setRequestSort] = useState("newest");
   const [requestStatusFilter, setRequestStatusFilter] = useState("all");
-  const [selectedRejectedRequests, setSelectedRejectedRequests] = useState([]);
-  const [requestStatusDrafts, setRequestStatusDrafts] = useState({});
-  const [requestStatusSaving, setRequestStatusSaving] = useState(false);
   const [requests, setRequests] = useState([]);
   const [requestsLoading, setRequestsLoading] = useState(false);
   const [requestLoading, setRequestLoading] = useState(false);
@@ -206,11 +203,6 @@ export default function App() {
       if (data.success) {
         const nextRequests = Array.isArray(data.requests) ? data.requests : [];
         setRequests(nextRequests);
-        setSelectedRejectedRequests(selected =>
-          selected.filter(rowNumber =>
-            nextRequests.some(request => request.rowNumber === rowNumber)
-          )
-        );
       } else if (!silent) {
         setRequestError(data.message || "Could not load requests.");
       }
@@ -270,6 +262,11 @@ export default function App() {
 
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  useEffect(() => {
+    loadRequests({ silent: true });
+    return () => abortRequestsLoad();
   }, []);
 
   useEffect(() => {
@@ -631,13 +628,26 @@ export default function App() {
   setRequestError("");
 
   try {
+    const levelId = String(requestForm.levelId || "").trim();
+    const alreadyRequested = requests.some(request => String(request.levelId || "").trim() === levelId);
+
+    if (!levelId) {
+      setRequestError("Please enter a level ID.");
+      return;
+    }
+
+    if (alreadyRequested) {
+      setRequestError("This demon has already been requested.");
+      return;
+    }
+
     abortRequestsLoad();
     const data = await requestJson(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
       method: "POST",
       body: JSON.stringify({
         action: "submitRequest",
-        levelId: requestForm.levelId,
-        type: requestForm.type,
+        levelId,
+        type: "Demon",
         notes: requestForm.notes
       })
     });
@@ -651,7 +661,7 @@ export default function App() {
 
     setRequestForm({
       levelId: "",
-      type: "Classic",
+      type: "Demon",
       notes: ""
     });
     await loadRequests({ silent: true });
@@ -661,52 +671,31 @@ export default function App() {
     setRequestLoading(false);
   }
 }
-function handleRequestStatusDraft(rowNumber, status) {
-  setRequestStatusDrafts(prev => ({
-    ...prev,
-    [rowNumber]: status
-  }));
-}
-
-async function handleSaveRequestStatusChanges() {
+async function handleRequestQuickStatus(rowNumber, status) {
   setRequestError("");
   setRequestMessage("");
 
-  const changes = Object.entries(requestStatusDrafts);
-
-  if (changes.length === 0) {
-    setRequestMessage("There are no status changes to save.");
-    return;
-  }
-
-  setRequestStatusSaving(true);
-
   try {
     abortRequestsLoad();
-    for (const [rowNumber, status] of changes) {
-      const data = await requestJson(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
-        method: "POST",
-        body: JSON.stringify({
-          action: "updateRequestStatus",
-          rowNumber: Number(rowNumber),
-          status,
-          token: localStorage.getItem("admin_token")
-        })
-      });
+    const data = await requestJson(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "updateRequestStatus",
+        rowNumber: Number(rowNumber),
+        status,
+        token: localStorage.getItem("admin_token")
+      })
+    });
 
-      if (!data.success) {
-        setRequestError(data.message || "Could not update the status.");
-        return;
-      }
+    if (!data.success) {
+      setRequestError(data.message || "Could not update the status.");
+      return;
     }
 
-    setRequestStatusDrafts({});
-    setRequestMessage("Status changes saved.");
+    setRequestMessage(data.message || `Request marked as ${status}.`);
     await loadRequests({ silent: true });
   } catch {
     setRequestError("Could not connect.");
-  } finally {
-    setRequestStatusSaving(false);
   }
 }
   async function handleDeleteRequest(rowNumber) {
@@ -738,116 +727,18 @@ async function handleSaveRequestStatusChanges() {
     setRequestError("Could not connect.");
   }
 }
-  async function handleAllowWeightIncrease(rowNumber) {
-  setRequestError("");
-  setRequestMessage("");
-
-  try {
-    abortRequestsLoad();
-    const data = await requestJson(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        action: "allowWeightIncrease",
-        rowNumber,
-        token: localStorage.getItem("admin_token")
-      })
-    });
-
-    if (!data.success) {
-      setRequestError(data.message || "Could not allow the weight increase.");
-      return;
-    }
-
-    setRequestMessage("Weight increase is now allowed for this request.");
-    await loadRequests({ silent: true });
-  } catch {
-    setRequestError("Could not connect.");
-  }
-  }
-  async function handleAllowWeightIncreaseForAll() {
-  setRequestError("");
-  setRequestMessage("");
-
-  const confirmOpen = window.confirm("Are you sure you want to allow weight increases for all requests?");
-  if (!confirmOpen) return;
-
-  try {
-    abortRequestsLoad();
-    const data = await requestJson(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        action: "allowWeightIncreaseForAll",
-        token: localStorage.getItem("admin_token")
-      })
-    });
-
-    if (!data.success) {
-      setRequestError(data.message || "Could not allow all weight increases.");
-      return;
-    }
-
-    setRequestMessage(data.message || "Weight increases are now allowed for all requests.");
-    await loadRequests({ silent: true });
-  } catch {
-    setRequestError("Could not connect.");
-  }
-}
-  function handleToggleRejectedRequest(rowNumber) {
-  setSelectedRejectedRequests(prev =>
-    prev.includes(rowNumber)
-      ? prev.filter(value => value !== rowNumber)
-      : [...prev, rowNumber]
-  );
-}
-  function handleSelectAllRejected(rowNumbers) {
-  setSelectedRejectedRequests(prev => {
-    const allSelected = rowNumbers.length > 0 && rowNumbers.every(rowNumber => prev.includes(rowNumber));
-    if (allSelected) {
-      return prev.filter(rowNumber => !rowNumbers.includes(rowNumber));
-    }
-
-    return Array.from(new Set([...prev, ...rowNumbers]));
-  });
-}
-  async function handleDeleteSelectedRequests() {
-  setRequestError("");
-  setRequestMessage("");
-
-  if (selectedRejectedRequests.length === 0) {
-    setRequestMessage("No rejected requests selected.");
-    return;
-  }
-
-  const confirmDelete = window.confirm(`Are you sure you want to delete ${selectedRejectedRequests.length} rejected requests?`);
-  if (!confirmDelete) return;
-
-  try {
-    abortRequestsLoad();
-    const data = await requestJson(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        action: "deleteRequests",
-        rowNumbers: selectedRejectedRequests,
-        token: localStorage.getItem("admin_token")
-      })
-    });
-
-    if (!data.success) {
-      setRequestError(data.message || "Could not delete the selected requests.");
-      return;
-    }
-
-    setSelectedRejectedRequests([]);
-    setRequestMessage(data.message || "Selected requests deleted.");
-    await loadRequests({ silent: true });
-  } catch {
-    setRequestError("Could not connect.");
-  }
-}
   const difficulties = useMemo(() => {
     const unique = new Set(demons.map(d => d.difficulty).filter(Boolean));
     return ["all", ...Array.from(unique)];
   }, [demons]);
+
+  const communityRequestedIds = useMemo(() => {
+    return new Set(
+      requests
+        .map(request => String(request.levelId || "").trim())
+        .filter(Boolean)
+    );
+  }, [requests]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -1090,17 +981,8 @@ async function handleSaveRequestStatusChanges() {
           requests={requests}
           requestsLoading={requestsLoading}
           isAdmin={isAdmin}
-          requestStatusDrafts={requestStatusDrafts}
-          handleRequestStatusDraft={handleRequestStatusDraft}
-          handleSaveRequestStatusChanges={handleSaveRequestStatusChanges}
-          requestStatusSaving={requestStatusSaving}
+          handleRequestQuickStatus={handleRequestQuickStatus}
           handleDeleteRequest={handleDeleteRequest}
-          handleAllowWeightIncrease={handleAllowWeightIncrease}
-          handleAllowWeightIncreaseForAll={handleAllowWeightIncreaseForAll}
-          selectedRejectedRequests={selectedRejectedRequests}
-          handleToggleRejectedRequest={handleToggleRejectedRequest}
-          handleSelectAllRejected={handleSelectAllRejected}
-          handleDeleteSelectedRequests={handleDeleteSelectedRequests}
           requestSort={requestSort}
           setRequestSort={setRequestSort}
           requestStatusFilter={requestStatusFilter}
@@ -1155,6 +1037,7 @@ async function handleSaveRequestStatusChanges() {
           isAdmin={isAdmin}
           futureListIds={futureListIds}
           onToggleFutureListDemon={toggleFutureListDemon}
+          communityRequestedIds={communityRequestedIds}
         />
       )}
 
@@ -1168,6 +1051,7 @@ async function handleSaveRequestStatusChanges() {
           hasNext={currentIndex < filtered.length - 1}
           isAdmin={isAdmin}
           onSaveNote={saveDemonNote}
+          isCommunityRequested={communityRequestedIds.has(String(selected.id || "").trim())}
         />
       )}
 

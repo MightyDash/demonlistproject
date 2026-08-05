@@ -39,7 +39,8 @@ export function DemonModal({
   hasPrev,
   hasNext,
   isAdmin,
-  onSaveNote
+  onSaveNote,
+  isCommunityRequested = false
 }) {
   const [noteDraft, setNoteDraft] = useState(demon.notes || "");
   const [noteState, setNoteState] = useState({ saving: false, message: "", error: "" });
@@ -181,6 +182,7 @@ export function DemonModal({
                 {cleanDifficulty}
               </span>
               <span className="modal-tier">Tier {formatTier(demon.tier)}</span>
+              {isCommunityRequested && <span className="community-requested-badge">Community Requested</span>}
             </div>
 
             <div className="modal-action-row">
