@@ -8185,6 +8185,40 @@ body,
   color: #d8b4fe;
 }
 
+.requests-under-construction-page {
+  pointer-events: none;
+  user-select: none;
+  filter: blur(8px);
+  transform: scale(0.995);
+}
+
+.requests-under-construction-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9500;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(6, 8, 12, 0.42);
+}
+
+.requests-under-construction-card {
+  width: min(440px, 100%);
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: rgba(23, 24, 28, 0.96);
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.55);
+  padding: 28px;
+  text-align: left;
+}
+
+.requests-under-construction-card h2 {
+  margin: 8px 0 18px;
+  color: var(--text);
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  line-height: 1.05;
+}
+
 @media (max-width: 760px) {
   .request-card-open,
   .request-detail-hero,

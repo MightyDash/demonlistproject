@@ -270,7 +270,7 @@ const [requestForm, setRequestForm] = useState({
   }, []);
 
   useEffect(() => {
-    if (!requestView) return;
+    if (!requestView || !isAdmin) return;
 
     loadRequests();
     const intervalId = window.setInterval(() => {
@@ -281,7 +281,7 @@ const [requestForm, setRequestForm] = useState({
       window.clearInterval(intervalId);
       abortRequestsLoad();
     };
-  }, [requestView]);
+  }, [requestView, isAdmin]);
 
   useEffect(() => {
     if (!historyView) return;
@@ -306,6 +306,13 @@ const [requestForm, setRequestForm] = useState({
 
     return () => mediaQuery.removeEventListener("change", updateMobileView);
   }, []);
+
+  useEffect(() => {
+    if (!requestView || isAdmin || !isMobileView) return;
+
+    window.alert("This page is currently unavailable.");
+    navigateTo(ROUTES.home, { replace: true });
+  }, [requestView, isAdmin, isMobileView]);
 
   useEffect(() => {
     setVisibleDemonCount(60);
@@ -813,13 +820,14 @@ async function handleRequestQuickStatus(rowNumber, status) {
   }, [selected, filtered]);
 
   const displayedDemons = useMemo(() => {
-    if (viewMode === "banner") return filtered.slice(0, visibleDemonCount);
-    if (!isMobileView || viewMode !== "grid") return filtered;
-    return filtered.slice(0, visibleDemonCount);
+    if (!isMobileView) return filtered;
+    if (viewMode === "banner" || viewMode === "grid") return filtered.slice(0, visibleDemonCount);
+    return filtered;
   }, [filtered, isMobileView, viewMode, visibleDemonCount]);
 
   const hasMoreDemons =
-    (viewMode === "banner" || (isMobileView && viewMode === "grid")) &&
+    isMobileView &&
+    (viewMode === "banner" || viewMode === "grid") &&
     visibleDemonCount < filtered.length;
 
   function handleLatestDemonClick() {
@@ -925,6 +933,53 @@ async function handleRequestQuickStatus(rowNumber, status) {
     };
   }, [demons]);
 
+  function handleOpenRequests() {
+    if (isAdmin) {
+      navigateTo(ROUTES.requests);
+      return;
+    }
+
+    if (isMobileView) {
+      window.alert("This page is currently unavailable.");
+      return;
+    }
+
+    navigateTo(ROUTES.requests);
+  }
+
+  const demonListContent = (
+    <DemonListContent
+      stats={stats}
+      setSelected={setSelected}
+      query={query}
+      setQuery={setQuery}
+      difficulty={difficulty}
+      setDifficulty={setDifficulty}
+      difficultyOpen={difficultyOpen}
+      setDifficultyOpen={setDifficultyOpen}
+      difficulties={difficulties}
+      segment={segment}
+      setSegment={setSegment}
+      yearView={yearView}
+      setYearView={setYearView}
+      viewMode={viewMode}
+      setViewMode={setViewMode}
+      filtered={displayedDemons}
+      totalCount={filtered.length}
+      hasMoreDemons={hasMoreDemons}
+      onLoadMore={() => setVisibleDemonCount(count => count + 60)}
+      apiLatestDemon={apiLatestDemon}
+      listUpdatedAt={listUpdatedAt}
+      onLatestDemonClick={handleLatestDemonClick}
+      demonListError={demonListError}
+      onRetryDemonList={() => loadDemonData()}
+      isAdmin={isAdmin}
+      futureListIds={futureListIds}
+      onToggleFutureListDemon={toggleFutureListDemon}
+      communityRequestedIds={communityRequestedIds}
+    />
+  );
+
   return (
     <div className="app">
       <AppHeader
@@ -934,9 +989,7 @@ async function handleRequestQuickStatus(rowNumber, status) {
           historyView={historyView}
           requestView={requestView}
           timelineView={timelineView}
-          onOpenRequests={() => {
-            navigateTo(ROUTES.requests);
-          }}
+          onOpenRequests={handleOpenRequests}
           onOpenHistory={() => {
             navigateTo(historyView ? ROUTES.home : ROUTES.history);
           }}
@@ -969,7 +1022,7 @@ async function handleRequestQuickStatus(rowNumber, status) {
           onOpenRequests={() => navigateTo(ROUTES.requests)}
           onSaveNote={saveDemonNote}
         />
-      ) : requestView ? (
+      ) : requestView && isAdmin ? (
         <RequestPanel
           onBack={() => navigateTo(ROUTES.home)}
           requestForm={requestForm}
@@ -988,6 +1041,21 @@ async function handleRequestQuickStatus(rowNumber, status) {
           requestStatusFilter={requestStatusFilter}
           setRequestStatusFilter={setRequestStatusFilter}
         />
+      ) : requestView ? (
+        <>
+          <div className="requests-under-construction-page" aria-hidden="true">
+            {demonListContent}
+          </div>
+          <div className="requests-under-construction-overlay" role="dialog" aria-modal="true">
+            <section className="requests-under-construction-card">
+              <p className="login-eyebrow">Demon Requests</p>
+              <h2>This page is under construction.</h2>
+              <button className="login-button" onClick={() => navigateTo(ROUTES.home)} type="button">
+                Back to list
+              </button>
+            </section>
+          </div>
+        </>
       ) : historyView ? (
         <RecentChanges
           changes={historyChanges}
@@ -1008,38 +1076,7 @@ async function handleRequestQuickStatus(rowNumber, status) {
           onAddTimelineEntry={addTimelineEntry}
           onRemoveTimelineEntry={removeTimelineEntry}
         />
-      ) : (
-        <DemonListContent
-          stats={stats}
-          setSelected={setSelected}
-          query={query}
-          setQuery={setQuery}
-          difficulty={difficulty}
-          setDifficulty={setDifficulty}
-          difficultyOpen={difficultyOpen}
-          setDifficultyOpen={setDifficultyOpen}
-          difficulties={difficulties}
-          segment={segment}
-          setSegment={setSegment}
-          yearView={yearView}
-          setYearView={setYearView}
-          viewMode={viewMode}
-          setViewMode={setViewMode}
-          filtered={displayedDemons}
-          totalCount={filtered.length}
-          hasMoreDemons={hasMoreDemons}
-          onLoadMore={() => setVisibleDemonCount(count => count + 60)}
-          apiLatestDemon={apiLatestDemon}
-          listUpdatedAt={listUpdatedAt}
-          onLatestDemonClick={handleLatestDemonClick}
-          demonListError={demonListError}
-          onRetryDemonList={() => loadDemonData()}
-          isAdmin={isAdmin}
-          futureListIds={futureListIds}
-          onToggleFutureListDemon={toggleFutureListDemon}
-          communityRequestedIds={communityRequestedIds}
-        />
-      )}
+      ) : demonListContent}
 
       {selected && (
         <DemonModal
