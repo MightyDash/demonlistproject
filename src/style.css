@@ -7225,7 +7225,8 @@ textarea:focus-visible {
 }
 
 /* Fixed grayscale site skin. This intentionally overrides all old selectable themes. */
-:root {
+:root,
+:root[data-theme] {
   --bg: #17181b;
   --bg-soft: #202126;
   --panel: rgba(29, 30, 34, 0.84);
@@ -7718,6 +7719,9 @@ body,
 /* Purple accent pass */
 :root,
 :root[data-theme] {
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.16);
+  --glow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 18px 46px rgba(0, 0, 0, 0.28);
   --blue: #a78bfa;
   --archive-cyan: #c4b5fd;
   --archive-orange: #a78bfa;
