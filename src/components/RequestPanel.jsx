@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { CheckCircle2, Clipboard, Eye, Megaphone, Send, Trash2, X } from "lucide-react";
+import { CheckCircle2, Clipboard, Megaphone, Send, Trash2, X } from "lucide-react";
 
 const REQUEST_STATUSES = ["Pending", "Under Review", "Planned", "Completed", "Rejected"];
 const DIFFICULTY_FILTERS = ["Easy Demon", "Medium Demon", "Hard Demon", "Insane Demon", "Extreme Demon"];
@@ -230,10 +230,8 @@ export function RequestPanel({
             <div className="request-table-shell">
               <div className="request-table-row request-table-head">
                 <div>Demon</div>
-                <div>Difficulty</div>
                 <div>Status</div>
                 <div>Requested</div>
-                <div>Actions</div>
               </div>
               {sortedRequests.map((request, index) => (
                 <div
@@ -257,21 +255,8 @@ export function RequestPanel({
                       <small>ID: {request.levelId}</small>
                     </span>
                   </div>
-                  <div className="request-table-info">
-                    <span>{requestDifficulty(request)}</span>
-                  </div>
                   <div>{renderStatusPill(request)}</div>
                   <div>{requestDate(request)}</div>
-                  <div className="request-table-actions">
-                    <button type="button" onClick={event => {
-                      event.stopPropagation();
-                      setSelectedRequest(request);
-                    }}>
-                      <Eye size={15} />
-                      Details
-                    </button>
-                    {renderQuickActions(request)}
-                  </div>
                 </div>
               ))}
             </div>
@@ -301,15 +286,13 @@ export function RequestPanel({
                       </div>
 
                       <div className="request-meta">
-                        <span>{requestDifficulty(request)}</span>
-                        <span>{requestDate(request)}</span>
+                        <span>Requested: {requestDate(request)}</span>
                       </div>
 
                       {request.notes && <p className="request-notes">{request.notes}</p>}
                     </div>
                   </button>
 
-                  {renderQuickActions(request)}
                 </article>
               ))}
             </div>

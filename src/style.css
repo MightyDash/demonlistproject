@@ -8205,6 +8205,39 @@ body,
   color: #d8b4fe;
 }
 
+.request-table-row {
+  grid-template-columns: minmax(360px, 1fr) 170px 150px;
+  min-height: 132px;
+  gap: 22px;
+}
+
+.request-table-head {
+  min-height: 48px;
+}
+
+.request-table-demon {
+  min-width: 0;
+  gap: 18px;
+}
+
+.request-table-demon img {
+  width: clamp(180px, 18vw, 280px);
+  height: clamp(94px, 9vw, 138px);
+  flex: 0 0 auto;
+}
+
+.request-table-demon span {
+  min-width: 0;
+}
+
+.request-table-demon strong {
+  overflow-wrap: anywhere;
+}
+
+.request-card .request-quick-actions {
+  display: none;
+}
+
 .requests-under-construction-page {
   pointer-events: none;
   user-select: none;
