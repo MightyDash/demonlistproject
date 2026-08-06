@@ -7792,13 +7792,14 @@ body,
   color: var(--text);
   cursor: pointer;
   user-select: none;
+  -webkit-user-select: none;
   isolation: isolate;
   animation: card-in 0.24s ease both;
   transition: border-color 170ms ease, box-shadow 170ms ease, transform 170ms ease;
 }
 
 .banner-card * {
-  cursor: pointer;
+  cursor: pointer !important;
 }
 
 .banner-card::before {
@@ -7862,12 +7863,26 @@ body,
   line-height: 1;
   text-shadow: 0 4px 22px rgba(0, 0, 0, 0.75);
   white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  caret-color: transparent;
 }
 
 .banner-main {
   z-index: 1;
   min-width: 0;
   padding: 22px 18px;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  caret-color: transparent;
+}
+
+.banner-main * {
+  user-select: none;
+  -webkit-user-select: none;
+  caret-color: transparent;
 }
 
 .banner-main h3 {
