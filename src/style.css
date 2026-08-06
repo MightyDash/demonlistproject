@@ -4444,10 +4444,24 @@ textarea:focus-visible {
 }
 
 .modal-identity h2 {
-  overflow-wrap: anywhere;
+  max-width: 100%;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
   color: var(--text);
   font-size: clamp(30px, 5vw, 64px);
   letter-spacing: 0;
+  line-height: 0.98;
+}
+
+.modal-identity h2.long-title {
+  font-size: clamp(2.4rem, 3.4vw, 3.8rem);
+  line-height: 1.02;
+}
+
+.modal-identity h2.very-long-title {
+  font-size: clamp(2rem, 2.7vw, 3rem);
+  line-height: 1.08;
 }
 
 .modal-placement-pill {
@@ -6174,6 +6188,14 @@ textarea:focus-visible {
   .modal-identity h2 {
     margin-top: 16px;
     font-size: clamp(3rem, 4.4vw, 4.5rem);
+  }
+
+  .modal-identity h2.long-title {
+    font-size: clamp(2.4rem, 3.2vw, 3.7rem);
+  }
+
+  .modal-identity h2.very-long-title {
+    font-size: clamp(2rem, 2.55vw, 3rem);
   }
 
   .modal-identity .creator {

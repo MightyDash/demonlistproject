@@ -47,6 +47,8 @@ export function DemonModal({
   const youtubeSearchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(`${demon.name || ""} ${demon.creator || ""} Geometry Dash`)}`;
   const cleanPlacement = String(demon.placement || "").trim() || "Unplaced";
   const cleanDifficulty = demon.difficulty || "Unknown";
+  const titleLength = String(demon.name || "").length;
+  const titleSizeClass = titleLength > 22 ? "very-long-title" : titleLength > 10 ? "long-title" : "";
   const noteText = demon.notes || "No note added yet.";
   const [skillsetDistribution, setSkillsetDistribution] = useState(
     Array.isArray(demon.skillsetDistribution) ? demon.skillsetDistribution : []
@@ -170,7 +172,7 @@ export function DemonModal({
         <div className="modal-hero-layout">
           <section className="modal-identity">
             <span className="modal-placement-pill">{cleanPlacement}</span>
-            <h2>{demon.name}</h2>
+            <h2 className={titleSizeClass}>{demon.name}</h2>
             <p className="creator">
               by {demon.creator || "Unknown creator"}
             </p>
