@@ -7058,7 +7058,11 @@ textarea:focus-visible {
 }
 
 .timeline-month-page-grid {
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+}
+
+.timeline-month-page-grid .timeline-demon-card {
+  min-height: 168px;
 }
 
 .timeline-demon-card img {
