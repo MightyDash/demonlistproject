@@ -23,6 +23,12 @@ const DEFAULT_SITE_CHANGELOG = [
   "Improved the desktop demon list, request page and list changes layout."
 ];
 const DEMON_DATA_CACHE_KEY = "moiks_demon_list_data_v1";
+const MOBILE_MEDIA_QUERY = "(max-width: 640px)";
+const MOBILE_DEMON_BATCH_SIZE = 24;
+
+function getInitialMobileView() {
+  return typeof window !== "undefined" && window.matchMedia(MOBILE_MEDIA_QUERY).matches;
+}
 
 function rowsFromDemonPayload(payload) {
   if (Array.isArray(payload)) return payload;
@@ -94,7 +100,8 @@ export default function App() {
   const [siteChangelog, setSiteChangelog] = useState(() => initialDemonData?.siteChangelog || DEFAULT_SITE_CHANGELOG);
   const [futureListIds, setFutureListIds] = useState(() => initialDemonData?.futureListIds || []);
   const [timelineEntries, setTimelineEntries] = useState(() => initialDemonData?.timelineEntries || []);
-  const [viewMode, setViewMode] = useState("banner");
+  const [isMobileView, setIsMobileView] = useState(getInitialMobileView);
+  const [viewMode, setViewMode] = useState(() => getInitialMobileView() ? "grid" : "banner");
   const [requestView, setRequestView] = useState(false);
   const [historyView, setHistoryView] = useState(false);
   const [timelineView, setTimelineView] = useState(false);
@@ -121,8 +128,7 @@ const [requestForm, setRequestForm] = useState({
   const [loginError, setLoginError] = useState("");
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [adminView, setAdminView] = useState(false);
-  const [isMobileView, setIsMobileView] = useState(false);
-  const [visibleDemonCount, setVisibleDemonCount] = useState(60);
+  const [visibleDemonCount, setVisibleDemonCount] = useState(MOBILE_DEMON_BATCH_SIZE);
   const [demonListError, setDemonListError] = useState("");
   const requestsLoadRef = useRef({ id: 0, controller: null });
   const historyLoadRef = useRef({ id: 0, controller: null });
@@ -298,7 +304,7 @@ const [requestForm, setRequestForm] = useState({
   }, [historyView]);
   
   useEffect(() => {
-    const mediaQuery = window.matchMedia("(max-width: 640px)");
+    const mediaQuery = window.matchMedia(MOBILE_MEDIA_QUERY);
     const updateMobileView = () => setIsMobileView(mediaQuery.matches);
 
     updateMobileView();
@@ -315,7 +321,7 @@ const [requestForm, setRequestForm] = useState({
   }, [requestView, isAdmin, isMobileView]);
 
   useEffect(() => {
-    setVisibleDemonCount(60);
+    setVisibleDemonCount(MOBILE_DEMON_BATCH_SIZE);
   }, [query, difficulty, segment, yearView, viewMode, isMobileView]);
 
   useEffect(() => {
@@ -860,7 +866,12 @@ async function handleRequestQuickStatus(rowNumber, status) {
     setViewMode("grid");
 
     if (latestIndex >= 0) {
-      setVisibleDemonCount(Math.max(60, Math.ceil((latestIndex + 1) / 60) * 60));
+      setVisibleDemonCount(
+        Math.max(
+          MOBILE_DEMON_BATCH_SIZE,
+          Math.ceil((latestIndex + 1) / MOBILE_DEMON_BATCH_SIZE) * MOBILE_DEMON_BATCH_SIZE
+        )
+      );
     }
 
     window.setTimeout(() => {
@@ -973,7 +984,7 @@ async function handleRequestQuickStatus(rowNumber, status) {
       filtered={displayedDemons}
       totalCount={filtered.length}
       hasMoreDemons={hasMoreDemons}
-      onLoadMore={() => setVisibleDemonCount(count => count + 60)}
+      onLoadMore={() => setVisibleDemonCount(count => count + MOBILE_DEMON_BATCH_SIZE)}
       apiLatestDemon={apiLatestDemon}
       listUpdatedAt={listUpdatedAt}
       onLatestDemonClick={handleLatestDemonClick}
