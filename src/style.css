@@ -7773,6 +7773,14 @@ body,
   background: linear-gradient(90deg, #7c3aed, #a78bfa) !important;
 }
 
+.hero::after,
+.stat-card::before,
+.grid-card::before,
+.admin-action-card::before {
+  display: none !important;
+  content: none !important;
+}
+
 .demon-banner-list {
   display: grid;
   gap: 10px;
