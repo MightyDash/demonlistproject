@@ -951,6 +951,11 @@ async function handleRequestQuickStatus(rowNumber, status) {
   }, [demons]);
 
   function handleOpenRequests() {
+    if (requestView) {
+      navigateTo(ROUTES.home);
+      return;
+    }
+
     if (isAdmin) {
       navigateTo(ROUTES.requests);
       return;

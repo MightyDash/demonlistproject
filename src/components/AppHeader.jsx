@@ -277,7 +277,7 @@ export function AppHeader({
 
             {!adminView && !historyView && !timelineView && (
               <button className="admin-button panel-button" onClick={onOpenRequests} type="button">
-                Demon Requests
+                {requestView ? "Back to list" : "Demon Requests"}
               </button>
             )}
     
