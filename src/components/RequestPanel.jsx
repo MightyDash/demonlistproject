@@ -321,6 +321,11 @@ export function RequestPanel({
                 }}
               />
               <div>
+                {isAdmin && (
+                  <div className="request-detail-actions-box">
+                    {renderQuickActions(selectedRequest)}
+                  </div>
+                )}
                 <p className="eyebrow">Request Detail</p>
                 <h2>{selectedRequest.demon || `Level ${selectedRequest.levelId}`}</h2>
                 <div className="request-detail-tags">
@@ -348,8 +353,6 @@ export function RequestPanel({
                 <p className="request-notes">{selectedRequest.notes || "No note was added."}</p>
               </section>
             </div>
-
-            {renderQuickActions(selectedRequest)}
           </article>
         </div>
       )}
