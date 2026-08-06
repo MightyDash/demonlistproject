@@ -7438,8 +7438,19 @@ body::after,
 }
 
 .grid-overlay {
-  background:
-    linear-gradient(180deg, rgba(5, 7, 5, 0.38) 0%, rgba(5, 7, 5, 0.03) 42%, rgba(5, 7, 5, 0.68) 100%) !important;
+  background: transparent !important;
+}
+
+.grid-overlay::after {
+  display: none !important;
+  content: none !important;
+}
+
+.grid-overlay h3,
+.grid-overlay p {
+  text-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.85),
+    0 6px 18px rgba(0, 0, 0, 0.72);
 }
 
 .desktop-list-shell.progress-shell .controls,
