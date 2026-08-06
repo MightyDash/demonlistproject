@@ -7423,6 +7423,12 @@ body::after,
   filter: saturate(1.18) contrast(1.08) brightness(1.06) !important;
 }
 
+.modal-cover img,
+.demon-detail-modal .modal-cover img {
+  opacity: 1 !important;
+  filter: saturate(1.18) contrast(1.08) brightness(1.06) !important;
+}
+
 .grid-card:hover .grid-thumb,
 .grid-card:focus-visible .grid-thumb {
   filter: saturate(1.26) contrast(1.12) brightness(1.1) !important;
@@ -7433,6 +7439,11 @@ body::after,
   filter: saturate(1.26) contrast(1.12) brightness(1.1) !important;
 }
 
+.modal-cover:hover img,
+.demon-detail-modal .modal-cover:hover img {
+  filter: saturate(1.26) contrast(1.12) brightness(1.1) !important;
+}
+
 .grid-overlay {
   background: transparent !important;
 }
@@ -7440,6 +7451,13 @@ body::after,
 .grid-overlay::after {
   display: none !important;
   content: none !important;
+}
+
+.modal-cover-shade,
+.demon-detail-modal .modal-cover-shade {
+  display: none !important;
+  content: none !important;
+  background: transparent !important;
 }
 
 .grid-overlay h3,
