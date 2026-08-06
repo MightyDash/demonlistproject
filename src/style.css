@@ -7791,9 +7791,14 @@ body,
   background: #17181c;
   color: var(--text);
   cursor: pointer;
+  user-select: none;
   isolation: isolate;
   animation: card-in 0.24s ease both;
   transition: border-color 170ms ease, box-shadow 170ms ease, transform 170ms ease;
+}
+
+.banner-card * {
+  cursor: pointer;
 }
 
 .banner-card::before {
