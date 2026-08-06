@@ -7424,9 +7424,22 @@ body::after,
   border-color: rgba(255, 255, 255, 0.1) !important;
 }
 
-.grid-thumb,
 .timeline-demon-card img {
   filter: saturate(0.5) contrast(0.96) brightness(0.86);
+}
+
+.grid-thumb {
+  filter: saturate(1.18) contrast(1.08) brightness(1.06) !important;
+}
+
+.grid-card:hover .grid-thumb,
+.grid-card:focus-visible .grid-thumb {
+  filter: saturate(1.26) contrast(1.12) brightness(1.1) !important;
+}
+
+.grid-overlay {
+  background:
+    linear-gradient(180deg, rgba(5, 7, 5, 0.38) 0%, rgba(5, 7, 5, 0.03) 42%, rgba(5, 7, 5, 0.68) 100%) !important;
 }
 
 .desktop-list-shell.progress-shell .controls,
