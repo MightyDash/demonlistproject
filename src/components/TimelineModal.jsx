@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { CalendarDays, Plus, Search, X } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, Plus, Search, X } from "lucide-react";
 import { comparePlacements, isInProgressDemon, parseDemonDate, placementSortValue } from "../demonUtils.js";
 
 const MONTHS = [
@@ -62,6 +62,21 @@ function pluralizeDemons(count) {
 
 function getHardestMonthHighlight(year, monthSlug) {
   return HARDEST_MONTH_HIGHLIGHTS[`${year}-${monthSlug}`] || "";
+}
+
+function getAdjacentTimelineMonth(timeline, activeYear, activeMonthSlug, direction) {
+  const months = timeline.flatMap(yearData =>
+    yearData.months.map(month => ({
+      year: yearData.year,
+      slug: month.slug,
+      name: month.name
+    }))
+  );
+  const activeIndex = months.findIndex(month => month.year === activeYear && month.slug === activeMonthSlug);
+
+  if (activeIndex === -1) return null;
+
+  return months[activeIndex + direction] || null;
 }
 
 function buildTimelineData(demons, timelineEntries) {
@@ -317,6 +332,8 @@ export function TimelinePage({
 
   if (isMonthPage) {
     const existingIds = new Set(selectedMonthData.demons.map(item => String(item.demon.id)));
+    const previousMonth = getAdjacentTimelineMonth(timeline, selectedYearData.year, selectedMonthData.slug, -1);
+    const nextMonth = getAdjacentTimelineMonth(timeline, selectedYearData.year, selectedMonthData.slug, 1);
 
     return (
       <section className="timeline-page timeline-month-page">
@@ -326,7 +343,27 @@ export function TimelinePage({
           </button>
           <div>
             <p className="eyebrow">Completion Timeline</p>
-            <h2>{selectedMonthData.name} {selectedYearData.year}</h2>
+            <div className="timeline-month-heading-row">
+              <h2>{selectedMonthData.name} {selectedYearData.year}</h2>
+              <div className="timeline-month-nav" aria-label="Month navigation">
+                <button
+                  type="button"
+                  onClick={() => previousMonth && onOpenMonth?.(previousMonth.year, previousMonth.slug)}
+                  disabled={!previousMonth || !onOpenMonth}
+                  aria-label={previousMonth ? `Go to ${previousMonth.name} ${previousMonth.year}` : "No previous month"}
+                >
+                  <ChevronLeft size={34} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => nextMonth && onOpenMonth?.(nextMonth.year, nextMonth.slug)}
+                  disabled={!nextMonth || !onOpenMonth}
+                  aria-label={nextMonth ? `Go to ${nextMonth.name} ${nextMonth.year}` : "No next month"}
+                >
+                  <ChevronRight size={34} />
+                </button>
+              </div>
+            </div>
             <p>{pluralizeDemons(selectedMonthData.demons.length)} in this month</p>
           </div>
           {isAdmin && onAddTimelineEntry && (
