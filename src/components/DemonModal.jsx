@@ -1,15 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   BarChart3,
-  Bookmark,
   ChevronLeft,
   ChevronRight,
   Clock3,
-  ExternalLink,
   FileText,
-  Heart,
   Save,
-  Share2,
+  Search,
   X
 } from "lucide-react";
 import { formatNumber, formatTier } from "../demonUtils.js";
@@ -47,6 +44,7 @@ export function DemonModal({
   const thumbnailSrc = demon.id
     ? `https://levelthumbs.prevter.me/thumbnail/${demon.id}`
     : "";
+  const youtubeSearchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(`${demon.name || ""} ${demon.creator || ""} Geometry Dash`)}`;
   const cleanPlacement = String(demon.placement || "").trim() || "Unplaced";
   const cleanDifficulty = demon.difficulty || "Unknown";
   const noteText = demon.notes || "No note added yet.";
@@ -174,7 +172,7 @@ export function DemonModal({
             <span className="modal-placement-pill">{cleanPlacement}</span>
             <h2>{demon.name}</h2>
             <p className="creator">
-              by {demon.creator || "Unknown creator"} <span className="creator-check" aria-label="Verified creator" />
+              by {demon.creator || "Unknown creator"}
             </p>
 
             <div className="modal-quick-tags">
@@ -186,21 +184,15 @@ export function DemonModal({
             </div>
 
             <div className="modal-action-row">
-              {demon.id && (
-                <a
-                  className="external-link modal-action"
-                  href={`https://gdbrowser.com/${encodeURIComponent(demon.id)}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <ExternalLink size={17} />
-                  Open in GDBrowser
-                </a>
-              )}
-              <button className="modal-icon-button" type="button" aria-label="Bookmark"><Bookmark size={20} /></button>
-              <button className="modal-icon-button" type="button" aria-label="Favorite"><Heart size={20} /></button>
-              <button className="modal-icon-button" type="button" aria-label="Stats"><BarChart3 size={20} /></button>
-              <button className="modal-icon-button" type="button" aria-label="Share"><Share2 size={20} /></button>
+              <a
+                className="external-link modal-action youtube-action"
+                href={youtubeSearchUrl}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <Search size={18} />
+                Search up on YouTube
+              </a>
             </div>
           </section>
 

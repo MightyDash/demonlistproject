@@ -1494,38 +1494,17 @@ h1 {
   font-weight: 950;
 }
 
-.creator-check {
-  display: inline-grid;
-  place-items: center;
-  width: 16px;
-  height: 16px;
-  margin-left: 5px;
-  border-radius: 50%;
-  background: var(--blue);
-  vertical-align: -2px;
-}
-
-.creator-check::before {
-  content: "";
-  width: 7px;
-  height: 4px;
-  border-left: 2px solid white;
-  border-bottom: 2px solid white;
-  transform: rotate(-45deg) translateY(-1px);
-}
-
 .modal-quick-tags {
   grid-template-columns: repeat(2, max-content);
   gap: 10px;
 }
 
 .modal-action-row {
-  grid-template-columns: minmax(190px, 1fr) repeat(4, 48px);
+  grid-template-columns: minmax(220px, 1fr);
   align-items: center;
-  gap: 12px;
   margin-top: 28px;
   width: 100%;
-  max-width: 440px;
+  max-width: 320px;
 }
 
 .modal-icon-button {
@@ -4483,9 +4462,20 @@ textarea:focus-visible {
   color: #0b0d0c;
 }
 
+.external-link.modal-action.youtube-action {
+  justify-content: center;
+  border-color: rgba(167, 139, 250, 0.6);
+  background: linear-gradient(135deg, #a78bfa, #7c3aed);
+  color: #141018;
+}
+
+.external-link.modal-action.youtube-action svg {
+  fill: #141018;
+}
+
 .external-link.modal-action:hover {
-  background: #dcff82;
-  color: #0b0d0c;
+  background: linear-gradient(135deg, #c4b5fd, #a78bfa);
+  color: #141018;
 }
 
 .modal-info-card {
