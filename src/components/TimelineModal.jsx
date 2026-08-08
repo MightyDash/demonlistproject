@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { CalendarDays, ChevronLeft, ChevronRight, Plus, Search, X } from "lucide-react";
 import { comparePlacements, isInProgressDemon, parseDemonDate, placementSortValue } from "../demonUtils.js";
 
@@ -301,6 +301,46 @@ export function TimelinePage({
   const selectedYearData = timeline.find(item => item.year === activeYear) || timeline[timeline.length - 1] || null;
   const selectedMonthData = selectedYearData?.months.find(month => month.slug === routeMonth) || null;
   const isMonthPage = Boolean(routeYear && routeMonth && selectedMonthData);
+  const previousMonth = selectedYearData && selectedMonthData
+    ? getAdjacentTimelineMonth(timeline, selectedYearData.year, selectedMonthData.slug, -1)
+    : null;
+  const nextMonth = selectedYearData && selectedMonthData
+    ? getAdjacentTimelineMonth(timeline, selectedYearData.year, selectedMonthData.slug, 1)
+    : null;
+
+  useEffect(() => {
+    if (!isMonthPage || !onOpenMonth) return undefined;
+
+    function handleMonthArrowKeys(event) {
+      if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+
+      const target = event.target;
+      const tagName = target?.tagName?.toLowerCase();
+      if (target?.isContentEditable || tagName === "input" || tagName === "select" || tagName === "textarea") {
+        return;
+      }
+
+      if (event.key === "ArrowLeft" && previousMonth) {
+        event.preventDefault();
+        onOpenMonth(previousMonth.year, previousMonth.slug);
+      }
+
+      if (event.key === "ArrowRight" && nextMonth) {
+        event.preventDefault();
+        onOpenMonth(nextMonth.year, nextMonth.slug);
+      }
+    }
+
+    window.addEventListener("keydown", handleMonthArrowKeys);
+    return () => window.removeEventListener("keydown", handleMonthArrowKeys);
+  }, [
+    isMonthPage,
+    nextMonth?.slug,
+    nextMonth?.year,
+    onOpenMonth,
+    previousMonth?.slug,
+    previousMonth?.year
+  ]);
 
   function handleSelectYear(year) {
     setSelectedYear(year);
@@ -332,8 +372,6 @@ export function TimelinePage({
 
   if (isMonthPage) {
     const existingIds = new Set(selectedMonthData.demons.map(item => String(item.demon.id)));
-    const previousMonth = getAdjacentTimelineMonth(timeline, selectedYearData.year, selectedMonthData.slug, -1);
-    const nextMonth = getAdjacentTimelineMonth(timeline, selectedYearData.year, selectedMonthData.slug, 1);
 
     return (
       <section className="timeline-page timeline-month-page">

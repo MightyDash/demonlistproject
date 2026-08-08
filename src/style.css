@@ -6951,10 +6951,10 @@ textarea:focus-visible {
 }
 
 .timeline-month-heading-row {
-  display: flex;
-  align-items: center;
-  gap: 20px;
+  position: relative;
+  display: block;
   min-width: 0;
+  padding-right: 120px;
 }
 
 .timeline-month-heading-row h2 {
@@ -6962,10 +6962,14 @@ textarea:focus-visible {
 }
 
 .timeline-month-nav {
+  position: absolute;
+  top: 50%;
+  left: 50%;
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding-top: 8px;
+  padding: 0;
+  transform: translate(-50%, -50%);
 }
 
 .timeline-month-nav button {
@@ -6986,7 +6990,7 @@ textarea:focus-visible {
   border-color: rgba(159, 124, 255, 0.42);
   background: rgba(159, 124, 255, 0.14);
   color: var(--text);
-  transform: translateY(-1px);
+  transform: translateY(-1px) scale(1.05);
 }
 
 .timeline-month-nav button:disabled {
@@ -7249,13 +7253,16 @@ textarea:focus-visible {
   }
 
   .timeline-month-heading-row {
+    display: flex;
     align-items: flex-start;
     flex-direction: column;
     gap: 10px;
+    padding-right: 0;
   }
 
   .timeline-month-nav {
-    padding-top: 0;
+    position: static;
+    transform: none;
   }
 
   .timeline-back-link {
