@@ -8551,12 +8551,13 @@ body,
 }
 
 .history-calendar {
-  grid-template-columns: 150px minmax(0, 1fr);
+  grid-template-columns: 176px minmax(0, 1fr);
   gap: 18px;
   margin-top: 0;
 }
 
 .calendar-year-rail {
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   min-height: 700px;
@@ -8567,8 +8568,11 @@ body,
 }
 
 .calendar-year-number {
+  max-width: 100%;
   margin: 8px 0 18px;
-  font-size: clamp(2.6rem, 4.8vw, 4.1rem);
+  overflow: hidden;
+  font-size: clamp(2.6rem, 31cqw, 4rem);
+  line-height: 0.94;
 }
 
 .calendar-year-tabs {
