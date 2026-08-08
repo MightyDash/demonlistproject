@@ -15,6 +15,31 @@ const MONTH_NAMES = [
   "December"
 ];
 
+const CHANGE_YEARS = Array.from({ length: 9 }, (_, index) => 2026 - index);
+
+const CATEGORY_CONFIG = {
+  newPlacements: {
+    title: "New Placements",
+    emptyText: "No new placements on this day.",
+    viewAllText: "View all new placements"
+  },
+  drops: {
+    title: "Drops",
+    emptyText: "No drops on this day.",
+    viewAllText: "View all drops"
+  },
+  climbers: {
+    title: "Climbers",
+    emptyText: "No climbers on this day.",
+    viewAllText: "View all climbers"
+  },
+  other: {
+    title: "Other",
+    emptyText: "No other updates on this day.",
+    viewAllText: "View all other updates"
+  }
+};
+
 function parseChangeDate(value) {
   if (!value) return null;
   const date = new Date(value);
@@ -59,6 +84,8 @@ function buildCalendar(changes) {
     if (!date) return;
 
     const year = date.getFullYear();
+    if (year < 2018 || year > 2026) return;
+
     const month = date.getMonth();
     const dayKey = dayKeyFromDate(date);
 
@@ -118,31 +145,81 @@ function splitDayChanges(changes) {
   return { newPlacements, drops, climbers, other };
 }
 
-function ChangeList({ title, changes, emptyText }) {
+function ChangeCard({ change }) {
   return (
-    <section className="calendar-change-section">
+    <article className="calendar-change-card">
+      <div className="calendar-change-card-top">
+        <strong>{change.demon || "Update"}</strong>
+        {change.newPlacement && <span>{change.newPlacement}</span>}
+      </div>
+      {change.message && <p>{change.message}</p>}
+
+      {(change.oldPlacement || change.newPlacement || movementAmount(change) > 0) && (
+        <div className="calendar-change-meta">
+          {change.oldPlacement && <span>Old: {change.oldPlacement}</span>}
+          {change.newPlacement && <span>New: {change.newPlacement}</span>}
+          {movementAmount(change) > 0 && <span>{movementAmount(change)} places</span>}
+        </div>
+      )}
+    </article>
+  );
+}
+
+function ChangePreview({ category, changes, onViewAll }) {
+  const config = CATEGORY_CONFIG[category];
+  const previewChanges = changes.slice(0, 3);
+
+  return (
+    <section className={`calendar-change-section ${category}`}>
       <div className="calendar-section-header">
-        <h3>{title}</h3>
+        <h3>{config.title}</h3>
         <span>{changes.length}</span>
       </div>
 
       {changes.length === 0 ? (
-        <p className="calendar-empty-line">{emptyText}</p>
+        <p className="calendar-empty-line">{config.emptyText}</p>
       ) : (
-        <div className="calendar-change-list">
-          {changes.map((change, index) => (
-            <article className="calendar-change-card" key={`${title}-${change.timestamp}-${change.demon}-${index}`}>
-              <strong>{change.demon || "Update"}</strong>
-              {change.message && <p>{change.message}</p>}
+        <>
+          <div className="calendar-change-list preview-list">
+            {previewChanges.map((change, index) => (
+              <div key={`${category}-${change.timestamp}-${change.demon}-${index}`}>
+                <ChangeCard change={change} />
+              </div>
+            ))}
+          </div>
+          <button className="calendar-view-all" onClick={() => onViewAll(category)} type="button">
+            {config.viewAllText}
+          </button>
+        </>
+      )}
+    </section>
+  );
+}
 
-              {(change.oldPlacement || change.newPlacement) && (
-                <div className="calendar-change-meta">
-                  {change.oldPlacement && <span>Old: {change.oldPlacement}</span>}
-                  {change.newPlacement && <span>New: {change.newPlacement}</span>}
-                  {movementAmount(change) > 0 && <span>{movementAmount(change)} places</span>}
-                </div>
-              )}
-            </article>
+function ChangeCategoryPage({ category, changes, activeDay, onBack }) {
+  const config = CATEGORY_CONFIG[category];
+
+  return (
+    <section className="calendar-category-page">
+      <div className="calendar-category-header">
+        <button className="timeline-back-link" onClick={onBack} type="button">
+          Back to selected day
+        </button>
+        <div>
+          <p className="eyebrow">{formatDayTitle(activeDay)}</p>
+          <h2>{config.title}</h2>
+          <p>{changes.length} {changes.length === 1 ? "change" : "changes"}</p>
+        </div>
+      </div>
+
+      {changes.length === 0 ? (
+        <div className="timeline-empty">{config.emptyText}</div>
+      ) : (
+        <div className="calendar-category-grid">
+          {changes.map((change, index) => (
+            <div key={`${category}-full-${change.timestamp}-${change.demon}-${index}`}>
+              <ChangeCard change={change} />
+            </div>
           ))}
         </div>
       )}
@@ -151,8 +228,9 @@ function ChangeList({ title, changes, emptyText }) {
 }
 
 export function RecentChanges({ changes, loading, error, onBack }) {
+  void onBack;
   const calendar = useMemo(() => buildCalendar(changes), [changes]);
-  const years = useMemo(
+  const dataYears = useMemo(
     () => Object.keys(calendar).map(Number).sort((a, b) => b - a),
     [calendar]
   );
@@ -160,12 +238,13 @@ export function RecentChanges({ changes, loading, error, onBack }) {
   const [selectedYear, setSelectedYear] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [selectedDay, setSelectedDay] = useState(null);
+  const [categoryPage, setCategoryPage] = useState(null);
 
-  const activeYear = selectedYear && calendar[selectedYear] ? selectedYear : years[0];
-  const months = activeYear
-    ? Object.keys(calendar[activeYear] || {}).map(Number).sort((a, b) => a - b)
-    : [];
-  const activeMonth = selectedMonth !== null && calendar[activeYear]?.[selectedMonth]
+  const fallbackYear = dataYears.find(year => CHANGE_YEARS.includes(year)) || 2026;
+  const activeYear = selectedYear ?? fallbackYear;
+  const monthsWithChanges = Object.keys(calendar[activeYear] || {}).map(Number).sort((a, b) => a - b);
+  const months = monthsWithChanges.length > 0 ? monthsWithChanges : [0];
+  const activeMonth = selectedMonth !== null && months.includes(selectedMonth)
     ? selectedMonth
     : months[months.length - 1];
   const changedDayKeys = activeYear !== undefined && activeMonth !== undefined
@@ -177,132 +256,169 @@ export function RecentChanges({ changes, loading, error, onBack }) {
     : changedDayKeys[0] || dayKeys[0];
   const dayChanges = activeDay ? calendar[activeYear]?.[activeMonth]?.[activeDay] || [] : [];
   const groupedChanges = splitDayChanges(dayChanges);
+  const totalChanges = groupedChanges.newPlacements.length + groupedChanges.drops.length + groupedChanges.climbers.length + groupedChanges.other.length;
 
   function selectYear(year) {
     setSelectedYear(year);
     setSelectedMonth(null);
     setSelectedDay(null);
+    setCategoryPage(null);
   }
 
   function selectMonth(month) {
     setSelectedMonth(month);
     setSelectedDay(null);
+    setCategoryPage(null);
   }
 
-  return (
-    <section className="panel recent-panel calendar-panel">
-      <div className="admin-panel-header">
-        <div>
-          <p className="eyebrow">History</p>
-          <h2>List Changes</h2>
-          <p>Browse all changes made to the demon list.</p>
-        </div>
-
-        <button className="admin-button" onClick={onBack} type="button">
-          Back to list
-        </button>
-      </div>
-
-      {loading ? (
+  if (loading) {
+    return (
+      <section className="panel recent-panel calendar-panel">
         <div className="request-loading">
           <span className="loading-dot" />
           Loading recent changes...
         </div>
-      ) : error ? (
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="panel recent-panel calendar-panel">
         <p className="admin-error">{error}</p>
-      ) : changes.length === 0 ? (
+      </section>
+    );
+  }
+
+  if (changes.length === 0) {
+    return (
+      <section className="panel recent-panel calendar-panel">
         <div className="request-empty">
           <strong>No recent changes found.</strong>
           <span>History entries will appear here after update runs.</span>
         </div>
-      ) : (
-        <div className="history-calendar">
-          <aside className="calendar-year-rail">
-            <span className="calendar-label">Year</span>
-            <div className="calendar-year-number">{activeYear}</div>
-            <div className="calendar-year-tabs">
-              {years.map(year => (
+      </section>
+    );
+  }
+
+  if (categoryPage && activeDay) {
+    return (
+      <section className="panel recent-panel calendar-panel">
+        <ChangeCategoryPage
+          category={categoryPage}
+          changes={groupedChanges[categoryPage] || []}
+          activeDay={activeDay}
+          onBack={() => setCategoryPage(null)}
+        />
+      </section>
+    );
+  }
+
+  return (
+    <section className="panel recent-panel calendar-panel">
+      <div className="history-calendar">
+        <aside className="calendar-year-rail">
+          <span className="calendar-label">Year</span>
+          <div className="calendar-year-number">{activeYear}</div>
+          <div className="calendar-year-tabs">
+            {CHANGE_YEARS.map(year => {
+              const count = Object.values(calendar[year] || {})
+                .flatMap(month => Object.values(month))
+                .reduce((sum, dayChangesForYear) => sum + dayChangesForYear.length, 0);
+
+              return (
                 <button
                   key={year}
                   className={activeYear === year ? "active" : ""}
                   onClick={() => selectYear(year)}
                   type="button"
                 >
-                  {year}
+                  <strong>{year}</strong>
+                  <span>{count} changes</span>
                 </button>
-              ))}
-            </div>
-          </aside>
+              );
+            })}
+          </div>
+        </aside>
 
-          <div className="calendar-main">
-            <div className="calendar-month-tabs">
-              {months.map(month => (
+        <div className="calendar-main">
+          <div className="calendar-month-tabs">
+            {months.map(month => (
+              <button
+                key={month}
+                className={activeMonth === month ? "active" : ""}
+                onClick={() => selectMonth(month)}
+                type="button"
+              >
+                {MONTH_NAMES[month]}
+              </button>
+            ))}
+          </div>
+
+          <div className="calendar-day-tabs">
+            {dayKeys.map(dayKey => {
+              const dayNumber = Number(dayKey.split("-")[2]);
+              const count = calendar[activeYear]?.[activeMonth]?.[dayKey]?.length || 0;
+
+              return (
                 <button
-                  key={month}
-                  className={activeMonth === month ? "active" : ""}
-                  onClick={() => selectMonth(month)}
+                  key={dayKey}
+                  className={`${activeDay === dayKey ? "active" : ""} ${count === 0 ? "empty" : ""}`}
+                  onClick={() => {
+                    setSelectedDay(dayKey);
+                    setCategoryPage(null);
+                  }}
                   type="button"
                 >
-                  {MONTH_NAMES[month]}
+                  <strong>{dayNumber}</strong>
+                  <span>{count === 1 ? "1 change" : `${count} changes`}</span>
                 </button>
-              ))}
-            </div>
+              );
+            })}
+          </div>
 
-            <div className="calendar-day-tabs">
-              {dayKeys.map(dayKey => {
-                const dayNumber = Number(dayKey.split("-")[2]);
-                const count = calendar[activeYear]?.[activeMonth]?.[dayKey]?.length || 0;
-
-                return (
-                  <button
-                    key={dayKey}
-                    className={`${activeDay === dayKey ? "active" : ""} ${count === 0 ? "empty" : ""}`}
-                    onClick={() => setSelectedDay(dayKey)}
-                    type="button"
-                  >
-                    <strong>{dayNumber}</strong>
-                    <span>{count === 1 ? "1 change" : `${count} changes`}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {activeDay && (
-              <div className="calendar-day-detail">
-                <div className="calendar-day-title">
+          {activeDay && (
+            <div className="calendar-day-detail">
+              <div className="calendar-day-title">
+                <div>
                   <span className="calendar-label">Selected day</span>
                   <h3>{formatDayTitle(activeDay)}</h3>
                 </div>
-
-                <div className="calendar-sections-grid">
-                  <ChangeList
-                    title="New Placements"
-                    changes={groupedChanges.newPlacements}
-                    emptyText="No new placements on this day."
-                  />
-                  <ChangeList
-                    title="Drops"
-                    changes={groupedChanges.drops}
-                    emptyText="No drops on this day."
-                  />
-                  <ChangeList
-                    title="Climbers"
-                    changes={groupedChanges.climbers}
-                    emptyText="No climbers on this day."
-                  />
-                  {groupedChanges.other.length > 0 && (
-                    <ChangeList
-                      title="Other"
-                      changes={groupedChanges.other}
-                      emptyText=""
-                    />
-                  )}
+                <div className="calendar-day-summary">
+                  <span><strong>{totalChanges}</strong>Total changes</span>
+                  <span><strong>{groupedChanges.drops.length}</strong>Drops</span>
+                  <span><strong>{groupedChanges.climbers.length}</strong>Climbers</span>
                 </div>
               </div>
-            )}
-          </div>
+
+              <div className="calendar-sections-grid">
+                <ChangePreview
+                  category="newPlacements"
+                  changes={groupedChanges.newPlacements}
+                  onViewAll={setCategoryPage}
+                />
+                <ChangePreview
+                  category="drops"
+                  changes={groupedChanges.drops}
+                  onViewAll={setCategoryPage}
+                />
+                <ChangePreview
+                  category="climbers"
+                  changes={groupedChanges.climbers}
+                  onViewAll={setCategoryPage}
+                />
+                {groupedChanges.other.length > 0 && (
+                  <ChangePreview
+                    category="other"
+                    changes={groupedChanges.other}
+                    onViewAll={setCategoryPage}
+                  />
+                )}
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </section>
   );
 }
