@@ -1,5 +1,20 @@
 import React, { useMemo, useState } from "react";
-import { CheckCircle2, Clipboard, Megaphone, Send, Trash2, X } from "lucide-react";
+import {
+  Ban,
+  CalendarCheck2,
+  CheckCircle2,
+  Clipboard,
+  Clock3,
+  FileSearch,
+  Hash,
+  Inbox,
+  ListFilter,
+  Megaphone,
+  Send,
+  Shield,
+  Trash2,
+  X
+} from "lucide-react";
 
 const REQUEST_STATUSES = ["Pending", "Under Review", "Planned", "Completed", "Rejected"];
 const DIFFICULTY_FILTERS = ["Easy Demon", "Medium Demon", "Hard Demon", "Insane Demon", "Extreme Demon"];
@@ -51,7 +66,17 @@ export function RequestPanel({
   requestStatusFilter,
   setRequestStatusFilter
 }) {
+  void onBack;
   const [selectedRequest, setSelectedRequest] = useState(null);
+  const statusStats = useMemo(() => {
+    const counts = Object.fromEntries(REQUEST_STATUSES.map(status => [status, 0]));
+    requests.forEach(request => {
+      const status = normalizeStatus(request.status);
+      counts[status] = (counts[status] || 0) + 1;
+    });
+
+    return counts;
+  }, [requests]);
 
   const filteredRequests = useMemo(() => {
     return requests.filter(request => {
@@ -123,70 +148,129 @@ export function RequestPanel({
 
   return (
     <section className="panel request-panel">
-      <div className="admin-panel-header">
-        <div>
-          <p className="eyebrow">Moik's Geometry Dash Demon Archive</p>
-          <h2>Demon Requests</h2>
-          <p>Community requests to add new demons to the list.</p>
-        </div>
-
-        <button className="admin-button" onClick={onBack} type="button">
-          Back to list
-        </button>
+      <div className="request-status-summary">
+        {[
+          ["Pending", Clock3],
+          ["Under Review", FileSearch],
+          ["Planned", CalendarCheck2],
+          ["Completed", CheckCircle2]
+        ].map(([status, Icon]) => (
+          <div className="request-status-stat" key={status}>
+            <span><Icon size={28} /></span>
+            <strong>{statusStats[status] || 0}</strong>
+            <small>{status}</small>
+          </div>
+        ))}
       </div>
 
-      <div className="request-form">
-        <div className="request-form-heading">
-          <Megaphone size={22} />
+      <div className="request-dashboard-grid">
+        <div className="request-form request-submit-card">
+          <div className="request-form-heading">
+            <Megaphone size={22} />
+            <div>
+              <h3>Submit a Demon Request</h3>
+              <p>The site fetches demon data from the level ID. Planned requests do not affect Future List or In Progress.</p>
+            </div>
+          </div>
+
+          <div className="request-form-row">
+            <label>
+              Level ID
+              <input
+                type="text"
+                inputMode="numeric"
+                autoComplete="off"
+                placeholder="Enter level ID"
+                value={requestForm.levelId}
+                onChange={event => setRequestForm({ ...requestForm, levelId: event.target.value })}
+              />
+              <small>Example: 12345678</small>
+            </label>
+          </div>
+
+          <label className="request-description-field">
+            Description
+            <textarea
+              placeholder="Why should this demon be considered?"
+              value={requestForm.notes}
+              onChange={event => setRequestForm({ ...requestForm, notes: event.target.value })}
+            />
+            <small>Provide details about the level, its quality, and why it deserves to be on the list.</small>
+          </label>
+
+          <div className="request-submit-row">
+            <button
+              className="login-button"
+              onClick={handleSubmitRequest}
+              disabled={requestLoading}
+              type="button"
+            >
+              <Send size={16} />
+              {requestLoading ? "Submitting..." : "Submit Request"}
+            </button>
+            <span>You can edit your request after submitting.</span>
+          </div>
+
+          {requestMessage && <p className="admin-success">{requestMessage}</p>}
+          {requestError && <p className="admin-error">{requestError}</p>}
+        </div>
+
+        <aside className="request-rules-card">
+          <div className="request-form-heading">
+            <Shield size={22} />
+            <div>
+              <h3>Request Rules</h3>
+              <p>A few guardrails before a request enters the list.</p>
+            </div>
+          </div>
+
+          <div className="request-rules-list">
+            <article>
+              <span><Shield size={24} /></span>
+              <div>
+                <strong>Only demons</strong>
+                <p>This archive only accepts demon difficulty levels.</p>
+              </div>
+            </article>
+            <article>
+              <span><Hash size={24} /></span>
+              <div>
+                <strong>Fetched by level ID</strong>
+                <p>Requests must include a valid Geometry Dash level ID.</p>
+              </div>
+            </article>
+            <article>
+              <span><Ban size={24} /></span>
+              <div>
+                <strong>No levels harder than Bloodbath</strong>
+                <p>Levels harder than Bloodbath cannot be requested.</p>
+              </div>
+            </article>
+            <article>
+              <span><CalendarCheck2 size={24} /></span>
+              <div>
+                <strong>Planned requests do not affect Future List</strong>
+                <p>Planned requests will not impact the Future List or In Progress.</p>
+              </div>
+            </article>
+          </div>
+        </aside>
+      </div>
+
+      <section className="request-submissions-panel">
+        <div className="request-submissions-header">
           <div>
-            <h3>Submit a Demon Request</h3>
-            <p>The site fetches demon data from the level ID. Planned requests do not affect Future List or In Progress.</p>
+            <h2><ListFilter size={22} /> Submissions</h2>
+          </div>
+
+          <div className="request-sort-row">
+            <span>Sort by</span>
+            <select value={requestSort} onChange={event => setRequestSort(event.target.value)}>
+              <option value="newest">Newest</option>
+              <option value="oldest">Oldest</option>
+            </select>
           </div>
         </div>
-
-        <div className="request-rules">
-          <span>Only demons. The site fetches demon data.</span>
-          <span>No levels harder than Bloodbath.</span>
-        </div>
-
-        <div className="request-form-row">
-          <label>
-            Level ID
-            <input
-              type="text"
-              inputMode="numeric"
-              autoComplete="off"
-              placeholder="Level ID"
-              value={requestForm.levelId}
-              onChange={event => setRequestForm({ ...requestForm, levelId: event.target.value })}
-            />
-          </label>
-        </div>
-
-        <label className="request-description-field">
-          Description
-          <textarea
-            placeholder="Why should this demon be considered?"
-            value={requestForm.notes}
-            onChange={event => setRequestForm({ ...requestForm, notes: event.target.value })}
-          />
-        </label>
-
-        <button
-          className="login-button"
-          onClick={handleSubmitRequest}
-          disabled={requestLoading}
-          type="button"
-        >
-          <Send size={16} />
-          {requestLoading ? "Submitting..." : "Submit Request"}
-        </button>
-
-        {requestMessage && <p className="admin-success">{requestMessage}</p>}
-        {requestError && <p className="admin-error">{requestError}</p>}
-        <hr className="request-divider" />
-
-        <h2>Submissions</h2>
 
         {requestsLoading ? (
           <div className="request-loading">
@@ -195,8 +279,9 @@ export function RequestPanel({
           </div>
         ) : requests.length === 0 ? (
           <div className="request-empty">
-            <strong>No requests found.</strong>
-            <span>New recommendations will appear here.</span>
+            <Inbox size={54} />
+            <strong>No requests yet</strong>
+            <span>New recommendations will appear here after the site fetches their data.</span>
           </div>
         ) : (
           <>
@@ -216,14 +301,6 @@ export function RequestPanel({
                     {label}
                   </button>
                 ))}
-              </div>
-
-              <div className="request-sort-row">
-                <span>Sort by</span>
-                <select value={requestSort} onChange={event => setRequestSort(event.target.value)}>
-                  <option value="newest">Newest</option>
-                  <option value="oldest">Oldest</option>
-                </select>
               </div>
             </div>
 
@@ -298,7 +375,7 @@ export function RequestPanel({
             </div>
           </>
         )}
-      </div>
+      </section>
 
       {selectedRequest && (
         <div className="modal-backdrop" onMouseDown={() => setSelectedRequest(null)}>
