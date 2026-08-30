@@ -48,7 +48,7 @@ export function AppHeader({
       : historyView
         ? "List Changes"
         : timelineView
-          ? "Completion Timeline"
+          ? "Timeline"
           : "Demon List";
   const pageSubtitle = adminView
     ? "Manage your demon list tools and admin actions."

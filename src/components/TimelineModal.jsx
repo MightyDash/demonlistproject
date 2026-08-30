@@ -396,7 +396,7 @@ export function TimelinePage({
         <div className="timeline-header">
           <span className="timeline-icon"><CalendarDays size={24} /></span>
           <div>
-            <h2>Completion Timeline</h2>
+            <h2>Timeline</h2>
             <p>No timeline data found yet.</p>
           </div>
         </div>
@@ -489,7 +489,7 @@ export function TimelinePage({
       <div className="timeline-header">
         <span className="timeline-icon"><CalendarDays size={24} /></span>
         <div>
-          <h2>Completion Timeline</h2>
+          <h2>Timeline</h2>
           <p>{pluralizeDemons(timeline.reduce((sum, year) => sum + year.demons.length, 0))} with known years</p>
         </div>
       </div>
