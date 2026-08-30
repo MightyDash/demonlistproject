@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { CalendarDays, ChevronLeft, ChevronRight, Plus, Search, X } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, Play, Plus, Search, X } from "lucide-react";
 import { comparePlacements, isInProgressDemon, parseDemonDate, placementSortValue } from "../demonUtils.js";
 
 const MONTHS = [
@@ -93,6 +93,16 @@ function getAdjacentTimelineMonth(timeline, activeYear, activeMonthSlug, directi
   if (activeIndex === -1) return null;
 
   return months[activeIndex + direction] || null;
+}
+
+function getMonthlyRecapUrl(monthlyRecaps, year, monthSlug) {
+  const recap = monthlyRecaps.find(item =>
+    Number(item.year) === Number(year) &&
+    String(item.month || "").trim().toLowerCase() === String(monthSlug || "").trim().toLowerCase() &&
+    String(item.url || "").trim()
+  );
+
+  return recap ? String(recap.url || "").trim() : "";
 }
 
 function buildTimelineData(demons, timelineEntries) {
@@ -305,6 +315,7 @@ function TimelineAddPopover({ demons, existingIds, year, month, onAddTimelineEnt
 export function TimelinePage({
   demons,
   timelineEntries = [],
+  monthlyRecaps = [],
   routeYear,
   routeMonth,
   isAdmin,
@@ -395,6 +406,7 @@ export function TimelinePage({
 
   if (isMonthPage) {
     const existingIds = new Set(selectedMonthData.demons.map(item => String(item.demon.id)));
+    const recapUrl = getMonthlyRecapUrl(monthlyRecaps, selectedYearData.year, selectedMonthData.slug);
 
     return (
       <section className="timeline-page timeline-month-page">
@@ -429,15 +441,28 @@ export function TimelinePage({
               </button>
             </div>
           </div>
-          {isAdmin && onAddTimelineEntry && (
-            <TimelineAddPopover
-              demons={demons}
-              existingIds={existingIds}
-              year={selectedYearData.year}
-              month={selectedMonthData.slug}
-              onAddTimelineEntry={onAddTimelineEntry}
-            />
-          )}
+          <div className="timeline-month-header-actions">
+            {recapUrl && (
+              <a
+                className="timeline-recap-button"
+                href={recapUrl}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <Play size={18} fill="currentColor" />
+                <span>Watch Recap</span>
+              </a>
+            )}
+            {isAdmin && onAddTimelineEntry && (
+              <TimelineAddPopover
+                demons={demons}
+                existingIds={existingIds}
+                year={selectedYearData.year}
+                month={selectedMonthData.slug}
+                onAddTimelineEntry={onAddTimelineEntry}
+              />
+            )}
+          </div>
         </div>
 
         {selectedMonthData.demons.length > 0 ? (

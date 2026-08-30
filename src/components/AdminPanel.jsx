@@ -1,16 +1,36 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
+  CalendarDays,
   Download,
   FileText,
   Inbox,
+  Link,
   Pencil,
   Plus,
   RefreshCw,
   RotateCcw,
-  Trash2
+  Trash2,
+  X
 } from "lucide-react";
 import { requestJson } from "../api.js";
+import { isInProgressDemon, parseDemonDate } from "../demonUtils.js";
+
+const TIMELINE_YEARS = [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
+const TIMELINE_MONTHS = [
+  { name: "January", slug: "january" },
+  { name: "February", slug: "february" },
+  { name: "March", slug: "march" },
+  { name: "April", slug: "april" },
+  { name: "May", slug: "may" },
+  { name: "June", slug: "june" },
+  { name: "July", slug: "july" },
+  { name: "August", slug: "august" },
+  { name: "September", slug: "september" },
+  { name: "October", slug: "october" },
+  { name: "November", slug: "november" },
+  { name: "December", slug: "december" }
+];
 
 function normalizeDateInput(value) {
   const text = String(value || "").trim();
@@ -38,22 +58,84 @@ function normalizeDateInput(value) {
   };
 }
 
+function isValidYouTubeUrl(value) {
+  const text = String(value || "").trim();
+  if (!text) return true;
+  return /^https:\/\/(www\.)?(youtube\.com\/watch\?v=|youtube\.com\/shorts\/|youtu\.be\/)[A-Za-z0-9_-]{6,}/i.test(text);
+}
+
+function getMonthlyRecapUrl(monthlyRecaps, year, monthSlug) {
+  const recap = monthlyRecaps.find(item =>
+    Number(item.year) === Number(year) &&
+    String(item.month || "").trim().toLowerCase() === String(monthSlug || "").trim().toLowerCase()
+  );
+
+  return recap ? String(recap.url || "").trim() : "";
+}
+
+function buildAdminTimelineCounts(demons, timelineEntries) {
+  const counts = TIMELINE_YEARS.reduce((acc, year) => {
+    acc[year] = TIMELINE_MONTHS.reduce((monthAcc, month) => {
+      monthAcc[month.slug] = 0;
+      return monthAcc;
+    }, {});
+    return acc;
+  }, {});
+  const counted = new Set();
+
+  demons
+    .filter(demon => !isInProgressDemon(demon))
+    .forEach(demon => {
+      const parsed = parseDemonDate(demon?.date);
+      if (!parsed || parsed.yearOnly || !parsed.month || !TIMELINE_YEARS.includes(parsed.year)) return;
+
+      const month = TIMELINE_MONTHS[parsed.month - 1];
+      if (!month) return;
+
+      const key = `${parsed.year}-${month.slug}-${demon.id || demon.name}`;
+      counted.add(key);
+      counts[parsed.year][month.slug] += 1;
+    });
+
+  timelineEntries.forEach(entry => {
+    const year = Number(entry.year || 0);
+    const month = String(entry.month || "").trim().toLowerCase();
+    const levelId = String(entry.levelId || "").trim();
+    const key = `${year}-${month}-${levelId}`;
+
+    if (!TIMELINE_YEARS.includes(year) || counts[year]?.[month] === undefined || !levelId || counted.has(key)) return;
+
+    counted.add(key);
+    counts[year][month] += 1;
+  });
+
+  return counts;
+}
+
 export function AdminPanel({
   onBack,
   onDataChanged,
   demons = [],
+  timelineEntries = [],
+  monthlyRecaps = [],
   requests = [],
   onOpenRequests,
-  onSaveNote
+  onSaveNote,
+  onSaveMonthlyRecap
 }) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showRemoveForm, setShowRemoveForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [showRefreshTokenForm, setShowRefreshTokenForm] = useState(false);
   const [showNoteManager, setShowNoteManager] = useState(false);
+  const [showTimelineManager, setShowTimelineManager] = useState(false);
   const [noteSearch, setNoteSearch] = useState("");
   const [noteDrafts, setNoteDrafts] = useState({});
   const [noteSavingId, setNoteSavingId] = useState("");
+  const [timelineManagerYear, setTimelineManagerYear] = useState(2026);
+  const [recapPopoverMonth, setRecapPopoverMonth] = useState("");
+  const [recapUrlDraft, setRecapUrlDraft] = useState("");
+  const [recapSaving, setRecapSaving] = useState(false);
 
   const [addForm, setAddForm] = useState({
     levelId: "",
@@ -118,14 +200,22 @@ export function AdminPanel({
     });
   }, [demons, noteSearch]);
 
+  const timelineCounts = useMemo(
+    () => buildAdminTimelineCounts(demons, timelineEntries),
+    [demons, timelineEntries]
+  );
+
   function resetOpenTools() {
     setShowAddForm(false);
     setShowRemoveForm(false);
     setShowEditForm(false);
     setShowRefreshTokenForm(false);
     setShowNoteManager(false);
+    setShowTimelineManager(false);
     setEditFound(null);
     setEditNotFound(false);
+    setRecapPopoverMonth("");
+    setRecapUrlDraft("");
     setPendingAdminPreview(null);
     setAdminMessage("");
     setAdminError("");
@@ -349,6 +439,56 @@ export function AdminPanel({
         token
       })
     });
+  }
+
+  function openTimelineManager() {
+    resetOpenTools();
+    setTimelineManagerYear(2026);
+    setShowTimelineManager(true);
+  }
+
+  function openRecapPopover(monthSlug) {
+    setAdminMessage("");
+    setAdminError("");
+    setRecapPopoverMonth(monthSlug);
+    setRecapUrlDraft(getMonthlyRecapUrl(monthlyRecaps, timelineManagerYear, monthSlug));
+  }
+
+  async function handleSaveMonthlyRecap(urlOverride) {
+    if (!onSaveMonthlyRecap || !recapPopoverMonth) {
+      setAdminError("Timeline Manager is not connected.");
+      return;
+    }
+
+    const url = urlOverride !== undefined ? urlOverride : recapUrlDraft.trim();
+
+    if (!isValidYouTubeUrl(url)) {
+      setAdminError("Add a valid YouTube URL.");
+      return;
+    }
+
+    setAdminMessage("");
+    setAdminError("");
+    setRecapSaving(true);
+
+    try {
+      const result = await onSaveMonthlyRecap({
+        year: timelineManagerYear,
+        month: recapPopoverMonth,
+        url
+      });
+
+      if (!result?.success) {
+        setAdminError(result?.message || "Could not save the recap video.");
+        return;
+      }
+
+      setAdminMessage(result.message || "Recap video saved.");
+      setRecapPopoverMonth("");
+      setRecapUrlDraft("");
+    } finally {
+      setRecapSaving(false);
+    }
   }
 
   async function handleAddDemon() {
@@ -640,6 +780,7 @@ export function AdminPanel({
             setShowEditForm(false);
             setShowRefreshTokenForm(false);
             setShowNoteManager(false);
+            setShowTimelineManager(false);
             setEditFound(null);
             setEditNotFound(false);
             setAdminMessage("");
@@ -661,6 +802,7 @@ export function AdminPanel({
             setShowEditForm(false);
             setShowRefreshTokenForm(false);
             setShowNoteManager(false);
+            setShowTimelineManager(false);
             setEditFound(null);
             setEditNotFound(false);
             setAdminMessage("");
@@ -682,6 +824,7 @@ export function AdminPanel({
             setShowRemoveForm(false);
             setShowRefreshTokenForm(false);
             setShowNoteManager(false);
+            setShowTimelineManager(false);
             setEditFound(null);
             setEditNotFound(false);
             setAdminMessage("");
@@ -703,6 +846,7 @@ export function AdminPanel({
             setShowRemoveForm(false);
             setShowEditForm(false);
             setShowNoteManager(false);
+            setShowTimelineManager(false);
             setEditFound(null);
             setEditNotFound(false);
             setAdminMessage("");
@@ -733,6 +877,17 @@ export function AdminPanel({
           <span className="admin-action-icon revert"><RotateCcw size={24} /></span>
           <strong>Revert Refresh</strong>
           <span>Restore the latest Refresh List or Update All backup.</span>
+          <ArrowRight className="admin-action-arrow" size={22} />
+        </button>
+
+        <button
+          className="admin-action-card"
+          type="button"
+          onClick={openTimelineManager}
+        >
+          <span className="admin-action-icon timeline"><CalendarDays size={24} /></span>
+          <strong>Timeline Manager</strong>
+          <span>Add recap videos to timeline months.</span>
           <ArrowRight className="admin-action-arrow" size={22} />
         </button>
 
@@ -770,6 +925,118 @@ export function AdminPanel({
           <ArrowRight className="admin-action-arrow" size={22} />
         </button>
       </div>
+
+      {showTimelineManager && (
+        <div className="admin-form timeline-manager-form">
+          <div className="timeline-manager-header">
+            <div>
+              <h3>Timeline Manager</h3>
+              <p className="admin-form-note">
+                Add YouTube recap videos to timeline months.
+              </p>
+            </div>
+            <button
+              className="close-button"
+              onClick={() => setShowTimelineManager(false)}
+              type="button"
+            >
+              Close
+            </button>
+          </div>
+
+          <div className="timeline-manager-years" aria-label="Timeline years">
+            {TIMELINE_YEARS.map(year => (
+              <button
+                className={timelineManagerYear === year ? "active" : ""}
+                key={year}
+                onClick={() => {
+                  setTimelineManagerYear(year);
+                  setRecapPopoverMonth("");
+                  setRecapUrlDraft("");
+                }}
+                type="button"
+              >
+                {year}
+              </button>
+            ))}
+          </div>
+
+          <div className="timeline-manager-months">
+            {TIMELINE_MONTHS.map(month => {
+              const demonCount = timelineCounts[timelineManagerYear]?.[month.slug] || 0;
+              const recapUrl = getMonthlyRecapUrl(monthlyRecaps, timelineManagerYear, month.slug);
+              const isPopoverOpen = recapPopoverMonth === month.slug;
+
+              return (
+                <div className="timeline-manager-month-row" key={month.slug}>
+                  <button
+                    className="timeline-manager-month-main"
+                    onClick={() => openRecapPopover(month.slug)}
+                    type="button"
+                  >
+                    <span>
+                      <strong>{month.name}</strong>
+                      {recapUrl && <small>Recap video connected</small>}
+                    </span>
+                    <span className="timeline-manager-month-count">
+                      {demonCount} {demonCount === 1 ? "demon" : "demons"}
+                    </span>
+                  </button>
+
+                  <button
+                    className="timeline-manager-add"
+                    onClick={() => openRecapPopover(month.slug)}
+                    type="button"
+                    aria-label={`Add recap video for ${month.name} ${timelineManagerYear}`}
+                  >
+                    <Plus size={18} />
+                  </button>
+
+                  {isPopoverOpen && (
+                    <div className="timeline-manager-popover">
+                      <button
+                        className="timeline-manager-popover-close"
+                        onClick={() => setRecapPopoverMonth("")}
+                        type="button"
+                        aria-label="Close recap editor"
+                      >
+                        <X size={16} />
+                      </button>
+                      <p><Link size={16} /> Add YouTube URL</p>
+                      <input
+                        autoFocus
+                        value={recapUrlDraft}
+                        onChange={event => setRecapUrlDraft(event.target.value)}
+                        placeholder="https://www.youtube.com/watch?v=..."
+                      />
+                      <div className="timeline-manager-popover-actions">
+                        <button
+                          className="login-button"
+                          onClick={() => handleSaveMonthlyRecap()}
+                          disabled={recapSaving}
+                          type="button"
+                        >
+                          {recapSaving ? "Saving..." : "Save"}
+                        </button>
+                        {recapUrl && (
+                          <button
+                            className="close-button"
+                            onClick={() => handleSaveMonthlyRecap("")}
+                            disabled={recapSaving}
+                            type="button"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {showNoteManager && (
         <div className="admin-form note-manager-form">

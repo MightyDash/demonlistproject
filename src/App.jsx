@@ -48,7 +48,8 @@ function normalizeDemonPayload(payload) {
     siteVersion: payload?.siteVersion || DEFAULT_SITE_VERSION,
     siteChangelog: Array.isArray(payload?.siteChangelog) ? payload.siteChangelog : DEFAULT_SITE_CHANGELOG,
     futureListIds: Array.isArray(payload?.futureListIds) ? payload.futureListIds.map(String) : [],
-    timelineEntries: Array.isArray(payload?.timelineEntries) ? payload.timelineEntries : []
+    timelineEntries: Array.isArray(payload?.timelineEntries) ? payload.timelineEntries : [],
+    monthlyRecaps: Array.isArray(payload?.monthlyRecaps) ? payload.monthlyRecaps : []
   };
 }
 
@@ -100,6 +101,7 @@ export default function App() {
   const [siteChangelog, setSiteChangelog] = useState(() => initialDemonData?.siteChangelog || DEFAULT_SITE_CHANGELOG);
   const [futureListIds, setFutureListIds] = useState(() => initialDemonData?.futureListIds || []);
   const [timelineEntries, setTimelineEntries] = useState(() => initialDemonData?.timelineEntries || []);
+  const [monthlyRecaps, setMonthlyRecaps] = useState(() => initialDemonData?.monthlyRecaps || []);
   const [isMobileView, setIsMobileView] = useState(getInitialMobileView);
   const [viewMode, setViewMode] = useState(() => getInitialMobileView() ? "grid" : "banner");
   const [requestView, setRequestView] = useState(false);
@@ -379,6 +381,7 @@ const [requestForm, setRequestForm] = useState({
       setSiteChangelog(nextData.siteChangelog);
       setFutureListIds(nextData.futureListIds);
       setTimelineEntries(nextData.timelineEntries);
+      setMonthlyRecaps(nextData.monthlyRecaps);
       setDemons(nextData.demons);
       setDemonListError("");
       setSource("live");
@@ -623,6 +626,42 @@ const [requestForm, setRequestForm] = useState({
 
       setTimelineEntries(Array.isArray(data.timelineEntries) ? data.timelineEntries : []);
       return { success: true, message: data.message || "Demon removed from timeline." };
+    } catch (error) {
+      return {
+        success: false,
+        message: error?.message
+          ? `Could not connect: ${error.message}`
+          : "Could not connect."
+      };
+    }
+  }
+
+  async function saveMonthlyRecap({ year, month, url }) {
+    const adminUrl = import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL;
+    const token = localStorage.getItem("admin_token");
+
+    if (!adminUrl || !token) {
+      return { success: false, message: "Admin connection is not configured." };
+    }
+
+    try {
+      const data = await requestJson(adminUrl, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "setMonthlyRecap",
+          token,
+          year,
+          month,
+          url
+        })
+      });
+
+      if (!data.success) {
+        return { success: false, message: data.message || "Could not save recap video." };
+      }
+
+      setMonthlyRecaps(Array.isArray(data.monthlyRecaps) ? data.monthlyRecaps : []);
+      return { success: true, message: data.message || "Recap video saved." };
     } catch (error) {
       return {
         success: false,
@@ -1041,9 +1080,12 @@ async function handleRequestQuickStatus(rowNumber, status) {
           onBack={() => navigateTo(ROUTES.home)}
           onDataChanged={() => loadDemonData({ silent: true })}
           demons={demons}
+          timelineEntries={timelineEntries}
+          monthlyRecaps={monthlyRecaps}
           requests={requests}
           onOpenRequests={() => navigateTo(ROUTES.requests)}
           onSaveNote={saveDemonNote}
+          onSaveMonthlyRecap={saveMonthlyRecap}
         />
       ) : requestView && isAdmin ? (
         <RequestPanel
@@ -1090,6 +1132,7 @@ async function handleRequestQuickStatus(rowNumber, status) {
         <TimelinePage
           demons={demons}
           timelineEntries={timelineEntries}
+          monthlyRecaps={monthlyRecaps}
           routeYear={timelineRoute.year}
           routeMonth={timelineRoute.month}
           isAdmin={isAdmin}
