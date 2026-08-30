@@ -415,7 +415,7 @@ export function TimelinePage({
             Back to timeline
           </button>
           <div className="timeline-month-title-block">
-            <p className="eyebrow">Completion Timeline</p>
+            <p className="eyebrow">Timeline</p>
             <div className="timeline-month-heading-row" aria-label="Month navigation">
               <button
                 className="timeline-month-nav-button"
