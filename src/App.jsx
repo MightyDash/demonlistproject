@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { SHEET_API_URL } from "./config.js";
+import { ADMIN_API_URL, SHEET_API_URL } from "./config.js";
 import { mockDemons } from "./mockData.js";
 import { AdminPanel } from "./components/AdminPanel.jsx";
 import { AppHeader } from "./components/AppHeader.jsx";
@@ -198,7 +198,7 @@ const [requestForm, setRequestForm] = useState({
   if (!silent) setRequestsLoading(true);
 
   try {
-    const data = await requestJson(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
+    const data = await requestJson(ADMIN_API_URL, {
       method: "POST",
       signal: controller.signal,
       body: JSON.stringify({
@@ -336,7 +336,7 @@ const [requestForm, setRequestForm] = useState({
     const savedToken = localStorage.getItem("admin_token");
     if (!savedToken) return;
 
-    const adminUrl = import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL;
+    const adminUrl = ADMIN_API_URL;
     if (!adminUrl) return;
 
     requestJson(adminUrl, {
@@ -415,7 +415,7 @@ const [requestForm, setRequestForm] = useState({
   // Credentials are never stored in the frontend bundle
   async function handleLogin() {
     setLoginError("");
-    const adminUrl = import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL;
+    const adminUrl = ADMIN_API_URL;
 
     if (!adminUrl) {
       setLoginError("Admin URL not configured.");
@@ -446,7 +446,7 @@ const [requestForm, setRequestForm] = useState({
   }
 
   async function saveDemonNote(demon, note) {
-    const adminUrl = import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL;
+    const adminUrl = ADMIN_API_URL;
     const token = localStorage.getItem("admin_token");
 
     if (!adminUrl || !token) {
@@ -488,7 +488,7 @@ const [requestForm, setRequestForm] = useState({
   }
 
   async function saveSiteChangelog(version, changes) {
-    const adminUrl = import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL;
+    const adminUrl = ADMIN_API_URL;
     const token = localStorage.getItem("admin_token");
 
     if (!adminUrl || !token) {
@@ -520,7 +520,7 @@ const [requestForm, setRequestForm] = useState({
   }
 
   async function toggleFutureListDemon(demon) {
-    const adminUrl = import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL;
+    const adminUrl = ADMIN_API_URL;
     const token = localStorage.getItem("admin_token");
     const levelId = String(demon?.id || "").trim();
 
@@ -565,7 +565,7 @@ const [requestForm, setRequestForm] = useState({
   }
 
   async function addTimelineEntry({ year, month, levelId }) {
-    const adminUrl = import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL;
+    const adminUrl = ADMIN_API_URL;
     const token = localStorage.getItem("admin_token");
 
     if (!adminUrl || !token) {
@@ -601,7 +601,7 @@ const [requestForm, setRequestForm] = useState({
   }
 
   async function removeTimelineEntry({ year, month, levelId }) {
-    const adminUrl = import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL;
+    const adminUrl = ADMIN_API_URL;
     const token = localStorage.getItem("admin_token");
 
     if (!adminUrl || !token) {
@@ -637,7 +637,7 @@ const [requestForm, setRequestForm] = useState({
   }
 
   async function saveMonthlyRecap({ year, month, url }) {
-    const adminUrl = import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL;
+    const adminUrl = ADMIN_API_URL;
     const token = localStorage.getItem("admin_token");
 
     if (!adminUrl || !token) {
@@ -700,7 +700,7 @@ const [requestForm, setRequestForm] = useState({
     }
 
     abortRequestsLoad();
-    const data = await requestJson(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
+    const data = await requestJson(ADMIN_API_URL, {
       method: "POST",
       body: JSON.stringify({
         action: "submitRequest",
@@ -735,7 +735,7 @@ async function handleRequestQuickStatus(rowNumber, status) {
 
   try {
     abortRequestsLoad();
-    const data = await requestJson(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
+    const data = await requestJson(ADMIN_API_URL, {
       method: "POST",
       body: JSON.stringify({
         action: "updateRequestStatus",
@@ -765,7 +765,7 @@ async function handleRequestQuickStatus(rowNumber, status) {
 
   try {
     abortRequestsLoad();
-    const data = await requestJson(import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL, {
+    const data = await requestJson(ADMIN_API_URL, {
       method: "POST",
       body: JSON.stringify({
         action: "deleteRequest",

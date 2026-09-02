@@ -14,6 +14,7 @@ import {
   X
 } from "lucide-react";
 import { requestJson } from "../api.js";
+import { ADMIN_API_URL } from "../config.js";
 import { isInProgressDemon, parseDemonDate } from "../demonUtils.js";
 
 const TIMELINE_YEARS = [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
@@ -421,11 +422,11 @@ export function AdminPanel({
   }
 
   async function sendAdminRequest(payload) {
-    const adminUrl = import.meta.env.VITE_APPS_SCRIPT_ADMIN_URL;
+    const adminUrl = ADMIN_API_URL;
     const token = localStorage.getItem("admin_token");
 
     if (!adminUrl) {
-      throw new Error("VITE_APPS_SCRIPT_ADMIN_URL is missing in Render.");
+      throw new Error("Admin URL is missing.");
     }
 
     if (!token) {
