@@ -3,7 +3,6 @@ export const ROUTES = {
   requests: "/demon-requests",
   history: "/recent-changes",
   timeline: "/timeline",
-  saveAnalyzer: "/save-analyzer",
   admin: "/admin-panel"
 };
 

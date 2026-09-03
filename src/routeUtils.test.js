@@ -7,7 +7,6 @@ describe("routeUtils", () => {
     ["/demon-requests/", ROUTES.requests],
     ["/recent-changes", ROUTES.history],
     ["/timeline", ROUTES.timeline],
-    ["/save-analyzer", ROUTES.saveAnalyzer],
     ["/admin-panel", ROUTES.admin],
     ["/unknown", ROUTES.home],
     ["/timeline/2018/january", "/timeline/2018/january"],

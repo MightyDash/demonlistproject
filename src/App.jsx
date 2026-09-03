@@ -10,7 +10,6 @@ import { LogoutConfirm } from "./components/LogoutConfirm.jsx";
 import { MilestonesModal } from "./components/MilestonesModal.jsx";
 import { RecentChanges } from "./components/RecentChanges.jsx";
 import { RequestPanel } from "./components/RequestPanel.jsx";
-import { SaveAnalyzer } from "./components/SaveAnalyzer.jsx";
 import { TimelinePage } from "./components/TimelineModal.jsx";
 import { comparePlacements, isInProgressDemon, normalizeDemon, segmentForPlacement } from "./demonUtils.js";
 import { requestJson } from "./api.js";
@@ -108,7 +107,6 @@ export default function App() {
   const [requestView, setRequestView] = useState(false);
   const [historyView, setHistoryView] = useState(false);
   const [timelineView, setTimelineView] = useState(false);
-  const [saveAnalyzerView, setSaveAnalyzerView] = useState(false);
   const [timelineRoute, setTimelineRoute] = useState({ year: null, month: null });
 const [requestForm, setRequestForm] = useState({
   levelId: "",
@@ -145,7 +143,6 @@ const [requestForm, setRequestForm] = useState({
     setRequestView(route === ROUTES.requests);
     setHistoryView(route === ROUTES.history);
     setTimelineView(route === ROUTES.timeline || route.startsWith(`${ROUTES.timeline}/`));
-    setSaveAnalyzerView(route === ROUTES.saveAnalyzer);
     setTimelineRoute(parseTimelineRoute(route));
     setAdminView(route === ROUTES.admin);
   }
@@ -1052,13 +1049,9 @@ async function handleRequestQuickStatus(rowNumber, status) {
           historyView={historyView}
           requestView={requestView}
           timelineView={timelineView}
-          saveAnalyzerView={saveAnalyzerView}
           onOpenRequests={handleOpenRequests}
           onOpenHistory={() => {
             navigateTo(historyView ? ROUTES.home : ROUTES.history);
-          }}
-          onOpenSaveAnalyzer={() => {
-            navigateTo(saveAnalyzerView ? ROUTES.home : ROUTES.saveAnalyzer);
           }}
           onOpenLogin={() => setShowLogin(true)}
           onOpenAdmin={() => navigateTo(ROUTES.admin)}
@@ -1147,8 +1140,6 @@ async function handleRequestQuickStatus(rowNumber, status) {
           onAddTimelineEntry={addTimelineEntry}
           onRemoveTimelineEntry={removeTimelineEntry}
         />
-      ) : saveAnalyzerView ? (
-        <SaveAnalyzer />
       ) : demonListContent}
 
       {selected && (
