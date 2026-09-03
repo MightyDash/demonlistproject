@@ -148,7 +148,6 @@ export function AdminPanel({
 
   const [removeLevelId, setRemoveLevelId] = useState("");
 
-  // Edit Demon state
   const [editSearch, setEditSearch] = useState("");
   const [editFound, setEditFound] = useState(null);
   const [editNotFound, setEditNotFound] = useState(false);
@@ -288,7 +287,7 @@ export function AdminPanel({
           requestBackup = requestData.requests;
         }
       } catch {
-        // Keep current in-memory requests if the extra fetch is unavailable.
+        requestBackup = requests;
       }
 
       const backup = {

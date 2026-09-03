@@ -101,7 +101,7 @@ export function RequestPanel({
     try {
       await navigator.clipboard.writeText(String(levelId || ""));
     } catch {
-      // Copy is a convenience action only.
+      return;
     }
   }
 

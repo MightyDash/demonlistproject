@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Award, CalendarDays, FileClock, Info, LogIn, LogOut, Pencil, Radio, Shield, X } from "lucide-react";
+import { Award, CalendarDays, FileClock, Info, LogIn, LogOut, Pencil, Radio, Shield, UploadCloud, X } from "lucide-react";
 
 const DEFAULT_SITE_VERSION = "v0.62";
 const DEFAULT_VERSION_CHANGES = [
@@ -16,8 +16,10 @@ export function AppHeader({
   historyView,
   requestView,
   timelineView,
+  saveAnalyzerView,
   onOpenRequests,
   onOpenHistory,
+  onOpenSaveAnalyzer,
   onOpenLogin,
   onOpenAdmin,
   onOpenMilestones,
@@ -49,7 +51,9 @@ export function AppHeader({
         ? "List Changes"
         : timelineView
           ? "Timeline"
-          : "Demon List";
+          : saveAnalyzerView
+            ? "Save Analyzer"
+            : "Demon List";
   const pageSubtitle = adminView
     ? "Manage your demon list tools and admin actions."
     : requestView
@@ -58,7 +62,9 @@ export function AppHeader({
         ? "Browse all changes made to the demon list."
         : timelineView
           ? "A year-by-year view of when demons were completed."
-          : "A clean, searchable demon list powered by my Google Spreadsheet.";
+          : saveAnalyzerView
+            ? "Read your Geometry Dash save file locally in the browser."
+            : "A clean, searchable demon list powered by my Google Spreadsheet.";
 
   function openVersionInfo() {
     setVersionDraft(resolvedVersion);
@@ -126,7 +132,7 @@ export function AppHeader({
             </p>
             <div className="hero-title-row">
               <h1>{pageTitle}</h1>
-              {!adminView && !requestView && !historyView && !timelineView && (
+              {!adminView && !requestView && !historyView && !timelineView && !saveAnalyzerView && (
                 <button
                   className="hero-info-button"
                   onClick={() => setShowListInfo(true)}
@@ -261,21 +267,28 @@ export function AppHeader({
               </button>
             )}
 
-            {!adminView && !historyView && !timelineView && (
+            {!adminView && !historyView && !timelineView && !saveAnalyzerView && (
               <button className="admin-button panel-button" onClick={onOpenMilestones} type="button">
                 <Award size={16} />
                 Milestones
               </button>
             )}
 
-            {!adminView && !historyView && (
+            {!adminView && !historyView && !saveAnalyzerView && (
               <button className="admin-button panel-button" onClick={onOpenTimeline} type="button">
                 <CalendarDays size={16} />
                 {timelineView ? "Back to list" : "Timeline"}
               </button>
             )}
 
-            {!adminView && !historyView && !timelineView && (
+            {!adminView && !historyView && !timelineView && !requestView && (
+              <button className="admin-button panel-button" onClick={onOpenSaveAnalyzer} type="button">
+                <UploadCloud size={16} />
+                {saveAnalyzerView ? "Back to list" : "Save Analyzer"}
+              </button>
+            )}
+
+            {!adminView && !historyView && !timelineView && !saveAnalyzerView && (
               <button className="admin-button panel-button" onClick={onOpenRequests} type="button">
                 {requestView ? "Back to list" : "Demon Requests"}
               </button>
