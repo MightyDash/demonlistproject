@@ -3,6 +3,7 @@ export const ROUTES = {
   requests: "/demon-requests",
   history: "/recent-changes",
   timeline: "/timeline",
+  betaList: "/beta-list",
   admin: "/admin-panel"
 };
 

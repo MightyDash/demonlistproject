@@ -10,6 +10,7 @@ import { LogoutConfirm } from "./components/LogoutConfirm.jsx";
 import { MilestonesModal } from "./components/MilestonesModal.jsx";
 import { RecentChanges } from "./components/RecentChanges.jsx";
 import { RequestPanel } from "./components/RequestPanel.jsx";
+import { BetaListPage } from "./components/BetaListPage.jsx";
 import { TimelinePage } from "./components/TimelineModal.jsx";
 import { comparePlacements, isInProgressDemon, normalizeDemon, segmentForPlacement } from "./demonUtils.js";
 import { requestJson } from "./api.js";
@@ -49,7 +50,8 @@ function normalizeDemonPayload(payload) {
     siteChangelog: Array.isArray(payload?.siteChangelog) ? payload.siteChangelog : DEFAULT_SITE_CHANGELOG,
     futureListIds: Array.isArray(payload?.futureListIds) ? payload.futureListIds.map(String) : [],
     timelineEntries: Array.isArray(payload?.timelineEntries) ? payload.timelineEntries : [],
-    monthlyRecaps: Array.isArray(payload?.monthlyRecaps) ? payload.monthlyRecaps : []
+    monthlyRecaps: Array.isArray(payload?.monthlyRecaps) ? payload.monthlyRecaps : [],
+    betaListOrder: Array.isArray(payload?.betaListOrder) ? payload.betaListOrder.map(String) : []
   };
 }
 
@@ -102,11 +104,13 @@ export default function App() {
   const [futureListIds, setFutureListIds] = useState(() => initialDemonData?.futureListIds || []);
   const [timelineEntries, setTimelineEntries] = useState(() => initialDemonData?.timelineEntries || []);
   const [monthlyRecaps, setMonthlyRecaps] = useState(() => initialDemonData?.monthlyRecaps || []);
+  const [betaListOrder, setBetaListOrder] = useState(() => initialDemonData?.betaListOrder || []);
   const [isMobileView, setIsMobileView] = useState(getInitialMobileView);
   const [viewMode, setViewMode] = useState(() => getInitialMobileView() ? "grid" : "banner");
   const [requestView, setRequestView] = useState(false);
   const [historyView, setHistoryView] = useState(false);
   const [timelineView, setTimelineView] = useState(false);
+  const [betaListView, setBetaListView] = useState(false);
   const [timelineRoute, setTimelineRoute] = useState({ year: null, month: null });
 const [requestForm, setRequestForm] = useState({
   levelId: "",
@@ -143,6 +147,7 @@ const [requestForm, setRequestForm] = useState({
     setRequestView(route === ROUTES.requests);
     setHistoryView(route === ROUTES.history);
     setTimelineView(route === ROUTES.timeline || route.startsWith(`${ROUTES.timeline}/`));
+    setBetaListView(route === ROUTES.betaList);
     setTimelineRoute(parseTimelineRoute(route));
     setAdminView(route === ROUTES.admin);
   }
@@ -382,6 +387,7 @@ const [requestForm, setRequestForm] = useState({
       setFutureListIds(nextData.futureListIds);
       setTimelineEntries(nextData.timelineEntries);
       setMonthlyRecaps(nextData.monthlyRecaps);
+      setBetaListOrder(nextData.betaListOrder);
       setDemons(nextData.demons);
       setDemonListError("");
       setSource("live");
@@ -660,6 +666,41 @@ const [requestForm, setRequestForm] = useState({
 
       setMonthlyRecaps(Array.isArray(data.monthlyRecaps) ? data.monthlyRecaps : []);
       return { success: true, message: data.message || "Recap video saved." };
+    } catch (error) {
+      return {
+        success: false,
+        message: error?.message
+          ? `Could not connect: ${error.message}`
+          : "Could not connect."
+      };
+    }
+  }
+
+  async function saveBetaListOrder(orderedIds) {
+    const adminUrl = ADMIN_API_URL;
+    const token = localStorage.getItem("admin_token");
+
+    if (!adminUrl || !token) {
+      return { success: false, message: "Admin connection is not configured." };
+    }
+
+    try {
+      const data = await requestJson(adminUrl, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "saveBetaListOrder",
+          token,
+          orderedIds
+        })
+      });
+
+      if (!data.success) {
+        return { success: false, message: data.message || "Could not save Beta List." };
+      }
+
+      const nextOrder = Array.isArray(data.betaListOrder) ? data.betaListOrder.map(String) : [];
+      setBetaListOrder(nextOrder);
+      return { success: true, message: data.message || "Beta List saved.", betaListOrder: nextOrder };
     } catch (error) {
       return {
         success: false,
@@ -987,6 +1028,37 @@ async function handleRequestQuickStatus(rowNumber, status) {
     };
   }, [demons]);
 
+  const betaListDemons = useMemo(() => {
+    const completedDemons = demons
+      .filter(demon => !isInProgressDemon(demon))
+      .slice()
+      .sort((a, b) => comparePlacements(a.placement, b.placement));
+    const demonById = new Map(completedDemons.map(demon => [String(demon.id), demon]));
+    const ordered = [];
+    const usedIds = new Set();
+
+    betaListOrder.forEach(id => {
+      const key = String(id);
+      const demon = demonById.get(key);
+      if (!demon || usedIds.has(key)) return;
+      usedIds.add(key);
+      ordered.push(demon);
+    });
+
+    completedDemons.forEach(demon => {
+      const key = String(demon.id);
+      if (usedIds.has(key)) return;
+      usedIds.add(key);
+      ordered.push(demon);
+    });
+
+    return ordered.map((demon, index) => ({
+      ...demon,
+      betaPlacementNumber: index + 1,
+      betaPlacement: `#${index + 1} •`
+    }));
+  }, [demons, betaListOrder]);
+
   function handleOpenRequests() {
     if (requestView) {
       navigateTo(ROUTES.home);
@@ -1049,7 +1121,11 @@ async function handleRequestQuickStatus(rowNumber, status) {
           historyView={historyView}
           requestView={requestView}
           timelineView={timelineView}
+          betaListView={betaListView}
           onOpenRequests={handleOpenRequests}
+          onOpenBetaList={() => {
+            navigateTo(betaListView ? ROUTES.home : ROUTES.betaList);
+          }}
           onOpenHistory={() => {
             navigateTo(historyView ? ROUTES.home : ROUTES.history);
           }}
@@ -1084,6 +1160,8 @@ async function handleRequestQuickStatus(rowNumber, status) {
           onOpenRequests={() => navigateTo(ROUTES.requests)}
           onSaveNote={saveDemonNote}
           onSaveMonthlyRecap={saveMonthlyRecap}
+          onSaveBetaListOrder={saveBetaListOrder}
+          betaListOrder={betaListOrder}
         />
       ) : requestView && isAdmin ? (
         <RequestPanel
@@ -1140,6 +1218,8 @@ async function handleRequestQuickStatus(rowNumber, status) {
           onAddTimelineEntry={addTimelineEntry}
           onRemoveTimelineEntry={removeTimelineEntry}
         />
+      ) : betaListView ? (
+        <BetaListPage demons={betaListDemons} onSelectDemon={setSelected} />
       ) : demonListContent}
 
       {selected && (

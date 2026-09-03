@@ -1,10 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
+  ArrowDown,
+  ArrowUp,
   CalendarDays,
   Download,
   FileText,
+  GripVertical,
   Inbox,
+  Layers3,
   Link,
   Pencil,
   Plus,
@@ -15,7 +19,7 @@ import {
 } from "lucide-react";
 import { requestJson } from "../api.js";
 import { ADMIN_API_URL } from "../config.js";
-import { isInProgressDemon, parseDemonDate } from "../demonUtils.js";
+import { comparePlacements, isInProgressDemon, parseDemonDate } from "../demonUtils.js";
 
 const TIMELINE_YEARS = [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
 const TIMELINE_MONTHS = [
@@ -113,6 +117,33 @@ function buildAdminTimelineCounts(demons, timelineEntries) {
   return counts;
 }
 
+function buildBetaListDraft(demons, betaListOrder) {
+  const completedDemons = demons
+    .filter(demon => !isInProgressDemon(demon))
+    .slice()
+    .sort((a, b) => comparePlacements(a.placement, b.placement));
+  const demonById = new Map(completedDemons.map(demon => [String(demon.id), demon]));
+  const ordered = [];
+  const usedIds = new Set();
+
+  betaListOrder.forEach(id => {
+    const key = String(id);
+    const demon = demonById.get(key);
+    if (!demon || usedIds.has(key)) return;
+    usedIds.add(key);
+    ordered.push(demon);
+  });
+
+  completedDemons.forEach(demon => {
+    const key = String(demon.id);
+    if (usedIds.has(key)) return;
+    usedIds.add(key);
+    ordered.push(demon);
+  });
+
+  return ordered;
+}
+
 export function AdminPanel({
   onBack,
   onDataChanged,
@@ -122,7 +153,9 @@ export function AdminPanel({
   requests = [],
   onOpenRequests,
   onSaveNote,
-  onSaveMonthlyRecap
+  onSaveMonthlyRecap,
+  onSaveBetaListOrder,
+  betaListOrder = []
 }) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showRemoveForm, setShowRemoveForm] = useState(false);
@@ -130,9 +163,14 @@ export function AdminPanel({
   const [showRefreshTokenForm, setShowRefreshTokenForm] = useState(false);
   const [showNoteManager, setShowNoteManager] = useState(false);
   const [showTimelineManager, setShowTimelineManager] = useState(false);
+  const [showBetaListEditor, setShowBetaListEditor] = useState(false);
   const [noteSearch, setNoteSearch] = useState("");
   const [noteDrafts, setNoteDrafts] = useState({});
   const [noteSavingId, setNoteSavingId] = useState("");
+  const [betaListDraft, setBetaListDraft] = useState([]);
+  const [betaListSearch, setBetaListSearch] = useState("");
+  const [betaListSaving, setBetaListSaving] = useState(false);
+  const [draggedBetaId, setDraggedBetaId] = useState("");
   const [timelineManagerYear, setTimelineManagerYear] = useState(2026);
   const [recapPopoverMonth, setRecapPopoverMonth] = useState("");
   const [recapUrlDraft, setRecapUrlDraft] = useState("");
@@ -200,6 +238,20 @@ export function AdminPanel({
     });
   }, [demons, noteSearch]);
 
+  const filteredBetaListDraft = useMemo(() => {
+    const query = betaListSearch.trim().toLowerCase();
+
+    if (!query) return betaListDraft;
+
+    return betaListDraft.filter(demon => {
+      return (
+        String(demon.name || "").toLowerCase().includes(query) ||
+        String(demon.creator || "").toLowerCase().includes(query) ||
+        String(demon.id || "").toLowerCase().includes(query)
+      );
+    });
+  }, [betaListDraft, betaListSearch]);
+
   const timelineCounts = useMemo(
     () => buildAdminTimelineCounts(demons, timelineEntries),
     [demons, timelineEntries]
@@ -212,10 +264,13 @@ export function AdminPanel({
     setShowRefreshTokenForm(false);
     setShowNoteManager(false);
     setShowTimelineManager(false);
+    setShowBetaListEditor(false);
     setEditFound(null);
     setEditNotFound(false);
     setRecapPopoverMonth("");
     setRecapUrlDraft("");
+    setBetaListSearch("");
+    setDraggedBetaId("");
     setPendingAdminPreview(null);
     setAdminMessage("");
     setAdminError("");
@@ -445,6 +500,57 @@ export function AdminPanel({
     resetOpenTools();
     setTimelineManagerYear(2026);
     setShowTimelineManager(true);
+  }
+
+  function openBetaListEditor() {
+    resetOpenTools();
+    setBetaListDraft(buildBetaListDraft(demons, betaListOrder));
+    setBetaListSearch("");
+    setShowBetaListEditor(true);
+  }
+
+  function moveBetaDemon(fromIndex, toIndex) {
+    setBetaListDraft(previous => {
+      if (fromIndex < 0 || toIndex < 0 || fromIndex >= previous.length || toIndex >= previous.length) {
+        return previous;
+      }
+
+      const next = previous.slice();
+      const [item] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, item);
+      return next;
+    });
+  }
+
+  function handleBetaDrop(targetId) {
+    const fromIndex = betaListDraft.findIndex(demon => String(demon.id) === String(draggedBetaId));
+    const toIndex = betaListDraft.findIndex(demon => String(demon.id) === String(targetId));
+    setDraggedBetaId("");
+    moveBetaDemon(fromIndex, toIndex);
+  }
+
+  async function handleSaveBetaList() {
+    if (!onSaveBetaListOrder) {
+      setAdminError("Beta List editor is not connected.");
+      return;
+    }
+
+    setAdminMessage("");
+    setAdminError("");
+    setBetaListSaving(true);
+
+    try {
+      const result = await onSaveBetaListOrder(betaListDraft.map(demon => String(demon.id)));
+      if (!result?.success) {
+        setAdminError(result?.message || "Could not save the Beta List.");
+        return;
+      }
+
+      setAdminMessage(result.message || "Beta List saved.");
+      if (onDataChanged) onDataChanged();
+    } finally {
+      setBetaListSaving(false);
+    }
   }
 
   function openRecapPopover(monthSlug) {
@@ -781,6 +887,7 @@ export function AdminPanel({
             setShowRefreshTokenForm(false);
             setShowNoteManager(false);
             setShowTimelineManager(false);
+            setShowBetaListEditor(false);
             setEditFound(null);
             setEditNotFound(false);
             setAdminMessage("");
@@ -803,6 +910,7 @@ export function AdminPanel({
             setShowRefreshTokenForm(false);
             setShowNoteManager(false);
             setShowTimelineManager(false);
+            setShowBetaListEditor(false);
             setEditFound(null);
             setEditNotFound(false);
             setAdminMessage("");
@@ -825,6 +933,7 @@ export function AdminPanel({
             setShowRefreshTokenForm(false);
             setShowNoteManager(false);
             setShowTimelineManager(false);
+            setShowBetaListEditor(false);
             setEditFound(null);
             setEditNotFound(false);
             setAdminMessage("");
@@ -847,6 +956,7 @@ export function AdminPanel({
             setShowEditForm(false);
             setShowNoteManager(false);
             setShowTimelineManager(false);
+            setShowBetaListEditor(false);
             setEditFound(null);
             setEditNotFound(false);
             setAdminMessage("");
@@ -888,6 +998,17 @@ export function AdminPanel({
           <span className="admin-action-icon timeline"><CalendarDays size={24} /></span>
           <strong>Timeline Manager</strong>
           <span>Add recap videos to timeline months.</span>
+          <ArrowRight className="admin-action-arrow" size={22} />
+        </button>
+
+        <button
+          className="admin-action-card"
+          type="button"
+          onClick={openBetaListEditor}
+        >
+          <span className="admin-action-icon beta"><Layers3 size={24} /></span>
+          <strong>Edit Beta List</strong>
+          <span>Reorder demons for your opinion-based list.</span>
           <ArrowRight className="admin-action-arrow" size={22} />
         </button>
 
@@ -1034,6 +1155,112 @@ export function AdminPanel({
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {showBetaListEditor && (
+        <div className="admin-form beta-list-editor">
+          <div className="note-manager-header">
+            <div>
+              <h3>Edit Beta List</h3>
+              <p className="admin-form-note">
+                The first order starts from your current demon placements.
+              </p>
+            </div>
+            <span>{betaListDraft.length} demons</span>
+          </div>
+
+          <div className="beta-editor-actions">
+            <label>
+              Search
+              <input
+                value={betaListSearch}
+                onChange={event => setBetaListSearch(event.target.value)}
+                placeholder="Search demon, creator or ID..."
+              />
+            </label>
+            <button
+              className="login-button"
+              onClick={handleSaveBetaList}
+              disabled={betaListSaving || betaListDraft.length === 0}
+              type="button"
+            >
+              {betaListSaving ? "Saving..." : "Save Beta List"}
+            </button>
+          </div>
+
+          <div className="beta-editor-list">
+            {filteredBetaListDraft.map(demon => {
+              const index = betaListDraft.findIndex(item => String(item.id) === String(demon.id));
+
+              return (
+                <article
+                  className="beta-editor-row"
+                  draggable
+                  key={demon.id || demon.name}
+                  onDragStart={() => setDraggedBetaId(String(demon.id))}
+                  onDragEnd={() => setDraggedBetaId("")}
+                  onDragOver={event => event.preventDefault()}
+                  onDrop={() => handleBetaDrop(demon.id)}
+                >
+                  <button
+                    className="beta-drag-handle"
+                    type="button"
+                    aria-label={`Drag ${demon.name}`}
+                  >
+                    <GripVertical size={18} />
+                  </button>
+                  <span className="beta-editor-position">#{index + 1}</span>
+                  <img
+                    src={demon.thumbnail}
+                    alt={demon.name}
+                    onError={event => {
+                      event.currentTarget.style.display = "none";
+                    }}
+                  />
+                  <div className="beta-editor-main">
+                    <strong>{demon.name}</strong>
+                    <span>{demon.creator || "Unknown creator"} - current {demon.placement || "Unplaced"}</span>
+                  </div>
+                  <div className="beta-editor-row-actions">
+                    <button
+                      onClick={() => moveBetaDemon(index, index - 1)}
+                      disabled={index <= 0}
+                      type="button"
+                      aria-label={`Move ${demon.name} up`}
+                    >
+                      <ArrowUp size={17} />
+                    </button>
+                    <button
+                      onClick={() => moveBetaDemon(index, index + 1)}
+                      disabled={index >= betaListDraft.length - 1}
+                      type="button"
+                      aria-label={`Move ${demon.name} down`}
+                    >
+                      <ArrowDown size={17} />
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+
+            {filteredBetaListDraft.length === 0 && (
+              <p className="request-empty">
+                <strong>No demons found.</strong>
+                <span>Try a different search.</span>
+              </p>
+            )}
+          </div>
+
+          <div className="admin-form-actions">
+            <button
+              className="close-button"
+              onClick={() => setShowBetaListEditor(false)}
+              type="button"
+            >
+              Close
+            </button>
           </div>
         </div>
       )}
