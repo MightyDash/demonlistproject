@@ -16,7 +16,6 @@ export function normalizeDemon(row) {
     year: dateYear,
     date: dateLabel,
     dateYear,
-    video: row.video ?? row["Done for Video"] ?? "",
     tier: Number(row.tier ?? row.Tier ?? 0),
     tierChange: Number(row.tierChange ?? row["Tier +/-"] ?? row.tier_change ?? 0),
     formerTop1Year: FORMER_TOP_1[name] || null,
