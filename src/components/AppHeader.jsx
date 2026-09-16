@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Award, CalendarDays, FileClock, Info, Layers3, LogIn, LogOut, Pencil, Radio, Shield, X } from "lucide-react";
+import { Award, CalendarDays, FileClock, Info, LogIn, LogOut, Pencil, Radio, Shield, X } from "lucide-react";
 
 const DEFAULT_SITE_VERSION = "v0.62";
 const DEFAULT_VERSION_CHANGES = [
@@ -16,9 +16,7 @@ export function AppHeader({
   historyView,
   requestView,
   timelineView,
-  betaListView,
   onOpenRequests,
-  onOpenBetaList,
   onOpenHistory,
   onOpenLogin,
   onOpenAdmin,
@@ -51,9 +49,7 @@ export function AppHeader({
         ? "List Changes"
         : timelineView
           ? "Timeline"
-          : betaListView
-            ? "Beta List"
-            : "Demon List";
+          : "Demon List";
   const pageSubtitle = adminView
     ? "Manage your demon list tools and admin actions."
     : requestView
@@ -62,9 +58,7 @@ export function AppHeader({
         ? "Browse all changes made to the demon list."
         : timelineView
           ? "A year-by-year view of when demons were completed."
-          : betaListView
-            ? "A personal order based on my own opinion, without tier scoring."
-            : "A clean, searchable demon list powered by my Google Spreadsheet.";
+          : "A clean, searchable demon list powered by my Google Spreadsheet.";
 
   function openVersionInfo() {
     setVersionDraft(resolvedVersion);
@@ -132,7 +126,7 @@ export function AppHeader({
             </p>
             <div className="hero-title-row">
               <h1>{pageTitle}</h1>
-              {!adminView && !requestView && !historyView && !timelineView && !betaListView && (
+              {!adminView && !requestView && !historyView && !timelineView && (
                 <button
                   className="hero-info-button"
                   onClick={() => setShowListInfo(true)}
@@ -267,28 +261,21 @@ export function AppHeader({
               </button>
             )}
 
-            {!adminView && !historyView && !timelineView && !betaListView && (
+            {!adminView && !historyView && !timelineView && (
               <button className="admin-button panel-button" onClick={onOpenMilestones} type="button">
                 <Award size={16} />
                 Milestones
               </button>
             )}
 
-            {!adminView && !historyView && !betaListView && (
+            {!adminView && !historyView && (
               <button className="admin-button panel-button" onClick={onOpenTimeline} type="button">
                 <CalendarDays size={16} />
                 {timelineView ? "Back to list" : "Timeline"}
               </button>
             )}
 
-            {!adminView && !historyView && !timelineView && !requestView && (
-              <button className="admin-button panel-button" onClick={onOpenBetaList} type="button">
-                <Layers3 size={16} />
-                {betaListView ? "Back to list" : "Beta List"}
-              </button>
-            )}
-
-            {!adminView && !historyView && !timelineView && !betaListView && (
+            {!adminView && !historyView && !timelineView && (
               <button className="admin-button panel-button" onClick={onOpenRequests} type="button">
                 {requestView ? "Back to list" : "Demon Requests"}
               </button>
