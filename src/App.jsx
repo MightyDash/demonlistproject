@@ -900,7 +900,6 @@ async function handleRequestQuickStatus(rowNumber, status) {
     setDifficulty("all");
     setSegment("all");
     setYearView("all");
-    setViewMode("grid");
 
     if (latestIndex >= 0) {
       setVisibleDemonCount(
