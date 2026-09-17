@@ -2,6 +2,7 @@ export const ROUTES = {
   home: "/",
   requests: "/demon-requests",
   history: "/recent-changes",
+  news: "/news",
   timeline: "/timeline",
   admin: "/admin-panel"
 };
@@ -23,11 +24,18 @@ export const TIMELINE_MONTH_SLUGS = new Set([
 
 export function normalizeRoute(pathname) {
   const path = pathname.replace(/\/+$/, "") || ROUTES.home;
+  if (/^\/news\/[a-z0-9-]+$/i.test(path)) return path;
   if (/^\/timeline\/\d{4}\/[a-z]+$/i.test(path)) {
     const month = path.split("/")[3].toLowerCase();
     return TIMELINE_MONTH_SLUGS.has(month) ? path.toLowerCase() : ROUTES.timeline;
   }
   return Object.values(ROUTES).includes(path) ? path : ROUTES.home;
+}
+
+export function parseNewsRoute(pathname) {
+  const path = pathname.replace(/\/+$/, "") || ROUTES.home;
+  const match = path.match(/^\/news\/([a-z0-9-]+)$/i);
+  return match ? match[1] : null;
 }
 
 export function parseTimelineRoute(pathname) {

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Award, CalendarDays, FileClock, Home, Inbox, Info, LogIn, LogOut, Menu, Pencil, Radio, Shield, X } from "lucide-react";
+import { Award, CalendarDays, FileClock, Home, Inbox, Info, LogIn, LogOut, Menu, Pencil, Radio, Rss, Shield, X } from "lucide-react";
 
 const DEFAULT_SITE_VERSION = "v0.62";
 const DEFAULT_VERSION_CHANGES = [
@@ -14,9 +14,11 @@ export function AppHeader({
   source,
   isAdmin,
   historyView,
+  newsView,
   requestView,
   timelineView,
   onOpenList,
+  onOpenNews,
   onOpenRequests,
   onOpenHistory,
   onOpenLogin,
@@ -26,7 +28,8 @@ export function AppHeader({
   onOpenLogout,
   siteVersion,
   siteChangelog,
-  onSaveChangelog
+  onSaveChangelog,
+  hasUnreadNews
 }) {
   const [showListInfo, setShowListInfo] = useState(false);
   const [showVersionInfo, setShowVersionInfo] = useState(false);
@@ -44,22 +47,26 @@ export function AppHeader({
     : DEFAULT_VERSION_CHANGES;
   const pageTitle = adminView
     ? "Admin Panel"
-    : requestView
-      ? "Demon Requests"
-      : historyView
-        ? "List Changes"
-        : timelineView
-          ? "Timeline"
-          : "Demon Archive";
+    : newsView
+      ? "News"
+      : requestView
+        ? "Demon Requests"
+        : historyView
+          ? "List Changes"
+          : timelineView
+            ? "Timeline"
+            : "Demon Archive";
   const pageSubtitle = adminView
     ? "Manage your demon list tools and admin actions."
-    : requestView
-      ? "Community requests to add new demons to the list."
-      : historyView
-        ? "Browse all changes made to the demon list."
-        : timelineView
-          ? "A year-by-year view of when demons were completed."
-          : "A clean, searchable demon list powered by my Google Spreadsheet.";
+    : newsView
+      ? "Updates, uploads and announcements from across my social channels."
+      : requestView
+        ? "Community requests to add new demons to the list."
+        : historyView
+          ? "Browse all changes made to the demon list."
+          : timelineView
+            ? "A year-by-year view of when demons were completed."
+            : "A clean, searchable demon list powered by my Google Spreadsheet.";
 
   function openVersionInfo() {
     setVersionDraft(resolvedVersion);
@@ -116,7 +123,7 @@ export function AppHeader({
     action?.();
   }
 
-  const listActive = !adminView && !requestView && !historyView && !timelineView;
+  const listActive = !adminView && !newsView && !requestView && !historyView && !timelineView;
   const sourceLabel = source === "live"
     ? "Live Sheet Data"
     : source === "cache"
@@ -136,6 +143,9 @@ export function AppHeader({
         <nav className="observatory-nav" aria-label="Main navigation">
           <button className={listActive ? "active" : ""} onClick={() => navigate(onOpenList)} type="button">
             <Home size={21} /><span>Archive</span>
+          </button>
+          <button className={newsView ? "active" : ""} onClick={() => navigate(onOpenNews)} type="button">
+            <Rss size={21} /><span>News</span>{hasUnreadNews && <i className="observatory-news-dot" aria-label="New news" />}
           </button>
           <button className={historyView ? "active" : ""} onClick={() => navigate(onOpenHistory)} type="button">
             <FileClock size={21} /><span>Changes</span>

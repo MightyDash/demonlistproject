@@ -8,12 +8,14 @@ import { DemonModal } from "./components/DemonModal.jsx";
 import { LoginModal } from "./components/LoginModal.jsx";
 import { LogoutConfirm } from "./components/LogoutConfirm.jsx";
 import { MilestonesModal } from "./components/MilestonesModal.jsx";
+import { NewsPage } from "./components/NewsPage.jsx";
 import { RecentChanges } from "./components/RecentChanges.jsx";
 import { RequestPanel } from "./components/RequestPanel.jsx";
 import { TimelinePage } from "./components/TimelineModal.jsx";
 import { comparePlacements, isInProgressDemon, normalizeDemon, segmentForPlacement } from "./demonUtils.js";
 import { requestJson } from "./api.js";
-import { normalizeRoute, parseTimelineRoute, ROUTES } from "./routeUtils.js";
+import { normalizeNewsArticle } from "./newsUtils.js";
+import { normalizeRoute, parseNewsRoute, parseTimelineRoute, ROUTES } from "./routeUtils.js";
 
 const DEFAULT_SITE_VERSION = "v0.62";
 const DEFAULT_SITE_CHANGELOG = [
@@ -23,6 +25,7 @@ const DEFAULT_SITE_CHANGELOG = [
   "Improved the desktop demon list, request page and list changes layout."
 ];
 const DEMON_DATA_CACHE_KEY = "moiks_demon_list_data_v1";
+const NEWS_SEEN_KEY = "moiks_news_last_seen_v1";
 const MOBILE_MEDIA_QUERY = "(max-width: 640px)";
 const MOBILE_DEMON_BATCH_SIZE = 24;
 
@@ -49,7 +52,8 @@ function normalizeDemonPayload(payload) {
     siteChangelog: Array.isArray(payload?.siteChangelog) ? payload.siteChangelog : DEFAULT_SITE_CHANGELOG,
     futureListIds: Array.isArray(payload?.futureListIds) ? payload.futureListIds.map(String) : [],
     timelineEntries: Array.isArray(payload?.timelineEntries) ? payload.timelineEntries : [],
-    monthlyRecaps: Array.isArray(payload?.monthlyRecaps) ? payload.monthlyRecaps : []
+    monthlyRecaps: Array.isArray(payload?.monthlyRecaps) ? payload.monthlyRecaps : [],
+    newsMeta: payload?.newsMeta && typeof payload.newsMeta === "object" ? payload.newsMeta : { count: 0, latestPublishedAt: "" }
   };
 }
 
@@ -102,6 +106,13 @@ export default function App() {
   const [futureListIds, setFutureListIds] = useState(() => initialDemonData?.futureListIds || []);
   const [timelineEntries, setTimelineEntries] = useState(() => initialDemonData?.timelineEntries || []);
   const [monthlyRecaps, setMonthlyRecaps] = useState(() => initialDemonData?.monthlyRecaps || []);
+  const [newsMeta, setNewsMeta] = useState(() => initialDemonData?.newsMeta || { count: 0, latestPublishedAt: "" });
+  const [newsArticles, setNewsArticles] = useState([]);
+  const [newsLoading, setNewsLoading] = useState(false);
+  const [newsError, setNewsError] = useState("");
+  const [newsView, setNewsView] = useState(false);
+  const [newsArticleId, setNewsArticleId] = useState(null);
+  const [lastSeenNewsAt, setLastSeenNewsAt] = useState(() => localStorage.getItem(NEWS_SEEN_KEY) || "");
   const [isMobileView, setIsMobileView] = useState(getInitialMobileView);
   const [viewMode, setViewMode] = useState(() => getInitialMobileView() ? "grid" : "banner");
   const [requestView, setRequestView] = useState(false);
@@ -134,6 +145,7 @@ const [requestForm, setRequestForm] = useState({
   const [demonListError, setDemonListError] = useState("");
   const requestsLoadRef = useRef({ id: 0, controller: null });
   const historyLoadRef = useRef({ id: 0, controller: null });
+  const newsLoadRef = useRef({ id: 0, controller: null });
   const demonDataLoadRef = useRef({ id: 0, controller: null });
   const hasLoadedLiveDemonDataRef = useRef(Boolean(initialDemonData));
 
@@ -141,6 +153,8 @@ const [requestForm, setRequestForm] = useState({
     const route = normalizeRoute(pathname);
 
     setRequestView(route === ROUTES.requests);
+    setNewsView(route === ROUTES.news || route.startsWith(`${ROUTES.news}/`));
+    setNewsArticleId(parseNewsRoute(route));
     setHistoryView(route === ROUTES.history);
     setTimelineView(route === ROUTES.timeline || route.startsWith(`${ROUTES.timeline}/`));
     setTimelineRoute(parseTimelineRoute(route));
@@ -177,6 +191,15 @@ const [requestForm, setRequestForm] = useState({
       id: historyLoadRef.current.id + 1,
       controller: null
     };
+  }
+
+  function abortNewsLoad() {
+    newsLoadRef.current.controller?.abort();
+    newsLoadRef.current = {
+      id: newsLoadRef.current.id + 1,
+      controller: null
+    };
+    setNewsLoading(false);
   }
 
   function abortDemonDataLoad() {
@@ -261,6 +284,47 @@ const [requestForm, setRequestForm] = useState({
     }
   }
 
+  async function loadNews({ silent = false } = {}) {
+    if (!SHEET_API_URL) return;
+    if (silent && newsLoadRef.current.controller) return;
+
+    newsLoadRef.current.controller?.abort();
+    const controller = new AbortController();
+    const requestId = newsLoadRef.current.id + 1;
+    newsLoadRef.current = { id: requestId, controller };
+    if (!silent) {
+      setNewsLoading(true);
+      setNewsError("");
+    }
+
+    try {
+      const token = localStorage.getItem("admin_token");
+      const separator = SHEET_API_URL.includes("?") ? "&" : "?";
+      const data = isAdmin && token
+        ? await requestJson(ADMIN_API_URL, {
+            method: "POST",
+            signal: controller.signal,
+            body: JSON.stringify({ action: "getAdminNews", token })
+          })
+        : await requestJson(`${SHEET_API_URL}${separator}view=news`, { signal: controller.signal });
+
+      if (data.aborted || newsLoadRef.current.id !== requestId) return;
+      if (data.success === false) throw new Error(data.message || "Could not load news.");
+      setNewsArticles((Array.isArray(data.articles) ? data.articles : []).map(normalizeNewsArticle));
+      if (data.newsMeta) setNewsMeta(data.newsMeta);
+      setNewsError("");
+    } catch (error) {
+      if (!silent && newsLoadRef.current.id === requestId) {
+        setNewsError(error?.message || "Could not load news.");
+      }
+    } finally {
+      if (newsLoadRef.current.id === requestId) {
+        newsLoadRef.current.controller = null;
+        if (!silent) setNewsLoading(false);
+      }
+    }
+  }
+
   useEffect(() => {
     applyRoute(window.location.pathname);
 
@@ -304,6 +368,19 @@ const [requestForm, setRequestForm] = useState({
       abortHistoryLoad();
     };
   }, [historyView]);
+
+  useEffect(() => {
+    if (!newsView) return;
+    loadNews();
+    return () => abortNewsLoad();
+  }, [newsView, isAdmin]);
+
+  useEffect(() => {
+    const latest = String(newsMeta?.latestPublishedAt || "");
+    if (!newsView || !latest) return;
+    localStorage.setItem(NEWS_SEEN_KEY, latest);
+    setLastSeenNewsAt(latest);
+  }, [newsView, newsMeta?.latestPublishedAt]);
   
   useEffect(() => {
     const mediaQuery = window.matchMedia(MOBILE_MEDIA_QUERY);
@@ -381,6 +458,7 @@ const [requestForm, setRequestForm] = useState({
       setFutureListIds(nextData.futureListIds);
       setTimelineEntries(nextData.timelineEntries);
       setMonthlyRecaps(nextData.monthlyRecaps);
+      setNewsMeta(nextData.newsMeta);
       setDemons(nextData.demons);
       setDemonListError("");
       setSource("live");
@@ -666,6 +744,69 @@ const [requestForm, setRequestForm] = useState({
           ? `Could not connect: ${error.message}`
           : "Could not connect."
       };
+    }
+  }
+
+  async function saveNewsArticle(article) {
+    const token = localStorage.getItem("admin_token");
+    if (!ADMIN_API_URL || !token) return { success: false, message: "Admin connection is not configured." };
+
+    try {
+      const data = await requestJson(ADMIN_API_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "saveNewsArticle", token, ...article })
+      });
+      if (!data.success) return { success: false, message: data.message || "Could not save article." };
+      if (Array.isArray(data.articles)) setNewsArticles(data.articles.map(normalizeNewsArticle));
+      if (data.newsMeta) setNewsMeta(data.newsMeta);
+      return { success: true, message: data.message || "Article saved.", article: data.article };
+    } catch (error) {
+      return { success: false, message: error?.message || "Could not connect to the news service." };
+    }
+  }
+
+  async function deleteNewsArticle(id) {
+    const token = localStorage.getItem("admin_token");
+    if (!ADMIN_API_URL || !token) return { success: false, message: "Admin connection is not configured." };
+
+    try {
+      const data = await requestJson(ADMIN_API_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "deleteNewsArticle", token, id })
+      });
+      if (!data.success) return { success: false, message: data.message || "Could not delete article." };
+      if (Array.isArray(data.articles)) setNewsArticles(data.articles.map(normalizeNewsArticle));
+      if (data.newsMeta) setNewsMeta(data.newsMeta);
+      return { success: true, message: data.message || "Article deleted." };
+    } catch (error) {
+      return { success: false, message: error?.message || "Could not connect to the news service." };
+    }
+  }
+
+  async function uploadNewsImage(file) {
+    const token = localStorage.getItem("admin_token");
+    if (!ADMIN_API_URL || !token) return { success: false, message: "Admin connection is not configured." };
+    if (!file?.type?.startsWith("image/")) return { success: false, message: "Choose an image file." };
+    if (file.size > 8 * 1024 * 1024) return { success: false, message: "Image must be smaller than 8 MB." };
+
+    const dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error("Image could not be read."));
+      reader.readAsDataURL(file);
+    }).catch(error => ({ error }));
+
+    if (dataUrl?.error) return { success: false, message: dataUrl.error.message };
+    try {
+      const data = await requestJson(ADMIN_API_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "uploadNewsImage", token, fileName: file.name, dataUrl })
+      });
+      return data.success
+        ? { success: true, imageUrl: data.imageUrl, fileUrl: data.fileUrl }
+        : { success: false, message: data.message || "Image upload failed." };
+    } catch (error) {
+      return { success: false, message: error?.message || "Could not upload the image." };
     }
   }
 
@@ -1004,6 +1145,10 @@ async function handleRequestQuickStatus(rowNumber, status) {
     navigateTo(ROUTES.requests);
   }
 
+  const hasUnreadNews = Boolean(
+    newsMeta?.latestPublishedAt && String(newsMeta.latestPublishedAt) > String(lastSeenNewsAt || "")
+  );
+
   const demonListContent = (
     <DemonListContent
       stats={stats}
@@ -1045,9 +1190,11 @@ async function handleRequestQuickStatus(rowNumber, status) {
           source={source}
           isAdmin={isAdmin}
           historyView={historyView}
+          newsView={newsView}
           requestView={requestView}
           timelineView={timelineView}
           onOpenList={() => navigateTo(ROUTES.home)}
+          onOpenNews={() => navigateTo(newsView ? ROUTES.home : ROUTES.news)}
           onOpenRequests={handleOpenRequests}
           onOpenHistory={() => {
             navigateTo(historyView ? ROUTES.home : ROUTES.history);
@@ -1062,6 +1209,7 @@ async function handleRequestQuickStatus(rowNumber, status) {
           siteVersion={siteVersion}
           siteChangelog={siteChangelog}
           onSaveChangelog={saveSiteChangelog}
+          hasUnreadNews={hasUnreadNews}
         />
 
       {showLogoutConfirm && (
@@ -1071,7 +1219,21 @@ async function handleRequestQuickStatus(rowNumber, status) {
         />
       )}
 
-      {adminView ? (
+      {newsView ? (
+        <NewsPage
+          articles={newsArticles}
+          loading={newsLoading}
+          error={newsError}
+          isAdmin={isAdmin}
+          selectedArticleId={newsArticleId}
+          onOpenArticle={id => navigateTo(`${ROUTES.news}/${id}`)}
+          onBackToNews={() => navigateTo(ROUTES.news)}
+          onReload={() => loadNews()}
+          onSave={saveNewsArticle}
+          onDelete={deleteNewsArticle}
+          onUploadImage={uploadNewsImage}
+        />
+      ) : adminView ? (
         <AdminPanel
           onBack={() => navigateTo(ROUTES.home)}
           onDataChanged={() => loadDemonData({ silent: true })}
