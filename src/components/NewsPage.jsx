@@ -12,11 +12,17 @@ const EMPTY_ARTICLE = {
   sourceLabel: "",
   sourceUrl: "",
   status: "draft",
-  pinned: false
+  pinned: false,
+  publishedAt: ""
 };
 
 function articleDate(article) {
   return formatNewsDate(article.publishedAt || article.updatedAt || article.createdAt);
+}
+
+function dateInputValue(value) {
+  const match = String(value || "").match(/^(\d{4}-\d{2}-\d{2})/);
+  return match ? match[1] : "";
 }
 
 export function NewsPage({
@@ -170,6 +176,7 @@ export function NewsPage({
             <label className="news-field-wide">Short introduction<textarea value={form.excerpt} maxLength={700} rows={3} onChange={event => setForm(current => ({ ...current, excerpt: event.target.value }))} placeholder="A short summary shown on the news card" /></label>
             <label>Platform or source<input value={form.sourceLabel} maxLength={80} onChange={event => setForm(current => ({ ...current, sourceLabel: event.target.value }))} placeholder="YouTube, Instagram..." /></label>
             <label>Original post URL<input type="url" value={form.sourceUrl} onChange={event => setForm(current => ({ ...current, sourceUrl: event.target.value }))} placeholder="https://..." /></label>
+            <label>Publication date<input type="date" value={dateInputValue(form.publishedAt)} onChange={event => setForm(current => ({ ...current, publishedAt: event.target.value }))} /></label>
             <label className="news-field-wide">Cover image URL<input type="url" value={form.coverImageUrl} onChange={event => setForm(current => ({ ...current, coverImageUrl: event.target.value }))} placeholder="https://..." /></label>
             <label className="news-cover-upload"><ImagePlus size={17} /> {coverUploading ? "Uploading..." : "Upload cover image"}<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" disabled={coverUploading} onChange={uploadCover} /></label>
             <label className="news-pin-toggle"><input type="checkbox" checked={form.pinned} onChange={event => setForm(current => ({ ...current, pinned: event.target.checked }))} /><Pin size={16} /> Pin this article</label>

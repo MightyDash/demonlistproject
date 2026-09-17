@@ -60,5 +60,14 @@ describe("NewsPage", () => {
     expect(screen.getByRole("button", { name: "Underline" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Add link card" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Upload image" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Publication date")).toBeInTheDocument();
+  });
+
+  it("loads the current publication date when editing an article", () => {
+    renderNews({ isAdmin: true });
+
+    fireEvent.click(screen.getByRole("button", { name: "Edit New channel update" }));
+
+    expect(screen.getByLabelText("Publication date")).toHaveValue("2026-09-17");
   });
 });
