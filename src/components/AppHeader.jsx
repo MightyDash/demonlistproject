@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Award, CalendarDays, FileClock, Info, LogIn, LogOut, Pencil, Radio, Shield, X } from "lucide-react";
+import { Award, CalendarDays, FileClock, Home, Inbox, Info, LogIn, LogOut, Menu, Pencil, Radio, Shield, X } from "lucide-react";
 
 const DEFAULT_SITE_VERSION = "v0.62";
 const DEFAULT_VERSION_CHANGES = [
@@ -16,13 +16,13 @@ export function AppHeader({
   historyView,
   requestView,
   timelineView,
+  onOpenList,
   onOpenRequests,
   onOpenHistory,
   onOpenLogin,
   onOpenAdmin,
   onOpenMilestones,
   onOpenTimeline,
-  onCloseAdmin,
   onOpenLogout,
   siteVersion,
   siteChangelog,
@@ -30,6 +30,7 @@ export function AppHeader({
 }) {
   const [showListInfo, setShowListInfo] = useState(false);
   const [showVersionInfo, setShowVersionInfo] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [editingVersionInfo, setEditingVersionInfo] = useState(false);
   const [versionDraft, setVersionDraft] = useState("");
   const [changelogDraft, setChangelogDraft] = useState("");
@@ -49,7 +50,7 @@ export function AppHeader({
         ? "List Changes"
         : timelineView
           ? "Timeline"
-          : "Demon List";
+          : "Demon Archive";
   const pageSubtitle = adminView
     ? "Manage your demon list tools and admin actions."
     : requestView
@@ -110,205 +111,164 @@ export function AppHeader({
     setEditingVersionInfo(false);
   }
 
+  function navigate(action) {
+    setMobileNavOpen(false);
+    action?.();
+  }
+
+  const listActive = !adminView && !requestView && !historyView && !timelineView;
+  const sourceLabel = source === "live"
+    ? "Live Sheet Data"
+    : source === "cache"
+      ? "Cached Data"
+      : source === "mock"
+        ? "Mock Data"
+        : "Loading";
+
   return (
-        <header className="hero">
-          <div>
-            <p className="eyebrow hero-eyebrow">
-              <span>Moik's Geometry Dash Demon Archive</span>
-              <button
-                className="version-badge"
-                onClick={openVersionInfo}
-                type="button"
-                aria-label={`Show changes in ${resolvedVersion}`}
-              >
-                {resolvedVersion}
+    <>
+      <aside id="site-navigation" className={`observatory-sidebar ${mobileNavOpen ? "mobile-open" : ""}`}>
+        <button className="observatory-brand" onClick={() => navigate(onOpenList)} type="button" aria-label="Open demon archive">
+          <span className="observatory-brand-mark">M</span>
+          <span>Moik's<br />Archive</span>
+        </button>
+
+        <nav className="observatory-nav" aria-label="Main navigation">
+          <button className={listActive ? "active" : ""} onClick={() => navigate(onOpenList)} type="button">
+            <Home size={21} /><span>Archive</span>
+          </button>
+          <button className={historyView ? "active" : ""} onClick={() => navigate(onOpenHistory)} type="button">
+            <FileClock size={21} /><span>Changes</span>
+          </button>
+          <button onClick={() => navigate(onOpenMilestones)} type="button">
+            <Award size={21} /><span>Milestones</span>
+          </button>
+          <button className={timelineView ? "active" : ""} onClick={() => navigate(onOpenTimeline)} type="button">
+            <CalendarDays size={21} /><span>Timeline</span>
+          </button>
+          <button className={requestView ? "active" : ""} onClick={() => navigate(onOpenRequests)} type="button">
+            <Inbox size={21} /><span>Requests</span>
+          </button>
+        </nav>
+
+        <div className="observatory-sidebar-footer">
+          <div className={`observatory-source ${source}`} title={sourceLabel}>
+            <Radio size={17} /><span>{sourceLabel}</span>
+          </div>
+          {!isAdmin ? (
+            <button onClick={() => navigate(onOpenLogin)} type="button">
+              <LogIn size={20} /><span>Admin</span>
+            </button>
+          ) : (
+            <>
+              <button className={adminView ? "active" : ""} onClick={() => navigate(adminView ? onOpenList : onOpenAdmin)} type="button">
+                <Shield size={20} /><span>{adminView ? "Archive" : "Admin"}</span>
               </button>
-            </p>
-            <div className="hero-title-row">
-              <h1>{pageTitle}</h1>
-              {!adminView && !requestView && !historyView && !timelineView && (
+              <button onClick={() => navigate(onOpenLogout)} type="button">
+                <LogOut size={20} /><span>Logout</span>
+              </button>
+            </>
+          )}
+          <button className="observatory-version" onClick={openVersionInfo} type="button">
+            {resolvedVersion}
+          </button>
+        </div>
+      </aside>
+
+      {mobileNavOpen && (
+        <button className="observatory-nav-backdrop" onClick={() => setMobileNavOpen(false)} type="button" aria-label="Close navigation" />
+      )}
+
+      <header className="hero observatory-hero">
+        <button
+          className="observatory-menu-button"
+          onClick={() => setMobileNavOpen(open => !open)}
+          type="button"
+          aria-label="Open navigation"
+          aria-expanded={mobileNavOpen}
+          aria-controls="site-navigation"
+        >
+          <Menu size={23} />
+        </button>
+        <div className="observatory-hero-copy">
+          <p className="eyebrow hero-eyebrow">Moik's Geometry Dash archive</p>
+          <div className="hero-title-row">
+            <h1>{pageTitle}</h1>
+            {listActive && (
+              <button className="hero-info-button" onClick={() => setShowListInfo(true)} type="button" aria-label="Demon list info">
+                <Info size={23} />
+              </button>
+            )}
+          </div>
+          <p className="subtitle">{pageSubtitle}</p>
+        </div>
+        <div className="observatory-hero-art" aria-hidden="true">
+          <span className="orbit orbit-one" />
+          <span className="orbit orbit-two" />
+          <span className="observatory-gem" />
+        </div>
+      </header>
+
+      {showListInfo && (
+        <div className="progress-info-backdrop" onClick={() => setShowListInfo(false)}>
+          <section className="progress-info-modal list-info-modal" onClick={event => event.stopPropagation()}>
+            <button className="progress-info-close" onClick={() => setShowListInfo(false)} type="button" aria-label="Close"><X size={20} /></button>
+            <p>{listInfoText}</p>
+          </section>
+        </div>
+      )}
+
+      {showVersionInfo && (
+        <div className="progress-info-backdrop" onClick={closeVersionInfo}>
+          <section className="progress-info-modal version-info-modal" onClick={event => event.stopPropagation()}>
+            <button className="progress-info-close" onClick={closeVersionInfo} type="button" aria-label="Close"><X size={20} /></button>
+            <div className="version-info-header">
+              <h2>Changes in {resolvedVersion}</h2>
+              {isAdmin && onSaveChangelog && (
                 <button
-                  className="hero-info-button"
-                  onClick={() => setShowListInfo(true)}
+                  className="version-edit-button"
+                  onClick={() => {
+                    setVersionDraft(resolvedVersion);
+                    setChangelogDraft(resolvedChangelog.join("\n"));
+                    setVersionSaveError("");
+                    setVersionSaveMessage("");
+                    setEditingVersionInfo(value => !value);
+                  }}
                   type="button"
-                  aria-label="Demon list info"
+                  aria-label="Edit changelog"
                 >
-                  <Info size={26} />
+                  <Pencil size={16} />
                 </button>
               )}
             </div>
-            <p className="subtitle">
-              {pageSubtitle}
-            </p>
-          </div>
 
-          {showListInfo && (
-            <div className="progress-info-backdrop" onClick={() => setShowListInfo(false)}>
-              <section className="progress-info-modal list-info-modal" onClick={event => event.stopPropagation()}>
-                <button
-                  className="progress-info-close"
-                  onClick={() => setShowListInfo(false)}
-                  type="button"
-                  aria-label="Close"
-                >
-                  <X size={20} />
-                </button>
-                <p>{listInfoText}</p>
-              </section>
-            </div>
-          )}
-
-          {showVersionInfo && (
-            <div className="progress-info-backdrop" onClick={closeVersionInfo}>
-              <section className="progress-info-modal version-info-modal" onClick={event => event.stopPropagation()}>
-                <button
-                  className="progress-info-close"
-                  onClick={closeVersionInfo}
-                  type="button"
-                  aria-label="Close"
-                >
-                  <X size={20} />
-                </button>
-                <div className="version-info-header">
-                  <h2>Changes in {resolvedVersion}</h2>
-                  {isAdmin && onSaveChangelog && (
-                    <button
-                      className="version-edit-button"
-                      onClick={() => {
-                        setVersionDraft(resolvedVersion);
-                        setChangelogDraft(resolvedChangelog.join("\n"));
-                        setVersionSaveError("");
-                        setVersionSaveMessage("");
-                        setEditingVersionInfo(value => !value);
-                      }}
-                      type="button"
-                      aria-label="Edit changelog"
-                    >
-                      <Pencil size={16} />
-                    </button>
-                  )}
+            {editingVersionInfo ? (
+              <div className="version-edit-form">
+                <label>
+                  Version
+                  <input className="version-edit-input" value={versionDraft} onChange={event => setVersionDraft(event.target.value)} placeholder="v0.62" />
+                </label>
+                <label>
+                  Changes
+                  <textarea className="version-edit-textarea" value={changelogDraft} onChange={event => setChangelogDraft(event.target.value)} placeholder="One change per line" rows={7} />
+                </label>
+                {versionSaveError && <p className="version-edit-status error">{versionSaveError}</p>}
+                {versionSaveMessage && <p className="version-edit-status success">{versionSaveMessage}</p>}
+                <div className="version-edit-actions">
+                  <button onClick={handleSaveVersionInfo} disabled={versionSaving} type="button">{versionSaving ? "Saving..." : "Save changelog"}</button>
+                  <button onClick={() => { setEditingVersionInfo(false); setVersionSaveError(""); setVersionSaveMessage(""); }} type="button">Cancel</button>
                 </div>
-
-                {editingVersionInfo ? (
-                  <div className="version-edit-form">
-                    <label>
-                      Version
-                      <input
-                        className="version-edit-input"
-                        value={versionDraft}
-                        onChange={event => setVersionDraft(event.target.value)}
-                        placeholder="v0.62"
-                      />
-                    </label>
-                    <label>
-                      Changes
-                      <textarea
-                        className="version-edit-textarea"
-                        value={changelogDraft}
-                        onChange={event => setChangelogDraft(event.target.value)}
-                        placeholder="One change per line"
-                        rows={7}
-                      />
-                    </label>
-                    {versionSaveError && <p className="version-edit-status error">{versionSaveError}</p>}
-                    {versionSaveMessage && <p className="version-edit-status success">{versionSaveMessage}</p>}
-                    <div className="version-edit-actions">
-                      <button onClick={handleSaveVersionInfo} disabled={versionSaving} type="button">
-                        {versionSaving ? "Saving..." : "Save changelog"}
-                      </button>
-                      <button
-                        onClick={() => {
-                          setEditingVersionInfo(false);
-                          setVersionSaveError("");
-                          setVersionSaveMessage("");
-                        }}
-                        type="button"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    {versionSaveMessage && <p className="version-edit-status success">{versionSaveMessage}</p>}
-                    <ul>
-                      {resolvedChangelog.map(change => (
-                        <li key={change}>{change}</li>
-                      ))}
-                    </ul>
-                  </>
-                )}
-              </section>
-            </div>
-          )}
-    
-          <div>
-            <div className={`source-pill ${source}`}>
-              {source === "live" && <Radio size={15} />}
-              {source === "live"
-                ? "Live Sheet Data"
-                : source === "cache"
-                  ? "Cached Sheet Data"
-                  : source === "mock"
-                    ? "Mock Data"
-                    : "Loading"}
-            </div>
-    
-            {!adminView && (
-              <button className="admin-button panel-button" onClick={onOpenHistory} type="button">
-                <FileClock size={16} />
-                {historyView ? "Back to list" : "List Changes"}
-              </button>
+              </div>
+            ) : (
+              <>
+                {versionSaveMessage && <p className="version-edit-status success">{versionSaveMessage}</p>}
+                <ul>{resolvedChangelog.map(change => <li key={change}>{change}</li>)}</ul>
+              </>
             )}
-
-            {!adminView && !historyView && !timelineView && (
-              <button className="admin-button panel-button" onClick={onOpenMilestones} type="button">
-                <Award size={16} />
-                Milestones
-              </button>
-            )}
-
-            {!adminView && !historyView && (
-              <button className="admin-button panel-button" onClick={onOpenTimeline} type="button">
-                <CalendarDays size={16} />
-                {timelineView ? "Back to list" : "Timeline"}
-              </button>
-            )}
-
-            {!adminView && !historyView && !timelineView && (
-              <button className="admin-button panel-button" onClick={onOpenRequests} type="button">
-                {requestView ? "Back to list" : "Demon Requests"}
-              </button>
-            )}
-    
-            {!isAdmin && (
-              <button className="admin-button" onClick={onOpenLogin} type="button">
-                <LogIn size={16} />
-                Admin Login
-              </button>
-            )}
-    
-            {isAdmin && !adminView && (
-              <button className="admin-button panel-button" onClick={onOpenAdmin} type="button">
-                <Shield size={16} />
-                Go to panel
-              </button>
-            )}
-    
-            {isAdmin && adminView && (
-              <button className="admin-button panel-button" onClick={onCloseAdmin} type="button">
-                Back to list
-              </button>
-            )}
-    
-            {isAdmin && (
-              <button className="admin-button logout-button" onClick={onOpenLogout} type="button">
-                <LogOut size={16} />
-                Logout
-              </button>
-            )}
-          </div>
-        </header>
+          </section>
+        </div>
+      )}
+    </>
   );
 }
 
