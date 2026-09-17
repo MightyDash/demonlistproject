@@ -156,8 +156,8 @@ export function NewsPage({
       <section className="news-page-toolbar">
         <div>
           <span className="news-section-kicker"><Radio size={15} /> Newsroom</span>
-          <h2>Latest stories</h2>
-          <p>Updates, uploads and announcements from across my channels.</p>
+          <h2>Latest News</h2>
+          <p>Demon List updates, YouTube uploads and in-game announcements get posted on this page. Posts regarding GD and Moik&apos;s Demon List get posted in English and posts regarding my main channel get posted in Dutch.</p>
         </div>
         <div className="news-toolbar-actions">
           {error && <button onClick={onReload} type="button">Try again</button>}
