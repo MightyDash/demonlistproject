@@ -163,7 +163,6 @@ export function RichTextEditor({ value, onChange, onUploadImage, disabled = fals
         suppressContentEditableWarning
         data-placeholder="Write your article here..."
         onInput={emitChange}
-        dangerouslySetInnerHTML={{ __html: value || "" }}
       />
       {uploadError && <p className="news-editor-error">{uploadError}</p>}
     </div>
