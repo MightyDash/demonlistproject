@@ -327,9 +327,8 @@ const [requestForm, setRequestForm] = useState({
   }, [query, difficulty, segment, yearView, viewMode, isMobileView]);
 
   useEffect(() => {
-    if (isMobileView && viewMode === "banner") {
-      setViewMode("grid");
-    }
+    const responsiveView = isMobileView ? "grid" : "banner";
+    if (viewMode !== responsiveView) setViewMode(responsiveView);
   }, [isMobileView, viewMode]);
 
   useEffect(() => {
@@ -1048,6 +1047,7 @@ async function handleRequestQuickStatus(rowNumber, status) {
           historyView={historyView}
           requestView={requestView}
           timelineView={timelineView}
+          onOpenList={() => navigateTo(ROUTES.home)}
           onOpenRequests={handleOpenRequests}
           onOpenHistory={() => {
             navigateTo(historyView ? ROUTES.home : ROUTES.history);
@@ -1058,7 +1058,6 @@ async function handleRequestQuickStatus(rowNumber, status) {
           onOpenTimeline={() => {
             navigateTo(timelineView ? ROUTES.home : ROUTES.timeline);
           }}
-          onCloseAdmin={() => navigateTo(ROUTES.home)}
           onOpenLogout={() => setShowLogoutConfirm(true)}
           siteVersion={siteVersion}
           siteChangelog={siteChangelog}

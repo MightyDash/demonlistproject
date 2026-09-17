@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { BarChart3, Check, Grid3X3, Info, List, Rows3, Search, SlidersHorizontal, Target, Trophy, X } from "lucide-react";
+import { BarChart3, Check, Info, Search, SlidersHorizontal, Target, Trophy, X } from "lucide-react";
 import { StatCard } from "./StatCard.jsx";
 import { difficultyClass, formatNumber, formatTier, isInProgressDemon } from "../demonUtils.js";
 
@@ -241,25 +241,6 @@ export function DemonListContent({
                 ))}
               </div>
     
-              <span className="filter-section-label">View</span>
-              <div className="tabs view-tabs">
-                {[
-                  ["grid", "Grid", <Grid3X3 size={15} />],
-                  ["list", "List", <List size={15} />],
-                  ...(isMobileView ? [] : [["banner", "Banner", <Rows3 size={15} />]])
-                ].map(([value, label, icon]) => (
-                  <button
-                    key={value}
-                    className={viewMode === value ? "active" : ""}
-                    onClick={() => setViewMode(value)}
-                    type="button"
-                  >
-                    {icon}
-                    {label}
-                  </button>
-                ))}
-              </div>
-
               <button
                 className="mobile-filter-apply"
                 onClick={() => setFilterDrawerOpen(false)}
