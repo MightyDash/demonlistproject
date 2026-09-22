@@ -143,7 +143,8 @@ export function AdminPanel({
     attempts: "",
     date: String(new Date().getFullYear()),
     status: "COMPLETED",
-    progressPercent: ""
+    progressPercent: "",
+    twoPlayerMode: "standard"
   });
 
   const [removeLevelId, setRemoveLevelId] = useState("");
@@ -158,7 +159,8 @@ export function AdminPanel({
     date: "",
     attempts: "",
     status: "COMPLETED",
-    progressPercent: ""
+    progressPercent: "",
+    twoPlayerMode: "standard"
   });
 
   const [adminMessage, setAdminMessage] = useState("");
@@ -348,6 +350,7 @@ export function AdminPanel({
         date: String(data.demon.date || data.demon.year || ""),
         attempts: String(data.demon.attempts || ""),
         status: data.demon.status || "COMPLETED",
+        twoPlayerMode: data.demon.twoPlayerMode || "standard",
         progressPercent: data.demon.progressPercent === undefined || data.demon.progressPercent === null
           ? ""
           : String(data.demon.progressPercent)
@@ -400,6 +403,7 @@ export function AdminPanel({
         date: dateInput.value,
         attempts,
         status: editForm.status,
+        twoPlayerMode: editForm.twoPlayerMode,
         progressPercent: editForm.status === "IN PROGRESS" ? progressPercent : ""
       });
 
@@ -531,6 +535,7 @@ export function AdminPanel({
         attempts,
         date: dateInput.value,
         status,
+        twoPlayerMode: addForm.twoPlayerMode,
         progressPercent: status === "IN PROGRESS" ? progressPercent : ""
       });
 
@@ -555,7 +560,8 @@ export function AdminPanel({
         attempts: "",
         date: String(new Date().getFullYear()),
         status: "COMPLETED",
-        progressPercent: ""
+        progressPercent: "",
+        twoPlayerMode: "standard"
       });
       setShowAddForm(false);
 
@@ -1240,6 +1246,18 @@ export function AdminPanel({
             </select>
           </label>
 
+          <label>
+            2-player demon: play mode
+            <select
+              value={addForm.twoPlayerMode}
+              onChange={e => setAddForm({ ...addForm, twoPlayerMode: e.target.value })}
+            >
+              <option value="standard">Not a 2-player demon</option>
+              <option value="solo">Solo</option>
+              <option value="two-player">With two players</option>
+            </select>
+          </label>
+
           {addForm.status === "IN PROGRESS" && (
             <label>
               Progress %
@@ -1413,6 +1431,18 @@ export function AdminPanel({
                   >
                     <option value="COMPLETED">COMPLETED</option>
                     <option value="IN PROGRESS">IN PROGRESS</option>
+                  </select>
+                </label>
+
+                <label>
+                  2-player demon: play mode
+                  <select
+                    value={editForm.twoPlayerMode}
+                    onChange={e => setEditForm({ ...editForm, twoPlayerMode: e.target.value })}
+                  >
+                    <option value="standard">Not a 2-player demon</option>
+                    <option value="solo">Solo</option>
+                    <option value="two-player">With two players</option>
                   </select>
                 </label>
 

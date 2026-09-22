@@ -62,6 +62,21 @@ describe("demonUtils", () => {
     });
   });
 
+  it("retains both GDDL tiers and the selected 2-player completion mode", () => {
+    expect(normalizeDemon({
+      id: "23298409",
+      tier: 17.78,
+      twoPlayerMode: "two-player",
+      soloTier: 19.91,
+      twoPlayerTier: 17.78
+    })).toMatchObject({
+      tier: 17.78,
+      twoPlayerMode: "two-player",
+      soloTier: 19.91,
+      twoPlayerTier: 17.78
+    });
+  });
+
   it("does not normalize unsupported placement container types into valid placements", () => {
     expect(normalizeDemon({ placement: ["1"] })).toMatchObject({ placement: "" });
     expect(normalizeDemon({ placement: { value: "#1" } })).toMatchObject({ placement: "" });

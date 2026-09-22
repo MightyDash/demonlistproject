@@ -181,7 +181,7 @@ export function DemonModal({
               <span className={`difficulty ${String(cleanDifficulty).toLowerCase().includes("extreme") ? "extreme" : ""}`}>
                 {cleanDifficulty}
               </span>
-              <span className="modal-tier">Tier {formatTier(demon.tier)}</span>
+              <span className="modal-tier">Tier {formatTier(demon.tier)}{demon.twoPlayerMode === "solo" ? " · Solo" : demon.twoPlayerMode === "two-player" ? " · 2 players" : ""}</span>
               {isCommunityRequested && <span className="community-requested-badge">Community Requested</span>}
             </div>
 
@@ -219,6 +219,12 @@ export function DemonModal({
                 <div><span>Creator(s)</span><strong>{demon.creator || "Unknown"}</strong></div>
                 <div><span>Difficulty</span><strong className="overview-danger">{cleanDifficulty}</strong></div>
                 <div><span>Tier</span><strong>{formatTier(demon.tier)}</strong></div>
+                {demon.twoPlayerMode !== "standard" && demon.soloTier > 0 && demon.twoPlayerTier > 0 && (
+                  <>
+                    <div><span>Solo tier</span><strong>{formatTier(demon.soloTier)}{demon.twoPlayerMode === "solo" ? " · Your mode" : ""}</strong></div>
+                    <div><span>2-player tier</span><strong>{formatTier(demon.twoPlayerTier)}{demon.twoPlayerMode === "two-player" ? " · Your mode" : ""}</strong></div>
+                  </>
+                )}
                 <div><span>Attempts (Total)</span><strong>{formatNumber(demon.attempts)}</strong></div>
                 <div><span>Date</span><strong>{demon.date || demon.year || "Unknown"}</strong></div>
               </div>

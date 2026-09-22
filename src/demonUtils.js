@@ -18,6 +18,11 @@ export function normalizeDemon(row) {
     dateYear,
     tier: Number(row.tier ?? row.Tier ?? 0),
     tierChange: Number(row.tierChange ?? row["Tier +/-"] ?? row.tier_change ?? 0),
+    twoPlayerMode: row.twoPlayerMode === "solo" || row.twoPlayerMode === "two-player"
+      ? row.twoPlayerMode
+      : "standard",
+    soloTier: Number(row.soloTier ?? 0),
+    twoPlayerTier: Number(row.twoPlayerTier ?? 0),
     formerTop1Year: FORMER_TOP_1[name] || null,
     skillsetDistribution: Array.isArray(row.skillsetDistribution)
       ? row.skillsetDistribution
