@@ -104,7 +104,7 @@ export function DemonListContent({
   }
 
   function placementTrendClass(demon) {
-    if (isProgressView || isFutureView) return "";
+    if (isProgressView || isFutureView || demon.historicalPlacement) return "";
 
     const placement = String(demon.placement || "");
     if (placement.includes("\u25b2")) return "placement-moved-up";
@@ -338,7 +338,14 @@ export function DemonListContent({
                       role="button"
                       tabIndex={0}
                     >
-                      <div className="placement">{renderAsProgress ? `${progressPercent}%` : placementLabel}</div>
+                      <div className={`placement ${demon.historicalPlacement ? "historical-placement" : ""}`}>
+                        {renderAsProgress ? `${progressPercent}%` : demon.historicalPlacement ? (
+                          <>
+                            <strong>{demon.historicalPlacement}</strong>
+                            <small>Current Placement: {displayPlacement(demon.placement)}</small>
+                          </>
+                        ) : placementLabel}
+                      </div>
                       <div className="name-cell">
                         <span className="demon-name">{demon.name}</span>
                         <span className="mobile-meta">{demon.creator}</span>
@@ -392,8 +399,13 @@ export function DemonListContent({
 
                         <div className="banner-shade" />
 
-                        <div className="banner-placement">
-                          {renderAsProgress ? `${progressPercent}%` : placementLabel}
+                        <div className={`banner-placement ${demon.historicalPlacement ? "historical-placement" : ""}`}>
+                          {renderAsProgress ? `${progressPercent}%` : demon.historicalPlacement ? (
+                            <>
+                              <strong>{demon.historicalPlacement}</strong>
+                              <small>Current Placement: {displayPlacement(demon.placement)}</small>
+                            </>
+                          ) : placementLabel}
                         </div>
 
                         <div className="banner-main">
@@ -471,7 +483,16 @@ export function DemonListContent({
                           <h3>{demon.name}</h3>
                           <p>by {demon.creator || "Unknown creator"}</p>
                           {isCommunityRequested && <span className="community-requested-badge">Community Requested</span>}
-                          {!renderAsProgress && <span className="grid-rank-inline">{placementLabel}</span>}
+                          {!renderAsProgress && (
+                            <span className={`grid-rank-inline ${demon.historicalPlacement ? "historical-placement" : ""}`}>
+                              {demon.historicalPlacement ? (
+                                <>
+                                  <strong>{demon.historicalPlacement}</strong>
+                                  <small>Current Placement: {displayPlacement(demon.placement)}</small>
+                                </>
+                              ) : placementLabel}
+                            </span>
+                          )}
                         </div>
 
                         {renderAsProgress ? (

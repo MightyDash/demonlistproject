@@ -12,7 +12,7 @@ import { NewsPage } from "./components/NewsPage.jsx";
 import { RecentChanges } from "./components/RecentChanges.jsx";
 import { RequestPanel } from "./components/RequestPanel.jsx";
 import { TimelinePage } from "./components/TimelineModal.jsx";
-import { comparePlacements, isInProgressDemon, normalizeDemon, segmentForPlacement } from "./demonUtils.js";
+import { buildHistoricalRanking, comparePlacements, isInProgressDemon, normalizeDemon, segmentForPlacement } from "./demonUtils.js";
 import { requestJson } from "./api.js";
 import { normalizeNewsArticle } from "./newsUtils.js";
 import { normalizeRoute, parseNewsRoute, parseTimelineRoute, ROUTES } from "./routeUtils.js";
@@ -970,6 +970,17 @@ async function handleRequestQuickStatus(rowNumber, status) {
         .filter(demon => {
           const matchesSegment =
             segment === "all" || segmentForPlacement(demon.futurePlacement) === segment;
+
+          return matchesSearchAndDifficulty(demon) && matchesSegment;
+        });
+    }
+
+    const historicalYearSelected = /^\d{4}$/.test(String(yearView));
+    if (historicalYearSelected) {
+      return buildHistoricalRanking(demons, yearView)
+        .filter(demon => {
+          const matchesSegment =
+            segment === "all" || segmentForPlacement(demon.historicalPlacement) === segment;
 
           return matchesSearchAndDifficulty(demon) && matchesSegment;
         });

@@ -143,4 +143,26 @@ describe("DemonListContent", () => {
     expect(screen.getByText("Unplaced")).toBeInTheDocument();
     expect(screen.getByText("Unranked Demon")).toBeInTheDocument();
   });
+
+  it("shows a historical rank with the current placement for earlier years", () => {
+    renderContent({
+      yearView: "2025",
+      filtered: [{ ...demons[1], historicalPlacement: "#2 •" }],
+      totalCount: 1
+    });
+
+    expect(screen.getByText("#2 •")).toBeInTheDocument();
+    expect(screen.getByText("Current Placement: #3")).toBeInTheDocument();
+  });
+
+  it("keeps the current placement unchanged in the current-year view", () => {
+    renderContent({
+      yearView: "all",
+      filtered: [demons[1]],
+      totalCount: 1
+    });
+
+    expect(screen.getByText("#3")).toBeInTheDocument();
+    expect(screen.queryByText(/Current Placement:/)).not.toBeInTheDocument();
+  });
 });

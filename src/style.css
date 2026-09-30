@@ -10341,6 +10341,35 @@ body::before {
   letter-spacing: -0.055em !important;
 }
 
+.historical-placement {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+}
+
+.historical-placement strong {
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+.historical-placement small {
+  display: block;
+  margin-top: 3px;
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 0.66rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.grid-rank-inline.historical-placement {
+  min-height: 42px;
+  padding-block: 5px;
+}
+
 .hero.observatory-hero .subtitle {
   max-width: 610px;
   margin: 15px 0 0 !important;

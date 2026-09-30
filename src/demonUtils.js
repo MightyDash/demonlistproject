@@ -81,6 +81,22 @@ export function isInProgressDemon(demon) {
   return status === "IN PROGRESS";
 }
 
+export function buildHistoricalRanking(demons, year) {
+  const cutoffYear = Number(year);
+  if (!Number.isInteger(cutoffYear)) return [];
+
+  return demons
+    .filter(demon => {
+      const demonYear = Number(demon?.dateYear || demon?.year || 0);
+      return !isInProgressDemon(demon) && demonYear <= cutoffYear;
+    })
+    .sort((a, b) => comparePlacements(a.placement, b.placement))
+    .map((demon, index) => ({
+      ...demon,
+      historicalPlacement: `#${index + 1} •`
+    }));
+}
+
 export function difficultyClass(diff) {
   const d = String(diff || "").toLowerCase();
   if (d.includes("extreme")) return "extreme";

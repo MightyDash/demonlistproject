@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildHistoricalRanking,
   difficultyClass,
   extractDateYear,
   formatDateLabel,
@@ -13,6 +14,20 @@ import {
 } from "./demonUtils.js";
 
 describe("demonUtils", () => {
+  it("builds a continuous ranking for a historical year without including later completions", () => {
+    const ranking = buildHistoricalRanking([
+      { name: "Current hardest", placement: "#1", year: 2026, status: "COMPLETED" },
+      { name: "Earlier hardest", placement: "#2", year: 2025, status: "COMPLETED" },
+      { name: "Older demon", placement: "#163", year: 2019, status: "COMPLETED" },
+      { name: "Progress", placement: "", year: 2025, status: "IN PROGRESS" }
+    ], 2025);
+
+    expect(ranking).toMatchObject([
+      { name: "Earlier hardest", placement: "#2", historicalPlacement: "#1 •" },
+      { name: "Older demon", placement: "#163", historicalPlacement: "#2 •" }
+    ]);
+  });
+
   it("normalizes a complete demon row", () => {
     expect(normalizeDemon({
       id: 10565740,
