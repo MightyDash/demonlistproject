@@ -17,6 +17,7 @@ const timelineDemons = [
     name: "Exact Month Demon",
     placement: "#2",
     tier: 18.5,
+    difficulty: "Insane Demon",
     date: "15/06/2025",
     dateYear: 2025,
     status: "COMPLETED",
@@ -81,6 +82,7 @@ describe("TimelinePage", () => {
     renderTimeline({ routeYear: 2025 });
 
     expect(screen.getByLabelText("Hardest demon: Exact Month Demon")).toBeInTheDocument();
+    expect(screen.getByLabelText("Hardest difficulty: Insane Demon")).toBeInTheDocument();
     expect(screen.getAllByText("Exact Month Demon")).toHaveLength(1);
   });
 });

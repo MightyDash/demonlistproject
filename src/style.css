@@ -8743,18 +8743,43 @@ body,
 .timeline-month-hardest {
   position: absolute;
   top: 50%;
-  left: 64%;
+  left: 61.5%;
   z-index: 2;
   display: flex !important;
   align-items: center;
   justify-content: center;
-  flex-direction: column;
-  gap: 5px;
-  width: 58%;
-  padding: 8px;
+  gap: 8px;
+  width: 77%;
+  padding: 6px;
   text-align: center;
   pointer-events: none;
   transform: translate(-50%, -50%);
+}
+
+.timeline-month-hardest-face {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 46px;
+  height: 46px;
+  filter: drop-shadow(0 7px 12px rgba(0, 0, 0, 0.42));
+}
+
+.timeline-month-hardest-face img {
+  display: block;
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+}
+
+.timeline-month-hardest-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
 }
 
 .timeline-month-hardest svg,
@@ -8768,7 +8793,7 @@ body,
   filter: drop-shadow(0 3px 7px rgba(244, 198, 82, 0.28));
 }
 
-.timeline-month-hardest b {
+.timeline-month-hardest-label b {
   display: -webkit-box;
   max-width: 100%;
   overflow: hidden;

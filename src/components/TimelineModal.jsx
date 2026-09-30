@@ -526,6 +526,7 @@ export function TimelinePage({
           const highlight = getHardestMonthHighlight(selectedYearData.year, month.slug);
           const hardestDemon = getHardestMonthlyDemon(month.demons);
           const hardestStyle = findMonthlyHighlightStyle(monthlyHighlightStyles, selectedYearData.year, month.slug);
+          const hardestDifficultyFace = getDifficultyFace(hardestDemon?.difficulty);
 
           return (
             <button
@@ -539,8 +540,15 @@ export function TimelinePage({
               <small>{pluralizeDemons(month.demons.length)}</small>
               {hardestDemon && (
                 <span className="timeline-month-hardest" aria-label={`Hardest demon: ${hardestDemon.name}`}>
-                  <Crown aria-hidden="true" />
-                  <b style={monthlyHighlightTextStyle(hardestStyle)}>{hardestDemon.name}</b>
+                  {hardestDifficultyFace && (
+                    <span className="timeline-month-hardest-face" aria-label={`Hardest difficulty: ${hardestDemon.difficulty}`}>
+                      <img src={hardestDifficultyFace} alt="" loading="lazy" />
+                    </span>
+                  )}
+                  <span className="timeline-month-hardest-label">
+                    <Crown aria-hidden="true" />
+                    <b style={monthlyHighlightTextStyle(hardestStyle)}>{hardestDemon.name}</b>
+                  </span>
                 </span>
               )}
             </button>
