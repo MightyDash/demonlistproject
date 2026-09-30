@@ -8760,16 +8760,17 @@ body,
   display: grid;
   place-items: center;
   flex: 0 0 auto;
-  width: clamp(50px, 3vw, 64px);
-  height: clamp(50px, 3vw, 64px);
-  filter: drop-shadow(0 7px 12px rgba(0, 0, 0, 0.42));
+  width: clamp(56px, 3.5vw, 74px);
+  height: clamp(56px, 3.5vw, 74px);
+  filter: drop-shadow(0 5px 7px rgba(0, 0, 0, 0.34));
 }
 
 .timeline-month-hardest-face img {
   display: block;
-  width: clamp(50px, 3vw, 64px);
-  height: clamp(50px, 3vw, 64px);
+  width: clamp(56px, 3.5vw, 74px);
+  height: clamp(56px, 3.5vw, 74px);
   object-fit: contain;
+  image-rendering: auto;
 }
 
 .timeline-month-hardest-label {
