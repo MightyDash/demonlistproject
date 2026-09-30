@@ -8760,15 +8760,15 @@ body,
   display: grid;
   place-items: center;
   flex: 0 0 auto;
-  width: 46px;
-  height: 46px;
+  width: clamp(50px, 3vw, 64px);
+  height: clamp(50px, 3vw, 64px);
   filter: drop-shadow(0 7px 12px rgba(0, 0, 0, 0.42));
 }
 
 .timeline-month-hardest-face img {
   display: block;
-  width: 46px;
-  height: 46px;
+  width: clamp(50px, 3vw, 64px);
+  height: clamp(50px, 3vw, 64px);
   object-fit: contain;
 }
 
