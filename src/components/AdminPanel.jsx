@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
   CalendarDays,
+  Crown,
   Download,
   FileText,
   Inbox,
@@ -16,6 +17,12 @@ import {
 import { requestJson } from "../api.js";
 import { ADMIN_API_URL } from "../config.js";
 import { isInProgressDemon, parseDemonDate } from "../demonUtils.js";
+import {
+  DEFAULT_MONTHLY_HIGHLIGHT_STYLE,
+  findMonthlyHighlightStyle,
+  getHardestMonthlyDemon,
+  monthlyHighlightTextStyle
+} from "../monthlyHighlightUtils.js";
 
 const TIMELINE_YEARS = [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
 const TIMELINE_MONTHS = [
@@ -74,15 +81,18 @@ function getMonthlyRecapUrl(monthlyRecaps, year, monthSlug) {
   return recap ? String(recap.url || "").trim() : "";
 }
 
-function buildAdminTimelineCounts(demons, timelineEntries) {
-  const counts = TIMELINE_YEARS.reduce((acc, year) => {
+function buildAdminTimelineSummary(demons, timelineEntries) {
+  const summary = TIMELINE_YEARS.reduce((acc, year) => {
     acc[year] = TIMELINE_MONTHS.reduce((monthAcc, month) => {
-      monthAcc[month.slug] = 0;
+      monthAcc[month.slug] = { count: 0, demons: [] };
       return monthAcc;
     }, {});
     return acc;
   }, {});
   const counted = new Set();
+  const completedById = new Map(
+    demons.filter(demon => !isInProgressDemon(demon)).map(demon => [String(demon.id), demon])
+  );
 
   demons
     .filter(demon => !isInProgressDemon(demon))
@@ -95,7 +105,8 @@ function buildAdminTimelineCounts(demons, timelineEntries) {
 
       const key = `${parsed.year}-${month.slug}-${demon.id || demon.name}`;
       counted.add(key);
-      counts[parsed.year][month.slug] += 1;
+      summary[parsed.year][month.slug].count += 1;
+      summary[parsed.year][month.slug].demons.push(demon);
     });
 
   timelineEntries.forEach(entry => {
@@ -104,13 +115,95 @@ function buildAdminTimelineCounts(demons, timelineEntries) {
     const levelId = String(entry.levelId || "").trim();
     const key = `${year}-${month}-${levelId}`;
 
-    if (!TIMELINE_YEARS.includes(year) || counts[year]?.[month] === undefined || !levelId || counted.has(key)) return;
+    const demon = completedById.get(levelId);
+    if (!TIMELINE_YEARS.includes(year) || !summary[year]?.[month] || !levelId || !demon || counted.has(key)) return;
 
     counted.add(key);
-    counts[year][month] += 1;
+    summary[year][month].count += 1;
+    summary[year][month].demons.push(demon);
   });
 
-  return counts;
+  return summary;
+}
+
+function MonthlyHighlightStyleEditor({ demonName, style, setStyle, saving, onSave, onReset }) {
+  const update = (key, value) => setStyle(current => ({ ...current, [key]: value }));
+  const range = (label, key, min, max, step = 1) => (
+    <label className="timeline-style-range">
+      <span>{label}<output>{style[key]}</output></span>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={style[key]}
+        onChange={event => update(key, Number(event.target.value))}
+      />
+    </label>
+  );
+
+  return (
+    <section className="timeline-style-editor">
+      <div className="timeline-style-editor-heading">
+        <div>
+          <strong>Monthly Hardest Styling</strong>
+          <small>The crown is fixed; only the demon name can be styled.</small>
+        </div>
+      </div>
+
+      <div className="timeline-hardest-preview">
+        <Crown aria-hidden="true" />
+        <b style={monthlyHighlightTextStyle(style)}>{demonName || "Demon Name"}</b>
+      </div>
+
+      <div className="timeline-style-controls">
+        <label className="timeline-style-color">
+          <span>Text color</span>
+          <input type="color" value={style.color} onChange={event => update("color", event.target.value)} />
+        </label>
+        {range("Opacity", "opacity", 0.2, 1, 0.05)}
+        {range("Text size", "fontSize", 18, 44)}
+        <label>
+          <span>Font</span>
+          <select value={style.fontFamily} onChange={event => update("fontFamily", event.target.value)}>
+            <option value="site">Site default</option>
+            <option value="display">Display</option>
+            <option value="serif">Serif</option>
+            <option value="mono">Monospace</option>
+          </select>
+        </label>
+        <label>
+          <span>Weight</span>
+          <select value={style.fontWeight} onChange={event => update("fontWeight", Number(event.target.value))}>
+            {[400, 500, 600, 700, 800, 900].map(weight => <option key={weight} value={weight}>{weight}</option>)}
+          </select>
+        </label>
+        {range("Letter spacing", "letterSpacing", -2, 8, 0.25)}
+        <label className="timeline-style-check"><input type="checkbox" checked={style.italic} onChange={event => update("italic", event.target.checked)} /><span>Italic</span></label>
+        <label className="timeline-style-check"><input type="checkbox" checked={style.underline} onChange={event => update("underline", event.target.checked)} /><span>Underline</span></label>
+        <label className="timeline-style-color">
+          <span>Outline color</span>
+          <input type="color" value={style.outlineColor} onChange={event => update("outlineColor", event.target.value)} />
+        </label>
+        {range("Outline width", "outlineWidth", 0, 3, 0.25)}
+        <label className="timeline-style-color">
+          <span>Shadow color</span>
+          <input type="color" value={style.shadowColor} onChange={event => update("shadowColor", event.target.value)} />
+        </label>
+        {range("Shadow opacity", "shadowOpacity", 0, 1, 0.05)}
+        {range("Shadow blur", "shadowBlur", 0, 24)}
+        {range("Shadow X", "shadowX", -12, 12)}
+        {range("Shadow Y", "shadowY", -12, 12)}
+      </div>
+
+      <div className="timeline-manager-popover-actions">
+        <button className="login-button" onClick={onSave} disabled={saving} type="button">
+          {saving ? "Saving..." : "Save styling"}
+        </button>
+        <button className="close-button" onClick={onReset} disabled={saving} type="button">Reset to default</button>
+      </div>
+    </section>
+  );
 }
 
 export function AdminPanel({
@@ -119,10 +212,12 @@ export function AdminPanel({
   demons = [],
   timelineEntries = [],
   monthlyRecaps = [],
+  monthlyHighlightStyles = [],
   requests = [],
   onOpenRequests,
   onSaveNote,
-  onSaveMonthlyRecap
+  onSaveMonthlyRecap,
+  onSaveMonthlyHighlightStyle
 }) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showRemoveForm, setShowRemoveForm] = useState(false);
@@ -137,6 +232,8 @@ export function AdminPanel({
   const [recapPopoverMonth, setRecapPopoverMonth] = useState("");
   const [recapUrlDraft, setRecapUrlDraft] = useState("");
   const [recapSaving, setRecapSaving] = useState(false);
+  const [highlightStyleDraft, setHighlightStyleDraft] = useState({ ...DEFAULT_MONTHLY_HIGHLIGHT_STYLE });
+  const [highlightStyleSaving, setHighlightStyleSaving] = useState(false);
 
   const [addForm, setAddForm] = useState({
     levelId: "",
@@ -202,8 +299,8 @@ export function AdminPanel({
     });
   }, [demons, noteSearch]);
 
-  const timelineCounts = useMemo(
-    () => buildAdminTimelineCounts(demons, timelineEntries),
+  const timelineSummary = useMemo(
+    () => buildAdminTimelineSummary(demons, timelineEntries),
     [demons, timelineEntries]
   );
 
@@ -218,6 +315,7 @@ export function AdminPanel({
     setEditNotFound(false);
     setRecapPopoverMonth("");
     setRecapUrlDraft("");
+    setHighlightStyleDraft({ ...DEFAULT_MONTHLY_HIGHLIGHT_STYLE });
     setPendingAdminPreview(null);
     setAdminMessage("");
     setAdminError("");
@@ -456,6 +554,34 @@ export function AdminPanel({
     setAdminError("");
     setRecapPopoverMonth(monthSlug);
     setRecapUrlDraft(getMonthlyRecapUrl(monthlyRecaps, timelineManagerYear, monthSlug));
+    setHighlightStyleDraft(findMonthlyHighlightStyle(monthlyHighlightStyles, timelineManagerYear, monthSlug));
+  }
+
+  async function handleSaveMonthlyHighlightStyle(reset = false) {
+    if (!onSaveMonthlyHighlightStyle || !recapPopoverMonth) {
+      setAdminError("Timeline Manager styling is not connected.");
+      return;
+    }
+
+    setAdminMessage("");
+    setAdminError("");
+    setHighlightStyleSaving(true);
+    try {
+      const result = await onSaveMonthlyHighlightStyle({
+        year: timelineManagerYear,
+        month: recapPopoverMonth,
+        style: highlightStyleDraft,
+        reset
+      });
+      if (!result?.success) {
+        setAdminError(result?.message || "Could not save monthly hardest styling.");
+        return;
+      }
+      if (reset) setHighlightStyleDraft({ ...DEFAULT_MONTHLY_HIGHLIGHT_STYLE });
+      setAdminMessage(result.message || "Monthly hardest styling saved.");
+    } finally {
+      setHighlightStyleSaving(false);
+    }
   }
 
   async function handleSaveMonthlyRecap(urlOverride) {
@@ -488,8 +614,7 @@ export function AdminPanel({
       }
 
       setAdminMessage(result.message || "Recap video saved.");
-      setRecapPopoverMonth("");
-      setRecapUrlDraft("");
+      setRecapUrlDraft(url);
     } finally {
       setRecapSaving(false);
     }
@@ -893,7 +1018,7 @@ export function AdminPanel({
         >
           <span className="admin-action-icon timeline"><CalendarDays size={24} /></span>
           <strong>Timeline Manager</strong>
-          <span>Add recap videos to timeline months.</span>
+          <span>Manage recap videos and monthly hardest styling.</span>
           <ArrowRight className="admin-action-arrow" size={22} />
         </button>
 
@@ -938,7 +1063,7 @@ export function AdminPanel({
             <div>
               <h3>Timeline Manager</h3>
               <p className="admin-form-note">
-                Add YouTube recap videos to timeline months.
+                Manage YouTube recaps and the automatic monthly hardest display.
               </p>
             </div>
             <button
@@ -959,6 +1084,7 @@ export function AdminPanel({
                   setTimelineManagerYear(year);
                   setRecapPopoverMonth("");
                   setRecapUrlDraft("");
+                  setHighlightStyleDraft({ ...DEFAULT_MONTHLY_HIGHLIGHT_STYLE });
                 }}
                 type="button"
               >
@@ -969,9 +1095,14 @@ export function AdminPanel({
 
           <div className="timeline-manager-months">
             {TIMELINE_MONTHS.map(month => {
-              const demonCount = timelineCounts[timelineManagerYear]?.[month.slug] || 0;
+              const monthSummary = timelineSummary[timelineManagerYear]?.[month.slug] || { count: 0, demons: [] };
+              const demonCount = monthSummary.count;
+              const hardestDemon = getHardestMonthlyDemon(monthSummary.demons);
               const recapUrl = getMonthlyRecapUrl(monthlyRecaps, timelineManagerYear, month.slug);
               const isPopoverOpen = recapPopoverMonth === month.slug;
+              const hasCustomStyle = monthlyHighlightStyles.some(item =>
+                Number(item.year) === timelineManagerYear && String(item.month || "").toLowerCase() === month.slug
+              );
 
               return (
                 <div className="timeline-manager-month-row" key={month.slug}>
@@ -983,6 +1114,8 @@ export function AdminPanel({
                     <span>
                       <strong>{month.name}</strong>
                       {recapUrl && <small>Recap video connected</small>}
+                      {hardestDemon && <small>Hardest: {hardestDemon.name}</small>}
+                      {hasCustomStyle && <small>Custom text styling</small>}
                     </span>
                     <span className="timeline-manager-month-count">
                       {demonCount} {demonCount === 1 ? "demon" : "demons"}
@@ -993,9 +1126,9 @@ export function AdminPanel({
                     className="timeline-manager-add"
                     onClick={() => openRecapPopover(month.slug)}
                     type="button"
-                    aria-label={`Add recap video for ${month.name} ${timelineManagerYear}`}
+                    aria-label={`Manage ${month.name} ${timelineManagerYear}`}
                   >
-                    <Plus size={18} />
+                    <Pencil size={18} />
                   </button>
 
                   {isPopoverOpen && (
@@ -1008,33 +1141,44 @@ export function AdminPanel({
                       >
                         <X size={16} />
                       </button>
-                      <p><Link size={16} /> Add YouTube URL</p>
-                      <input
-                        autoFocus
-                        value={recapUrlDraft}
-                        onChange={event => setRecapUrlDraft(event.target.value)}
-                        placeholder="https://www.youtube.com/watch?v=..."
-                      />
-                      <div className="timeline-manager-popover-actions">
-                        <button
-                          className="login-button"
-                          onClick={() => handleSaveMonthlyRecap()}
-                          disabled={recapSaving}
-                          type="button"
-                        >
-                          {recapSaving ? "Saving..." : "Save"}
-                        </button>
-                        {recapUrl && (
+                      <section className="timeline-recap-editor">
+                        <p><Link size={16} /> YouTube recap</p>
+                        <input
+                          autoFocus
+                          value={recapUrlDraft}
+                          onChange={event => setRecapUrlDraft(event.target.value)}
+                          placeholder="https://www.youtube.com/watch?v=..."
+                        />
+                        <div className="timeline-manager-popover-actions">
                           <button
-                            className="close-button"
-                            onClick={() => handleSaveMonthlyRecap("")}
+                            className="login-button"
+                            onClick={() => handleSaveMonthlyRecap()}
                             disabled={recapSaving}
                             type="button"
                           >
-                            Remove
+                            {recapSaving ? "Saving..." : "Save recap"}
                           </button>
-                        )}
-                      </div>
+                          {recapUrl && (
+                            <button
+                              className="close-button"
+                              onClick={() => handleSaveMonthlyRecap("")}
+                              disabled={recapSaving}
+                              type="button"
+                            >
+                              Remove recap
+                            </button>
+                          )}
+                        </div>
+                      </section>
+
+                      <MonthlyHighlightStyleEditor
+                        demonName={hardestDemon?.name}
+                        style={highlightStyleDraft}
+                        setStyle={setHighlightStyleDraft}
+                        saving={highlightStyleSaving}
+                        onSave={() => handleSaveMonthlyHighlightStyle(false)}
+                        onReset={() => handleSaveMonthlyHighlightStyle(true)}
+                      />
                     </div>
                   )}
                 </div>

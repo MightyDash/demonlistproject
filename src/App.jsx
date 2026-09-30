@@ -53,6 +53,7 @@ function normalizeDemonPayload(payload) {
     futureListIds: Array.isArray(payload?.futureListIds) ? payload.futureListIds.map(String) : [],
     timelineEntries: Array.isArray(payload?.timelineEntries) ? payload.timelineEntries : [],
     monthlyRecaps: Array.isArray(payload?.monthlyRecaps) ? payload.monthlyRecaps : [],
+    monthlyHighlightStyles: Array.isArray(payload?.monthlyHighlightStyles) ? payload.monthlyHighlightStyles : [],
     newsMeta: payload?.newsMeta && typeof payload.newsMeta === "object" ? payload.newsMeta : { count: 0, latestPublishedAt: "" }
   };
 }
@@ -106,6 +107,7 @@ export default function App() {
   const [futureListIds, setFutureListIds] = useState(() => initialDemonData?.futureListIds || []);
   const [timelineEntries, setTimelineEntries] = useState(() => initialDemonData?.timelineEntries || []);
   const [monthlyRecaps, setMonthlyRecaps] = useState(() => initialDemonData?.monthlyRecaps || []);
+  const [monthlyHighlightStyles, setMonthlyHighlightStyles] = useState(() => initialDemonData?.monthlyHighlightStyles || []);
   const [newsMeta, setNewsMeta] = useState(() => initialDemonData?.newsMeta || { count: 0, latestPublishedAt: "" });
   const [newsArticles, setNewsArticles] = useState([]);
   const [newsLoading, setNewsLoading] = useState(false);
@@ -458,6 +460,7 @@ const [requestForm, setRequestForm] = useState({
       setFutureListIds(nextData.futureListIds);
       setTimelineEntries(nextData.timelineEntries);
       setMonthlyRecaps(nextData.monthlyRecaps);
+      setMonthlyHighlightStyles(nextData.monthlyHighlightStyles);
       setNewsMeta(nextData.newsMeta);
       setDemons(nextData.demons);
       setDemonListError("");
@@ -743,6 +746,39 @@ const [requestForm, setRequestForm] = useState({
         message: error?.message
           ? `Could not connect: ${error.message}`
           : "Could not connect."
+      };
+    }
+  }
+
+  async function saveMonthlyHighlightStyle({ year, month, style, reset = false }) {
+    const token = localStorage.getItem("admin_token");
+    if (!ADMIN_API_URL || !token) {
+      return { success: false, message: "Admin connection is not configured." };
+    }
+
+    try {
+      const data = await requestJson(ADMIN_API_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "setMonthlyHighlightStyle",
+          token,
+          year,
+          month,
+          style,
+          reset
+        })
+      });
+
+      if (!data.success) {
+        return { success: false, message: data.message || "Could not save monthly hardest styling." };
+      }
+
+      setMonthlyHighlightStyles(Array.isArray(data.monthlyHighlightStyles) ? data.monthlyHighlightStyles : []);
+      return { success: true, message: data.message || "Monthly hardest styling saved." };
+    } catch (error) {
+      return {
+        success: false,
+        message: error?.message ? `Could not connect: ${error.message}` : "Could not connect."
       };
     }
   }
@@ -1251,10 +1287,12 @@ async function handleRequestQuickStatus(rowNumber, status) {
           demons={demons}
           timelineEntries={timelineEntries}
           monthlyRecaps={monthlyRecaps}
+          monthlyHighlightStyles={monthlyHighlightStyles}
           requests={requests}
           onOpenRequests={() => navigateTo(ROUTES.requests)}
           onSaveNote={saveDemonNote}
           onSaveMonthlyRecap={saveMonthlyRecap}
+          onSaveMonthlyHighlightStyle={saveMonthlyHighlightStyle}
         />
       ) : requestView && isAdmin ? (
         <RequestPanel
@@ -1302,6 +1340,7 @@ async function handleRequestQuickStatus(rowNumber, status) {
           demons={demons}
           timelineEntries={timelineEntries}
           monthlyRecaps={monthlyRecaps}
+          monthlyHighlightStyles={monthlyHighlightStyles}
           routeYear={timelineRoute.year}
           routeMonth={timelineRoute.month}
           isAdmin={isAdmin}

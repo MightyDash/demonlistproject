@@ -16,6 +16,7 @@ const timelineDemons = [
     id: "2",
     name: "Exact Month Demon",
     placement: "#2",
+    tier: 18.5,
     date: "15/06/2025",
     dateYear: 2025,
     status: "COMPLETED",
@@ -74,5 +75,12 @@ describe("TimelinePage", () => {
     expect(screen.getByText("Exact Month Demon")).toBeInTheDocument();
     expect(screen.queryByText("Invalid Date Demon")).not.toBeInTheDocument();
     expect(screen.queryByText("Progress Demon")).not.toBeInTheDocument();
+  });
+
+  it("shows the hardest demon on non-empty month cards", () => {
+    renderTimeline({ routeYear: 2025 });
+
+    expect(screen.getByLabelText("Hardest demon: Exact Month Demon")).toBeInTheDocument();
+    expect(screen.getAllByText("Exact Month Demon")).toHaveLength(1);
   });
 });

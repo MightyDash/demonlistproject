@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { CalendarDays, ChevronLeft, ChevronRight, Play, Plus, Search, X } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, Crown, Play, Plus, Search, X } from "lucide-react";
 import { comparePlacements, isInProgressDemon, parseDemonDate, placementSortValue } from "../demonUtils.js";
+import { findMonthlyHighlightStyle, getHardestMonthlyDemon, monthlyHighlightTextStyle } from "../monthlyHighlightUtils.js";
 
 const MONTHS = [
   { name: "January", slug: "january" },
@@ -316,6 +317,7 @@ export function TimelinePage({
   demons,
   timelineEntries = [],
   monthlyRecaps = [],
+  monthlyHighlightStyles = [],
   routeYear,
   routeMonth,
   isAdmin,
@@ -522,6 +524,8 @@ export function TimelinePage({
       <div className="timeline-month-grid">
         {selectedYearData.months.map(month => {
           const highlight = getHardestMonthHighlight(selectedYearData.year, month.slug);
+          const hardestDemon = getHardestMonthlyDemon(month.demons);
+          const hardestStyle = findMonthlyHighlightStyle(monthlyHighlightStyles, selectedYearData.year, month.slug);
 
           return (
             <button
@@ -533,6 +537,12 @@ export function TimelinePage({
               <span>{month.name}</span>
               <strong>{month.demons.length}</strong>
               <small>{pluralizeDemons(month.demons.length)}</small>
+              {hardestDemon && (
+                <span className="timeline-month-hardest" aria-label={`Hardest demon: ${hardestDemon.name}`}>
+                  <Crown aria-hidden="true" />
+                  <b style={monthlyHighlightTextStyle(hardestStyle)}>{hardestDemon.name}</b>
+                </span>
+              )}
             </button>
           );
         })}

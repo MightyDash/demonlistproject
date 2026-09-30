@@ -8733,6 +8733,188 @@ body,
   }
 }
 
+/* Monthly hardest champion */
+.timeline-month-card > span:first-child,
+.timeline-month-card > strong,
+.timeline-month-card > small {
+  max-width: 40%;
+}
+
+.timeline-month-hardest {
+  position: absolute;
+  top: 50%;
+  left: 64%;
+  z-index: 2;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 5px;
+  width: 58%;
+  padding: 8px;
+  text-align: center;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.timeline-month-hardest svg,
+.timeline-hardest-preview svg {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  fill: none;
+  color: #f4c652;
+  stroke-width: 2.35;
+  filter: drop-shadow(0 3px 7px rgba(244, 198, 82, 0.28));
+}
+
+.timeline-month-hardest b {
+  display: -webkit-box;
+  max-width: 100%;
+  overflow: hidden;
+  line-height: 1.05;
+  overflow-wrap: normal;
+  word-break: normal;
+  text-align: center;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.timeline-manager-popover {
+  position: relative;
+  top: auto;
+  right: auto;
+  grid-column: 1 / -1;
+  width: 100%;
+  padding: 20px;
+}
+
+.timeline-recap-editor,
+.timeline-style-editor {
+  display: grid;
+  gap: 12px;
+}
+
+.timeline-style-editor {
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.timeline-style-editor-heading strong,
+.timeline-style-editor-heading small {
+  display: block;
+}
+
+.timeline-style-editor-heading small {
+  margin-top: 4px;
+  color: var(--muted);
+}
+
+.timeline-hardest-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 150px;
+  overflow: hidden;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: radial-gradient(circle at 62% 45%, rgba(157, 114, 255, 0.12), transparent 38%), #0b0c12;
+  text-align: center;
+}
+
+.timeline-hardest-preview b {
+  max-width: 92%;
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+
+.timeline-style-controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.timeline-style-controls label {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  min-width: 0;
+  padding: 11px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.025);
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.timeline-style-controls label > span:first-child,
+.timeline-style-range > span {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.timeline-style-range output {
+  color: var(--text);
+}
+
+.timeline-style-controls select {
+  width: 100%;
+  min-height: 38px;
+  padding: 7px 9px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #11131c;
+  color: var(--text);
+}
+
+.timeline-style-controls input[type="range"] {
+  width: 100%;
+  accent-color: var(--obs-purple-bright);
+}
+
+.timeline-style-controls .timeline-style-color input[type="color"] {
+  width: 100%;
+  height: 38px;
+  padding: 3px;
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.timeline-style-controls .timeline-style-check {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-direction: row;
+}
+
+.timeline-style-controls .timeline-style-check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--obs-purple-bright);
+}
+
+@media (max-width: 820px) {
+  .timeline-style-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .timeline-month-hardest {
+    left: 64%;
+    width: 50%;
+  }
+
+  .timeline-month-hardest svg {
+    width: 32px;
+    height: 32px;
+  }
+}
+
 @media (max-width: 760px) {
   .app {
     padding-inline: 12px !important;
