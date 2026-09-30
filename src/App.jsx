@@ -7,7 +7,6 @@ import { DemonListContent } from "./components/DemonListContent.jsx";
 import { DemonModal } from "./components/DemonModal.jsx";
 import { LoginModal } from "./components/LoginModal.jsx";
 import { LogoutConfirm } from "./components/LogoutConfirm.jsx";
-import { MilestonesModal } from "./components/MilestonesModal.jsx";
 import { NewsPage } from "./components/NewsPage.jsx";
 import { RecentChanges } from "./components/RecentChanges.jsx";
 import { RequestPanel } from "./components/RequestPanel.jsx";
@@ -134,7 +133,6 @@ const [requestForm, setRequestForm] = useState({
   const [requestMessage, setRequestMessage] = useState("");
   const [requestError, setRequestError] = useState("");
   const [showLogin, setShowLogin] = useState(false);
-  const [showMilestones, setShowMilestones] = useState(false);
   const [historyChanges, setHistoryChanges] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState("");
@@ -1248,7 +1246,6 @@ async function handleRequestQuickStatus(rowNumber, status) {
           }}
           onOpenLogin={() => setShowLogin(true)}
           onOpenAdmin={() => navigateTo(ROUTES.admin)}
-          onOpenMilestones={() => setShowMilestones(true)}
           onOpenTimeline={() => {
             navigateTo(timelineView ? ROUTES.home : ROUTES.timeline);
           }}
@@ -1376,13 +1373,6 @@ async function handleRequestQuickStatus(rowNumber, status) {
             setShowLogin(false);
             setLoginError("");
           }}
-        />
-      )}
-
-      {showMilestones && (
-        <MilestonesModal
-          demons={demons}
-          onClose={() => setShowMilestones(false)}
         />
       )}
 
