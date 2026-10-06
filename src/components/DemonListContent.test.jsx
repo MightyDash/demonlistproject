@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { DemonListContent } from "./DemonListContent.jsx";
 
 const demons = [
@@ -74,6 +74,10 @@ function renderContent(overrides = {}) {
 }
 
 describe("DemonListContent", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   it("shows live demon list errors with a non-submit retry button", () => {
     const onRetryDemonList = vi.fn();
     renderContent({
@@ -164,5 +168,30 @@ describe("DemonListContent", () => {
 
     expect(screen.getByText("#3")).toBeInTheDocument();
     expect(screen.queryByText(/Current Placement:/)).not.toBeInTheDocument();
+  });
+
+  it("reveals banner cards through the desktop intersection observer", () => {
+    let observerCallback;
+    const observe = vi.fn();
+
+    vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: true })));
+    vi.stubGlobal("IntersectionObserver", class {
+      constructor(callback) {
+        observerCallback = callback;
+      }
+
+      observe = observe;
+      disconnect = vi.fn();
+    });
+
+    const { container } = renderContent();
+    const list = container.querySelector(".demon-banner-list");
+    const firstCard = container.querySelector(".banner-card");
+
+    expect(list).toHaveClass("scroll-reveal-enabled");
+    expect(observe).toHaveBeenCalledTimes(demons.length);
+
+    observerCallback([{ target: firstCard, isIntersecting: true }]);
+    expect(firstCard).toHaveClass("scroll-reveal-visible");
   });
 });
