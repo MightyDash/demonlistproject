@@ -68,6 +68,7 @@ export function DemonListContent({
     ["2021", "2021"],
     ["2020", "2020"],
     ["2019", "2019"],
+    ["2018", "2018"],
     ["progress", "In Progress"],
     ["future", "Future List"]
   ];

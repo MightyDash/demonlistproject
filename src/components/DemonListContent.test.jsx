@@ -165,4 +165,12 @@ describe("DemonListContent", () => {
     expect(screen.getByText("#3")).toBeInTheDocument();
     expect(screen.queryByText(/Current Placement:/)).not.toBeInTheDocument();
   });
+
+  it("offers 2018 as a historical year filter", () => {
+    const setYearView = vi.fn();
+    renderContent({ setYearView });
+
+    fireEvent.click(screen.getByRole("button", { name: "2018" }));
+    expect(setYearView).toHaveBeenCalledWith("2018");
+  });
 });
