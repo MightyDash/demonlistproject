@@ -10777,6 +10777,22 @@ body::before {
   backdrop-filter: blur(8px);
 }
 
+.device-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.device-label svg {
+  flex: 0 0 auto;
+}
+
+.overview-list .device-label {
+  justify-content: flex-end;
+}
+
 /* Shared secondary page polish */
 .timeline-page,
 .recent-panel,

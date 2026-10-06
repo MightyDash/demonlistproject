@@ -40,6 +40,7 @@ describe("demonUtils", () => {
       Tier: "23.99",
       "Tier +/-": "0.01",
       "Done/Progress?": "COMPLETED",
+      device: "laptop",
       skillsetDistribution: [{ name: "Wave", value: 10 }]
     })).toMatchObject({
       id: "10565740",
@@ -54,6 +55,7 @@ describe("demonUtils", () => {
       tierChange: 0.01,
       formerTop1Year: null,
       status: "COMPLETED",
+      device: "Laptop",
       thumbnail: "https://levelthumbs.prevter.me/thumbnail/10565740"
     });
   });
@@ -72,6 +74,7 @@ describe("demonUtils", () => {
       tierChange: 0,
       skillsetDistribution: [],
       status: "COMPLETED",
+      device: "",
       progressPercent: 0,
       thumbnail: ""
     });

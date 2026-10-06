@@ -13,6 +13,7 @@ const demons = [
     year: 2026,
     date: "18/03/2026",
     tier: 23.99,
+    device: "Laptop",
     thumbnail: "https://example.test/bloodbath.jpg",
     status: "COMPLETED"
   },
@@ -172,5 +173,14 @@ describe("DemonListContent", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "2018" }));
     expect(setYearView).toHaveBeenCalledWith("2018");
+  });
+
+  it("shows the completion device beside the tier in banner view", () => {
+    const { container } = renderContent({ filtered: [demons[0]], totalCount: 1 });
+    const side = container.querySelector(".banner-side");
+
+    expect(side).toHaveTextContent("Tier 23,99");
+    expect(side).toHaveTextContent("Laptop");
+    expect(side.querySelector(".device-label svg")).toBeInTheDocument();
   });
 });

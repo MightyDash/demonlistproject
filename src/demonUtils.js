@@ -1,3 +1,5 @@
+import { normalizeDevice } from "./deviceUtils.js";
+
 export function normalizeDemon(row) {
   const id = String(row.id ?? row.ID ?? "");
   const name = row.name ?? row.demon ?? row.Demon ?? "";
@@ -23,6 +25,7 @@ export function normalizeDemon(row) {
       : "standard",
     soloTier: Number(row.soloTier ?? 0),
     twoPlayerTier: Number(row.twoPlayerTier ?? 0),
+    device: normalizeDevice(row.device ?? row.Device),
     formerTop1Year: FORMER_TOP_1[name] || null,
     skillsetDistribution: Array.isArray(row.skillsetDistribution)
       ? row.skillsetDistribution

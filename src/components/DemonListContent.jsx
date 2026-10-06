@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { BarChart3, Check, Info, Search, SlidersHorizontal, Target, Trophy, X } from "lucide-react";
 import { StatCard } from "./StatCard.jsx";
+import { DeviceLabel } from "./DeviceLabel.jsx";
 import { difficultyClass, formatNumber, formatTier, isInProgressDemon } from "../demonUtils.js";
 
 function displayPlacement(value) {
@@ -438,6 +439,7 @@ export function DemonListContent({
                         ) : (
                           <div className="banner-side">
                             <span>Tier {formatTier(demon.tier)}</span>
+                            <DeviceLabel device={demon.device} />
                             <strong className={difficultyClass(demon.difficulty)}>{demon.difficulty || "Unknown"}</strong>
                             <span>{formatNumber(demon.attempts)} attempts</span>
                             <span>{demon.date || demon.year || "Unknown"}</span>

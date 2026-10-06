@@ -12,6 +12,7 @@ import {
 import { formatNumber, formatTier } from "../demonUtils.js";
 import { SHEET_API_URL } from "../config.js";
 import { requestJson } from "../api.js";
+import { DeviceLabel } from "./DeviceLabel.jsx";
 
 const SKILLSET_COLORS = [
   "#1495df",
@@ -219,6 +220,7 @@ export function DemonModal({
                 <div><span>Creator(s)</span><strong>{demon.creator || "Unknown"}</strong></div>
                 <div><span>Difficulty</span><strong className="overview-danger">{cleanDifficulty}</strong></div>
                 <div><span>Tier</span><strong>{formatTier(demon.tier)}</strong></div>
+                {demon.device && <div><span>Device</span><strong><DeviceLabel device={demon.device} iconSize={17} /></strong></div>}
                 {demon.twoPlayerMode !== "standard" && demon.soloTier > 0 && demon.twoPlayerTier > 0 && (
                   <>
                     <div><span>Solo tier</span><strong>{formatTier(demon.soloTier)}{demon.twoPlayerMode === "solo" ? " · Your mode" : ""}</strong></div>

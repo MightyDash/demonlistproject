@@ -17,6 +17,7 @@ import {
 import { requestJson } from "../api.js";
 import { ADMIN_API_URL } from "../config.js";
 import { isInProgressDemon, parseDemonDate } from "../demonUtils.js";
+import { DEVICE_OPTIONS } from "../deviceUtils.js";
 import {
   DEFAULT_MONTHLY_HIGHLIGHT_STYLE,
   findMonthlyHighlightStyle,
@@ -256,6 +257,7 @@ export function AdminPanel({
     date: "",
     attempts: "",
     status: "COMPLETED",
+    device: "",
     progressPercent: "",
     twoPlayerMode: "standard"
   });
@@ -448,6 +450,7 @@ export function AdminPanel({
         date: String(data.demon.date || data.demon.year || ""),
         attempts: String(data.demon.attempts || ""),
         status: data.demon.status || "COMPLETED",
+        device: data.demon.device || "",
         twoPlayerMode: data.demon.twoPlayerMode || "standard",
         progressPercent: data.demon.progressPercent === undefined || data.demon.progressPercent === null
           ? ""
@@ -501,6 +504,7 @@ export function AdminPanel({
         date: dateInput.value,
         attempts,
         status: editForm.status,
+        device: editForm.device,
         twoPlayerMode: editForm.twoPlayerMode,
         progressPercent: editForm.status === "IN PROGRESS" ? progressPercent : ""
       });
@@ -1575,6 +1579,17 @@ export function AdminPanel({
                   >
                     <option value="COMPLETED">COMPLETED</option>
                     <option value="IN PROGRESS">IN PROGRESS</option>
+                  </select>
+                </label>
+
+                <label>
+                  Device
+                  <select
+                    value={editForm.device}
+                    onChange={e => setEditForm({ ...editForm, device: e.target.value })}
+                  >
+                    <option value="">Not set</option>
+                    {DEVICE_OPTIONS.map(device => <option key={device} value={device}>{device}</option>)}
                   </select>
                 </label>
 
