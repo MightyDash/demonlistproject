@@ -94,6 +94,8 @@ export default function App() {
   const [demons, setDemons] = useState(() => initialDemonData?.demons || []);
   const [source, setSource] = useState(() => initialDemonData ? "cache" : "loading");
   const [query, setQuery] = useState("");
+  const [device, setDevice] = useState("all");
+  const [deviceOpen, setDeviceOpen] = useState(false);
   const [difficulty, setDifficulty] = useState("all");
   const [difficultyOpen, setDifficultyOpen] = useState(false);
   const [segment, setSegment] = useState("all");
@@ -984,7 +986,10 @@ async function handleRequestQuickStatus(rowNumber, status) {
       const matchesDifficulty =
         difficulty === "all" || demon.difficulty === difficulty;
 
-      return matchesQuery && matchesDifficulty;
+      const matchesDevice =
+        device === "all" || demon.device === device;
+
+      return matchesQuery && matchesDevice && matchesDifficulty;
     };
 
     if (yearView === "future") {
@@ -1044,7 +1049,7 @@ async function handleRequestQuickStatus(rowNumber, status) {
 
         return comparePlacements(a.placement, b.placement);
       });
-  }, [demons, query, difficulty, segment, yearView, futureListIds]);
+  }, [demons, query, device, difficulty, segment, yearView, futureListIds]);
 
   const currentIndex = useMemo(() => {
     if (!selected) return -1;
@@ -1082,6 +1087,7 @@ async function handleRequestQuickStatus(rowNumber, status) {
     );
 
     setQuery("");
+    setDevice("all");
     setDifficulty("all");
     setSegment("all");
     setYearView("all");
@@ -1200,6 +1206,10 @@ async function handleRequestQuickStatus(rowNumber, status) {
       setSelected={setSelected}
       query={query}
       setQuery={setQuery}
+      device={device}
+      setDevice={setDevice}
+      deviceOpen={deviceOpen}
+      setDeviceOpen={setDeviceOpen}
       difficulty={difficulty}
       setDifficulty={setDifficulty}
       difficultyOpen={difficultyOpen}

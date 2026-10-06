@@ -42,6 +42,10 @@ function renderContent(overrides = {}) {
     setSelected: vi.fn(),
     query: "",
     setQuery: vi.fn(),
+    device: "all",
+    setDevice: vi.fn(),
+    deviceOpen: false,
+    setDeviceOpen: vi.fn(),
     difficulty: "all",
     setDifficulty: vi.fn(),
     difficultyOpen: false,
@@ -75,6 +79,16 @@ function renderContent(overrides = {}) {
 }
 
 describe("DemonListContent", () => {
+  it("offers device filtering between search and difficulty", () => {
+    const setDevice = vi.fn();
+    const setDeviceOpen = vi.fn();
+    renderContent({ deviceOpen: true, setDevice, setDeviceOpen });
+
+    fireEvent.click(screen.getByRole("button", { name: "Laptop" }));
+    expect(setDevice).toHaveBeenCalledWith("Laptop");
+    expect(setDeviceOpen).toHaveBeenCalledWith(false);
+  });
+
   it("shows live demon list errors with a non-submit retry button", () => {
     const onRetryDemonList = vi.fn();
     renderContent({

@@ -751,7 +751,7 @@ h1 {
 
 .controls {
   display: grid;
-  grid-template-columns: 1fr 240px auto;
+  grid-template-columns: minmax(260px, 1fr) 190px 240px auto;
   gap: 12px;
   padding: 14px;
   margin-bottom: 14px;
@@ -10797,7 +10797,7 @@ body::before {
 
 .desktop-list-shell .controls {
   display: grid !important;
-  grid-template-columns: minmax(260px, 1.45fr) minmax(190px, 0.55fr) auto !important;
+  grid-template-columns: minmax(260px, 1.45fr) minmax(165px, 0.42fr) minmax(190px, 0.55fr) auto !important;
   gap: 12px !important;
   align-items: center !important;
   margin: 0 0 14px !important;

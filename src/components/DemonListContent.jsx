@@ -3,6 +3,7 @@ import { BarChart3, Check, Info, Search, SlidersHorizontal, Target, Trophy, X } 
 import { StatCard } from "./StatCard.jsx";
 import { DeviceLabel } from "./DeviceLabel.jsx";
 import { difficultyClass, formatNumber, formatTier, isInProgressDemon } from "../demonUtils.js";
+import { DEVICE_OPTIONS } from "../deviceUtils.js";
 
 function displayPlacement(value) {
   return String(value || "").trim() || "Unplaced";
@@ -12,6 +13,10 @@ export function DemonListContent({
   setSelected,
   query,
   setQuery,
+  device,
+  setDevice,
+  deviceOpen,
+  setDeviceOpen,
   difficulty,
   setDifficulty,
   difficultyOpen,
@@ -48,6 +53,7 @@ export function DemonListContent({
     : new Set(Array.from(communityRequestedIds || []).map(String));
   const activeFilterCount = [
     query.trim(),
+    device !== "all",
     difficulty !== "all",
     segment !== "all",
     yearView !== "all"
@@ -93,6 +99,7 @@ export function DemonListContent({
 
   function resetFilters() {
     setQuery("");
+    setDevice("all");
     setDifficulty("all");
     setSegment("all");
     setYearView("all");
@@ -181,11 +188,46 @@ export function DemonListContent({
                   placeholder="Search demon, creator or ID..."
                 />
               </div>
+
+              <div className="custom-select device-filter-select">
+                <button
+                  className="custom-select-button"
+                  onClick={() => {
+                    setDeviceOpen(open => !open);
+                    setDifficultyOpen(false);
+                  }}
+                  type="button"
+                >
+                  <span>{device === "all" ? "All Devices" : device}</span>
+                  <span className="custom-select-arrow">⌄</span>
+                </button>
+
+                {deviceOpen && (
+                  <div className="custom-select-menu">
+                    {["all", ...DEVICE_OPTIONS].map(option => (
+                      <button
+                        key={option}
+                        type="button"
+                        className={`custom-select-option ${device === option ? "active" : ""}`}
+                        onClick={() => {
+                          setDevice(option);
+                          setDeviceOpen(false);
+                        }}
+                      >
+                        {option === "all" ? "All Devices" : option}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
     
               <div className="custom-select">
                 <button
                   className="custom-select-button"
-                  onClick={() => setDifficultyOpen(open => !open)}
+                  onClick={() => {
+                    setDifficultyOpen(open => !open);
+                    setDeviceOpen(false);
+                  }}
                   type="button"
                 >
                   <span>{difficulty === "all" ? "All difficulties" : difficulty}</span>
