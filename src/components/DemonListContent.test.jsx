@@ -182,5 +182,6 @@ describe("DemonListContent", () => {
     expect(side).toHaveTextContent("Tier 23,99");
     expect(side).toHaveTextContent("Laptop");
     expect(side.querySelector(".device-label svg")).toBeInTheDocument();
+    expect(side.firstElementChild).toHaveClass("device-label");
   });
 });

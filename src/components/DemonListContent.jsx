@@ -438,8 +438,8 @@ export function DemonListContent({
                           </div>
                         ) : (
                           <div className="banner-side">
-                            <span>Tier {formatTier(demon.tier)}</span>
                             <DeviceLabel device={demon.device} />
+                            <span>Tier {formatTier(demon.tier)}</span>
                             <strong className={difficultyClass(demon.difficulty)}>{demon.difficulty || "Unknown"}</strong>
                             <span>{formatNumber(demon.attempts)} attempts</span>
                             <span>{demon.date || demon.year || "Unknown"}</span>
