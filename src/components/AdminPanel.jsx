@@ -17,7 +17,7 @@ import {
 import { requestJson } from "../api.js";
 import { ADMIN_API_URL } from "../config.js";
 import { isInProgressDemon, parseDemonDate } from "../demonUtils.js";
-import { DEVICE_OPTIONS } from "../deviceUtils.js";
+import { BulkDemonEditor } from "./BulkDemonEditor.jsx";
 import {
   DEFAULT_MONTHLY_HIGHLIGHT_STYLE,
   findMonthlyHighlightStyle,
@@ -247,21 +247,6 @@ export function AdminPanel({
 
   const [removeLevelId, setRemoveLevelId] = useState("");
 
-  const [editSearch, setEditSearch] = useState("");
-  const [editFound, setEditFound] = useState(null);
-  const [editNotFound, setEditNotFound] = useState(false);
-  const [editForm, setEditForm] = useState({
-    name: "",
-    difficulty: "",
-    creator: "",
-    date: "",
-    attempts: "",
-    status: "COMPLETED",
-    device: "",
-    progressPercent: "",
-    twoPlayerMode: "standard"
-  });
-
   const [adminMessage, setAdminMessage] = useState("");
   const [adminError, setAdminError] = useState("");
   const [adminToast, setAdminToast] = useState(null);
@@ -313,8 +298,6 @@ export function AdminPanel({
     setShowRefreshTokenForm(false);
     setShowNoteManager(false);
     setShowTimelineManager(false);
-    setEditFound(null);
-    setEditNotFound(false);
     setRecapPopoverMonth("");
     setRecapUrlDraft("");
     setHighlightStyleDraft({ ...DEFAULT_MONTHLY_HIGHLIGHT_STYLE });
@@ -423,104 +406,29 @@ export function AdminPanel({
     }
   }
 
-  async function handleSearchEdit() {
-    setAdminMessage("");
-    setAdminError("");
-    setEditFound(null);
-    setEditNotFound(false);
-
-    const q = editSearch.trim();
-    if (!q) {
-      setAdminError("Enter a Level ID or name.");
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const data = await sendAdminRequest({ action: "findDemon", query: q });
-      if (!data.success || !data.demon) {
-        setEditNotFound(true);
-        return;
-      }
-      setEditFound(data.demon);
-      setEditForm({
-        name: data.demon.name || "",
-        difficulty: data.demon.difficulty || "",
-        creator: data.demon.creator || "",
-        date: String(data.demon.date || data.demon.year || ""),
-        attempts: String(data.demon.attempts || ""),
-        status: data.demon.status || "COMPLETED",
-        device: data.demon.device || "",
-        twoPlayerMode: data.demon.twoPlayerMode || "standard",
-        progressPercent: data.demon.progressPercent === undefined || data.demon.progressPercent === null
-          ? ""
-          : String(data.demon.progressPercent)
-      });
-    } catch (error) {
-      setAdminError(error.message || "Could not connect to Apps Script.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  async function handleEditDemon() {
+  async function handleBulkEditDemons(edits) {
     setAdminMessage("");
     setAdminError("");
     setAdminToast(null);
 
-    const dateInput = normalizeDateInput(editForm.date);
-    const attempts = Number(editForm.attempts);
-    const progressPercent = Number(editForm.progressPercent);
-
-    if (!editForm.name.trim()) {
-      setAdminError("Name is required.");
-      return;
-    }
-    if (!dateInput.valid) {
-      setAdminError("Date must be a four-digit year or dd/mm/yyyy.");
-      return;
-    }
-    if (!Number.isInteger(attempts) || attempts < 0) {
-      setAdminError("Attempts must be a valid number.");
-      return;
-    }
-    if (editForm.status !== "COMPLETED" && editForm.status !== "IN PROGRESS") {
-      setAdminError("Status must be COMPLETED or IN PROGRESS.");
-      return;
-    }
-    if (editForm.status === "IN PROGRESS" && (!Number.isInteger(progressPercent) || progressPercent < 0 || progressPercent > 100)) {
-      setAdminError("Progress must be a percentage between 0 and 100.");
-      return;
-    }
-
     setIsSubmitting(true);
     try {
       const data = await sendAdminRequest({
-        action: "editDemon",
-        levelId: editFound.id,
-        name: editForm.name.trim(),
-        difficulty: editForm.difficulty.trim(),
-        creator: editForm.creator.trim(),
-        date: dateInput.value,
-        attempts,
-        status: editForm.status,
-        device: editForm.device,
-        twoPlayerMode: editForm.twoPlayerMode,
-        progressPercent: editForm.status === "IN PROGRESS" ? progressPercent : ""
+        action: "bulkEditDemons",
+        edits
       });
 
       if (!data.success) {
-        setAdminError(data.message || "Could not edit the demon.");
-        return;
+        setAdminError(data.message || "Could not save the demon changes.");
+        return data;
       }
 
-      showAdminToast(`${editForm.name.trim()} has been edited.`);
-      setEditFound(null);
-      setEditSearch("");
-      setShowEditForm(false);
+      showAdminToast(data.message || `${edits.length} demons updated.`);
       if (onDataChanged) onDataChanged();
+      return data;
     } catch (error) {
       setAdminError(error.message || "Could not connect to Apps Script.");
+      return { success: false, message: error.message };
     } finally {
       setIsSubmitting(false);
     }
@@ -766,8 +674,6 @@ export function AdminPanel({
       return;
     }
 
-    setEditFound(null);
-    setEditNotFound(false);
     setIsSubmitting(true);
 
     try {
@@ -916,8 +822,6 @@ export function AdminPanel({
             setShowRefreshTokenForm(false);
             setShowNoteManager(false);
             setShowTimelineManager(false);
-            setEditFound(null);
-            setEditNotFound(false);
             setAdminMessage("");
             setAdminError("");
           }}
@@ -938,8 +842,6 @@ export function AdminPanel({
             setShowRefreshTokenForm(false);
             setShowNoteManager(false);
             setShowTimelineManager(false);
-            setEditFound(null);
-            setEditNotFound(false);
             setAdminMessage("");
             setAdminError("");
           }}
@@ -960,8 +862,6 @@ export function AdminPanel({
             setShowRefreshTokenForm(false);
             setShowNoteManager(false);
             setShowTimelineManager(false);
-            setEditFound(null);
-            setEditNotFound(false);
             setAdminMessage("");
             setAdminError("");
           }}
@@ -982,8 +882,6 @@ export function AdminPanel({
             setShowEditForm(false);
             setShowNoteManager(false);
             setShowTimelineManager(false);
-            setEditFound(null);
-            setEditNotFound(false);
             setAdminMessage("");
             setAdminError("");
           }}
@@ -1475,176 +1373,12 @@ export function AdminPanel({
       )}
 
       {showEditForm && (
-        <div className="admin-form">
-          <h3>Edit Demon</h3>
-
-          <div className="edit-search-row">
-            <input
-              value={editSearch}
-              onChange={e => {
-                setEditSearch(e.target.value);
-                setEditFound(null);
-                setEditNotFound(false);
-              }}
-              onKeyDown={e => { if (e.key === "Enter") handleSearchEdit(); }}
-              placeholder="Exact name or Level ID..."
-            />
-            <button
-              className="login-button edit-search-btn"
-              onClick={handleSearchEdit}
-              disabled={isSubmitting}
-              type="button"
-            >
-              {isSubmitting ? "Searching..." : "Search"}
-            </button>
-          </div>
-
-          <p className="edit-search-hint">
-            Enter the exact name (case-insensitive) or exact Level ID.
-          </p>
-
-          {editNotFound && (
-            <p className="admin-error" style={{ marginTop: "12px" }}>
-              No demon found. Check the name or Level ID.
-            </p>
-          )}
-
-          {editFound && (
-            <>
-              <div className="edit-found-badge">
-                <span className="edit-found-dot" />
-                <span>Found: <strong>{editFound.name}</strong></span>
-                <span className="edit-found-id">ID: {editFound.id}</span>
-              </div>
-
-              <div className="edit-fields-grid">
-                <label>
-                  Name
-                  <input
-                    value={editForm.name}
-                    onChange={e => setEditForm({ ...editForm, name: e.target.value })}
-                    placeholder="Demon name"
-                  />
-                </label>
-
-                <label>
-                  Difficulty
-                  <input
-                    value={editForm.difficulty}
-                    onChange={e => setEditForm({ ...editForm, difficulty: e.target.value })}
-                    placeholder="Example: Extreme Demon"
-                  />
-                </label>
-
-                <label>
-                  Maker(s)
-                  <input
-                    value={editForm.creator}
-                    onChange={e => setEditForm({ ...editForm, creator: e.target.value })}
-                    placeholder="Example: Riot & more"
-                  />
-                </label>
-
-                <label>
-                  Date
-                  <input
-                    value={editForm.date}
-                    onChange={e => setEditForm({ ...editForm, date: e.target.value })}
-                    placeholder="Example: 2024 or 09/10/2025"
-                  />
-                </label>
-
-                <label>
-                  Attempts
-                  <input
-                    type="number"
-                    min="0"
-                    value={editForm.attempts}
-                    onChange={e => setEditForm({ ...editForm, attempts: e.target.value })}
-                    placeholder="Example: 5000"
-                  />
-                </label>
-
-                <label>
-                  Status
-                  <select
-                    value={editForm.status}
-                    onChange={e =>
-                      setEditForm({
-                        ...editForm,
-                        status: e.target.value,
-                        progressPercent: e.target.value === "IN PROGRESS" ? editForm.progressPercent : ""
-                      })
-                    }
-                  >
-                    <option value="COMPLETED">COMPLETED</option>
-                    <option value="IN PROGRESS">IN PROGRESS</option>
-                  </select>
-                </label>
-
-                <label>
-                  Device
-                  <select
-                    value={editForm.device}
-                    onChange={e => setEditForm({ ...editForm, device: e.target.value })}
-                  >
-                    <option value="">Not set</option>
-                    {DEVICE_OPTIONS.map(device => <option key={device} value={device}>{device}</option>)}
-                  </select>
-                </label>
-
-                <label>
-                  2-player demon: play mode
-                  <select
-                    value={editForm.twoPlayerMode}
-                    onChange={e => setEditForm({ ...editForm, twoPlayerMode: e.target.value })}
-                  >
-                    <option value="standard">Not a 2-player demon</option>
-                    <option value="solo">Solo</option>
-                    <option value="two-player">With two players</option>
-                  </select>
-                </label>
-
-                {editForm.status === "IN PROGRESS" && (
-                  <label>
-                    Progress %
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={editForm.progressPercent}
-                      onChange={e => setEditForm({ ...editForm, progressPercent: e.target.value })}
-                      placeholder="Example: 67"
-                    />
-                  </label>
-                )}
-
-              </div>
-
-              <div className="admin-form-actions" style={{ marginTop: "8px" }}>
-                <button
-                  className="login-button"
-                  onClick={handleEditDemon}
-                  disabled={isSubmitting}
-                  type="button"
-                >
-                  {isSubmitting ? "Saving..." : "Save"}
-                </button>
-                <button
-                  className="close-button"
-                  onClick={() => {
-                    setEditFound(null);
-                    setEditSearch("");
-                    setEditNotFound(false);
-                  }}
-                  type="button"
-                >
-                  Cancel
-                </button>
-              </div>
-            </>
-          )}
-        </div>
+        <BulkDemonEditor
+          demons={demons}
+          saving={isSubmitting}
+          onSave={handleBulkEditDemons}
+          onClose={() => setShowEditForm(false)}
+        />
       )}
     </section>
   );
