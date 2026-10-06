@@ -18,7 +18,7 @@ export function createDemonEditDraft(demon) {
     date: String(demon?.date || demon?.year || ""),
     attempts: String(demon?.attempts ?? ""),
     status: String(demon?.status || "COMPLETED"),
-    device: String(demon?.device || ""),
+    device: String(demon?.device || "PC"),
     twoPlayerMode: String(demon?.twoPlayerMode || "standard"),
     progressPercent: String(demon?.progressPercent ?? "")
   };

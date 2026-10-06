@@ -161,7 +161,6 @@ export function BulkDemonEditor({ demons, saving, onSave, onClose }) {
                     </label>
                     <label>Device
                       <select value={draft.device} onChange={event => updateDraft(levelId, "device", event.target.value)}>
-                        <option value="">Not set</option>
                         {DEVICE_OPTIONS.map(device => <option key={device} value={device}>{device}</option>)}
                       </select>
                     </label>

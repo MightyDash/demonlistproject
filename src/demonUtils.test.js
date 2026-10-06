@@ -74,7 +74,7 @@ describe("demonUtils", () => {
       tierChange: 0,
       skillsetDistribution: [],
       status: "COMPLETED",
-      device: "",
+      device: "PC",
       progressPercent: 0,
       thumbnail: ""
     });

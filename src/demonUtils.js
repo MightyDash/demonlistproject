@@ -25,7 +25,7 @@ export function normalizeDemon(row) {
       : "standard",
     soloTier: Number(row.soloTier ?? 0),
     twoPlayerTier: Number(row.twoPlayerTier ?? 0),
-    device: normalizeDevice(row.device ?? row.Device),
+    device: normalizeDevice(row.device ?? row.Device) || "PC",
     formerTop1Year: FORMER_TOP_1[name] || null,
     skillsetDistribution: Array.isArray(row.skillsetDistribution)
       ? row.skillsetDistribution
