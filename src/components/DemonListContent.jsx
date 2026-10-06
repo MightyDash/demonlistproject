@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { BarChart3, Check, Info, Search, SlidersHorizontal, Target, Trophy, X } from "lucide-react";
 import { StatCard } from "./StatCard.jsx";
 import { difficultyClass, formatNumber, formatTier, isInProgressDemon } from "../demonUtils.js";
@@ -37,7 +37,6 @@ export function DemonListContent({
   onToggleFutureListDemon,
   communityRequestedIds = new Set()
 }) {
-  const bannerListRef = useRef(null);
   const [showProgressInfo, setShowProgressInfo] = useState(false);
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const isProgressView = yearView === "progress";
@@ -89,46 +88,6 @@ export function DemonListContent({
       window.removeEventListener("keydown", handleEscape);
     };
   }, [filterDrawerOpen]);
-
-  useEffect(() => {
-    const list = bannerListRef.current;
-    if (
-      viewMode !== "banner" ||
-      isMobileView ||
-      !list ||
-      typeof window.matchMedia !== "function" ||
-      typeof window.IntersectionObserver !== "function"
-    ) return undefined;
-
-    const motionQuery = window.matchMedia("(min-width: 641px) and (prefers-reduced-motion: no-preference)");
-    if (!motionQuery.matches) return undefined;
-
-    const cards = Array.from(list.querySelectorAll(".banner-card"));
-    list.classList.add("scroll-reveal-enabled");
-
-    const observer = new window.IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        entry.target.classList.toggle("scroll-reveal-visible", entry.isIntersecting);
-      });
-    }, {
-      threshold: 0.42,
-      rootMargin: "0px 0px -5% 0px"
-    });
-
-    cards.forEach((card, index) => {
-      card.style.setProperty("--banner-reveal-delay", `${Math.min(index % 4, 3) * 24}ms`);
-      observer.observe(card);
-    });
-
-    return () => {
-      observer.disconnect();
-      list.classList.remove("scroll-reveal-enabled");
-      cards.forEach(card => {
-        card.classList.remove("scroll-reveal-visible");
-        card.style.removeProperty("--banner-reveal-delay");
-      });
-    };
-  }, [filtered, isMobileView, viewMode]);
 
   function resetFilters() {
     setQuery("");
@@ -407,7 +366,7 @@ export function DemonListContent({
                   })}
                 </div>
               ) : viewMode === "banner" ? (
-                <div className="demon-banner-list" ref={bannerListRef}>
+                <div className="demon-banner-list">
                   {filtered.map(demon => {
                     const isInProgress = isInProgressDemon(demon);
                     const renderAsProgress = isInProgress && isProgressView;

@@ -11184,30 +11184,3 @@ body::before {
     display: grid !important;
   }
 }
-
-/* React Bits-inspired desktop scroll reveal for the banner list. */
-@media (min-width: 641px) and (prefers-reduced-motion: no-preference) {
-  .demon-banner-list.scroll-reveal-enabled .banner-card {
-    opacity: 0 !important;
-    filter: blur(4px);
-    transform: translateY(24px) scale(0.94) !important;
-    transition:
-      opacity 260ms cubic-bezier(0.25, 0.46, 0.45, 0.94) var(--banner-reveal-delay, 0ms),
-      filter 260ms cubic-bezier(0.25, 0.46, 0.45, 0.94) var(--banner-reveal-delay, 0ms),
-      transform 320ms cubic-bezier(0.25, 0.46, 0.45, 0.94) var(--banner-reveal-delay, 0ms),
-      border-color 180ms ease,
-      box-shadow 180ms ease !important;
-    will-change: opacity, filter, transform;
-  }
-
-  .demon-banner-list.scroll-reveal-enabled .banner-card.scroll-reveal-visible {
-    opacity: 1 !important;
-    filter: none;
-    transform: translateY(0) scale(1) !important;
-  }
-
-  .demon-banner-list.scroll-reveal-enabled .banner-card.scroll-reveal-visible:hover,
-  .demon-banner-list.scroll-reveal-enabled .banner-card.scroll-reveal-visible:focus-visible {
-    transform: translateY(-2px) scale(1) !important;
-  }
-}
