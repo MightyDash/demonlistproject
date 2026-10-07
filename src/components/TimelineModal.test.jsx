@@ -50,9 +50,11 @@ function renderTimeline(overrides = {}) {
       timelineEntries={[]}
       routeYear={null}
       routeMonth={null}
+      routeOverview={false}
       isAdmin={false}
       onSelectDemon={vi.fn()}
       onOpenMonth={vi.fn()}
+      onOpenYearOverview={vi.fn()}
       onBackToTimeline={vi.fn()}
       onAddTimelineEntry={vi.fn()}
       onRemoveTimelineEntry={vi.fn()}
@@ -84,5 +86,28 @@ describe("TimelinePage", () => {
     expect(screen.getByLabelText("Hardest demon: Exact Month Demon")).toBeInTheDocument();
     expect(screen.getByLabelText("Hardest difficulty: Insane Demon")).toBeInTheDocument();
     expect(screen.getAllByText("Exact Month Demon")).toHaveLength(1);
+  });
+
+  it("shows all month demons in the year overview without year-only entries", () => {
+    const demons = [
+      ...timelineDemons,
+      {
+        id: "5",
+        name: "January Demon",
+        placement: "#5",
+        date: "08/01/2025",
+        dateYear: 2025,
+        status: "COMPLETED"
+      }
+    ];
+
+    renderTimeline({ demons, routeYear: 2025, routeOverview: true });
+
+    expect(screen.getByRole("heading", { name: "2025 Year Overview" })).toBeInTheDocument();
+    const januaryDemon = screen.getByText("January Demon");
+    const juneDemon = screen.getByText("Exact Month Demon");
+    expect(januaryDemon.compareDocumentPosition(juneDemon) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.getByText("Exact Month Demon")).toBeInTheDocument();
+    expect(screen.queryByText("Year Only Demon")).not.toBeInTheDocument();
   });
 });

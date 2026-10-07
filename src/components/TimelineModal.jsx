@@ -320,9 +320,11 @@ export function TimelinePage({
   monthlyHighlightStyles = [],
   routeYear,
   routeMonth,
+  routeOverview = false,
   isAdmin,
   onSelectDemon,
   onOpenMonth,
+  onOpenYearOverview,
   onBackToTimeline,
   onAddTimelineEntry,
   onRemoveTimelineEntry
@@ -337,6 +339,10 @@ export function TimelinePage({
   const selectedYearData = timeline.find(item => item.year === activeYear) || timeline[timeline.length - 1] || null;
   const selectedMonthData = selectedYearData?.months.find(month => month.slug === routeMonth) || null;
   const isMonthPage = Boolean(routeYear && routeMonth && selectedMonthData);
+  const isYearOverviewPage = Boolean(routeYear && routeOverview && selectedYearData);
+  const yearOverviewDemons = selectedYearData
+    ? selectedYearData.months.flatMap(month => month.demons)
+    : [];
   const previousMonth = selectedYearData && selectedMonthData
     ? getAdjacentTimelineMonth(timeline, selectedYearData.year, selectedMonthData.slug, -1)
     : null;
@@ -377,6 +383,10 @@ export function TimelinePage({
     previousMonth?.slug,
     previousMonth?.year
   ]);
+
+  useEffect(() => {
+    if (routeYear) setSelectedYear(routeYear);
+  }, [routeYear]);
 
   function handleSelectYear(year) {
     setSelectedYear(year);
@@ -486,6 +496,41 @@ export function TimelinePage({
     );
   }
 
+  if (isYearOverviewPage) {
+    return (
+      <section className="timeline-page timeline-month-page timeline-year-overview-page">
+        <div className="timeline-month-page-header timeline-year-overview-header">
+          <button className="timeline-back-link" onClick={onBackToTimeline} type="button">
+            Back to timeline
+          </button>
+          <div className="timeline-month-title-block">
+            <p className="eyebrow">Timeline</p>
+            <div className="timeline-month-title-copy">
+              <h2>{selectedYearData.year} Year Overview</h2>
+              <p>{pluralizeDemons(yearOverviewDemons.length)} placed across all months</p>
+            </div>
+          </div>
+          <span aria-hidden="true" />
+        </div>
+
+        {yearOverviewDemons.length > 0 ? (
+          <div className="timeline-demon-grid timeline-month-page-grid timeline-year-overview-grid">
+            {yearOverviewDemons.map(({ demon, date }) => (
+              <TimelineDemonCard
+                demon={demon}
+                key={`${date.month}-${demon.id || demon.name}-${demon.placement}`}
+                canRemove={false}
+                onSelectDemon={onSelectDemon}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="timeline-empty">No demons have been placed in this year yet.</div>
+        )}
+      </section>
+    );
+  }
+
   return (
     <section className="timeline-page">
       <div className="timeline-header">
@@ -519,6 +564,14 @@ export function TimelinePage({
           <h3>{selectedYearData.year}</h3>
           <p>{pluralizeDemons(selectedYearData.demons.length)} completed, {pluralizeDemons(selectedYearData.exactDemons.length)} placed in months</p>
         </div>
+        <button
+          className="timeline-year-overview-button"
+          onClick={() => onOpenYearOverview?.(selectedYearData.year)}
+          type="button"
+        >
+          <CalendarDays size={18} />
+          <span>Year Overview</span>
+        </button>
       </div>
 
       <div className="timeline-month-grid">

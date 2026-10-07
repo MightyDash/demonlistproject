@@ -14,6 +14,8 @@ describe("routeUtils", () => {
     ["/unknown", ROUTES.home],
     ["/timeline/2018/january", "/timeline/2018/january"],
     ["/timeline/2018/January", "/timeline/2018/january"],
+    ["/timeline/2026/overview", "/timeline/2026/overview"],
+    ["/timeline/2026/Overview", "/timeline/2026/overview"],
     ["/timeline/2018/notamonth", ROUTES.timeline],
     ["/timeline/20a8/january", ROUTES.home],
     ["/timeline/2018/january/", "/timeline/2018/january"],
@@ -23,14 +25,15 @@ describe("routeUtils", () => {
   });
 
   it.each([
-    ["/timeline/2018/january", { year: 2018, month: "january" }],
-    ["/timeline/2026/december", { year: 2026, month: "december" }],
-    ["/timeline/2026/March", { year: 2026, month: "march" }],
-    ["/timeline/2026/notamonth", { year: null, month: null }],
-    ["/timeline/january", { year: null, month: null }],
-    ["/timeline/year/january", { year: null, month: null }],
-    ["/timeline", { year: null, month: null }],
-    ["/whatever", { year: null, month: null }]
+    ["/timeline/2018/january", { year: 2018, month: "january", overview: false }],
+    ["/timeline/2026/december", { year: 2026, month: "december", overview: false }],
+    ["/timeline/2026/March", { year: 2026, month: "march", overview: false }],
+    ["/timeline/2026/overview", { year: 2026, month: null, overview: true }],
+    ["/timeline/2026/notamonth", { year: null, month: null, overview: false }],
+    ["/timeline/january", { year: null, month: null, overview: false }],
+    ["/timeline/year/january", { year: null, month: null, overview: false }],
+    ["/timeline", { year: null, month: null, overview: false }],
+    ["/whatever", { year: null, month: null, overview: false }]
   ])("parses %s", (input, expected) => {
     expect(parseTimelineRoute(input)).toEqual(expected);
   });

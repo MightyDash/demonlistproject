@@ -7754,6 +7754,40 @@ textarea:focus-visible {
   margin-bottom: 18px;
 }
 
+.timeline-year-overview-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 44px;
+  padding: 0 17px;
+  border: 1px solid rgba(196, 181, 253, 0.55);
+  border-radius: 8px;
+  background: #a78bfa;
+  color: #141018;
+  font: inherit;
+  font-weight: 950;
+  cursor: pointer;
+  box-shadow: 0 12px 30px rgba(124, 58, 237, 0.2);
+  transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+}
+
+.timeline-year-overview-button:hover,
+.timeline-year-overview-button:focus-visible {
+  background: #b9a3ff;
+  box-shadow: 0 16px 34px rgba(124, 58, 237, 0.3);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.timeline-year-overview-header {
+  align-items: start;
+}
+
+.timeline-year-overview-grid {
+  align-content: start;
+}
+
 .timeline-month-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -8259,6 +8293,15 @@ textarea:focus-visible {
   .timeline-page {
     margin-top: 16px;
     padding: 18px;
+  }
+
+  .timeline-detail-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .timeline-year-overview-button {
+    width: 100%;
   }
 
   .timeline-years {
