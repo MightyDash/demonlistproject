@@ -10,6 +10,7 @@ import { LogoutConfirm } from "./components/LogoutConfirm.jsx";
 import { NewsPage } from "./components/NewsPage.jsx";
 import { RecentChanges } from "./components/RecentChanges.jsx";
 import { RequestPanel } from "./components/RequestPanel.jsx";
+import { ScrollToTopButton } from "./components/ScrollToTopButton.jsx";
 import { TimelinePage } from "./components/TimelineModal.jsx";
 import { buildHistoricalRanking, comparePlacements, isInProgressDemon, normalizeDemon, segmentForPlacement } from "./demonUtils.js";
 import { requestJson } from "./api.js";
@@ -1385,6 +1386,8 @@ async function handleRequestQuickStatus(rowNumber, status) {
           }}
         />
       )}
+
+      <ScrollToTopButton />
 
     </div>
   );

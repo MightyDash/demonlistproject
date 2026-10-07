@@ -604,27 +604,88 @@ h1 {
   gap: 14px;
 }
 
-.hero-info-button {
-  display: grid;
-  place-items: center;
-  width: clamp(38px, 4vw, 52px);
-  height: clamp(38px, 4vw, 52px);
-  border: 1px solid rgba(94, 161, 255, 0.34);
-  border-radius: 999px;
-  background: rgba(94, 161, 255, 0.08);
-  color: var(--blue);
+.back-to-top-button {
+  position: fixed;
+  right: 24px;
+  bottom: 76px;
+  z-index: 250;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--accent) 48%, transparent);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--panel) 90%, #090910);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 25%, transparent), 0 12px 28px rgba(0, 0, 0, 0.32);
+  color: #fff;
   cursor: pointer;
-  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(18px) scale(0.9);
+  transition: width 0.3s ease, border-radius 0.3s ease, background 0.3s ease, opacity 0.22s ease, transform 0.22s ease;
 }
 
-.hero-info-button:hover {
-  transform: translateY(-1px);
-  border-color: rgba(94, 161, 255, 0.58);
-  background: rgba(94, 161, 255, 0.14);
+.back-to-top-button.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
 }
 
-.list-info-modal {
-  width: min(720px, 100%);
+.back-to-top-icon {
+  width: 12px;
+  transition: transform 0.3s ease;
+}
+
+.back-to-top-icon path {
+  fill: currentColor;
+}
+
+.back-to-top-button::before {
+  position: absolute;
+  bottom: -20px;
+  content: "Back to Top";
+  color: white;
+  font-size: 0;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .back-to-top-button:hover {
+    width: 140px;
+    border-radius: 50px;
+    background: var(--accent);
+  }
+
+  .back-to-top-button:hover .back-to-top-icon {
+    transform: translateY(-200%);
+  }
+
+  .back-to-top-button:hover::before {
+    bottom: auto;
+    font-size: 13px;
+    opacity: 1;
+    transition: font-size 0.3s ease, opacity 0.3s ease;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .back-to-top-button,
+  .back-to-top-icon {
+    transition: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .back-to-top-button {
+    right: 16px;
+    bottom: calc(18px + env(safe-area-inset-bottom));
+    width: 48px;
+    height: 48px;
+  }
 }
 
 .subtitle {

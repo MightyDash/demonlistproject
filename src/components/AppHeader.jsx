@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CalendarDays, FileClock, Home, Inbox, Info, LogIn, LogOut, Menu, Pencil, Radio, Rss, Shield, X } from "lucide-react";
+import { CalendarDays, FileClock, Home, Inbox, LogIn, LogOut, Menu, Pencil, Radio, Rss, Shield, X } from "lucide-react";
 
 const DEFAULT_SITE_VERSION = "v0.62";
 const DEFAULT_VERSION_CHANGES = [
@@ -30,7 +30,6 @@ export function AppHeader({
   onSaveChangelog,
   hasUnreadNews
 }) {
-  const [showListInfo, setShowListInfo] = useState(false);
   const [showVersionInfo, setShowVersionInfo] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [editingVersionInfo, setEditingVersionInfo] = useState(false);
@@ -39,7 +38,6 @@ export function AppHeader({
   const [versionSaveError, setVersionSaveError] = useState("");
   const [versionSaveMessage, setVersionSaveMessage] = useState("");
   const [versionSaving, setVersionSaving] = useState(false);
-  const listInfoText = "This is my demon list with all the demons I have beaten over the years. It won't look like most of you hoped or expected. To me, some demons meant something, whether it was the moments surrounding them or a goal I wanted to achieve. From 2019 to the summer of 2021, I didn't beat any harder demons except some medium demons because I found it too challenging, but it was precisely in the summer of 2021 that I started taking things a step further and attempting to defeat Nine Circles. Since defeating this level, I wanted to go for the harder ones. Every demon had something to offer, which you will discover in this list.";
   const resolvedVersion = String(siteVersion || DEFAULT_SITE_VERSION).trim();
   const resolvedChangelog = Array.isArray(siteChangelog) && siteChangelog.length > 0
     ? siteChangelog
@@ -200,11 +198,6 @@ export function AppHeader({
           <p className="eyebrow hero-eyebrow">Moik's Geometry Dash archive</p>
           <div className="hero-title-row">
             <h1>{pageTitle}</h1>
-            {listActive && (
-              <button className="hero-info-button" onClick={() => setShowListInfo(true)} type="button" aria-label="Demon list info">
-                <Info size={23} />
-              </button>
-            )}
           </div>
           <p className="subtitle">{pageSubtitle}</p>
         </div>
@@ -214,15 +207,6 @@ export function AppHeader({
           <span className="observatory-gem" />
         </div>
       </header>
-
-      {showListInfo && (
-        <div className="progress-info-backdrop" onClick={() => setShowListInfo(false)}>
-          <section className="progress-info-modal list-info-modal" onClick={event => event.stopPropagation()}>
-            <button className="progress-info-close" onClick={() => setShowListInfo(false)} type="button" aria-label="Close"><X size={20} /></button>
-            <p>{listInfoText}</p>
-          </section>
-        </div>
-      )}
 
       {showVersionInfo && (
         <div className="progress-info-backdrop" onClick={closeVersionInfo}>
