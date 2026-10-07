@@ -95,6 +95,7 @@ describe("TimelinePage", () => {
         id: "5",
         name: "January Demon",
         placement: "#5",
+        tier: 20,
         date: "08/01/2025",
         dateYear: 2025,
         status: "COMPLETED"
@@ -104,9 +105,9 @@ describe("TimelinePage", () => {
     renderTimeline({ demons, routeYear: 2025, routeOverview: true });
 
     expect(screen.getByRole("heading", { name: "2025 Year Overview" })).toBeInTheDocument();
-    const januaryDemon = screen.getByText("January Demon");
     const juneDemon = screen.getByText("Exact Month Demon");
-    expect(januaryDemon.compareDocumentPosition(juneDemon) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const januaryDemon = screen.getByText("January Demon");
+    expect(juneDemon.compareDocumentPosition(januaryDemon) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.getByText("Exact Month Demon")).toBeInTheDocument();
     expect(screen.queryByText("Year Only Demon")).not.toBeInTheDocument();
   });
