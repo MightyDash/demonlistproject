@@ -344,9 +344,9 @@ export function TimelinePage({
     ? selectedYearData.months
       .flatMap(month => month.demons)
       .sort((a, b) => {
-        const tierDifference = Number(a.demon.tier || 0) - Number(b.demon.tier || 0);
+        const tierDifference = Number(b.demon.tier || 0) - Number(a.demon.tier || 0);
         if (tierDifference !== 0) return tierDifference;
-        return comparePlacements(b.demon.placement, a.demon.placement);
+        return comparePlacements(a.demon.placement, b.demon.placement);
       })
     : [];
   const previousMonth = selectedYearData && selectedMonthData
@@ -513,7 +513,7 @@ export function TimelinePage({
             <p className="eyebrow">Timeline</p>
             <div className="timeline-month-title-copy">
               <h2>{selectedYearData.year} Year Overview</h2>
-              <p>{pluralizeDemons(yearOverviewDemons.length)}, easiest to hardest</p>
+              <p>{pluralizeDemons(yearOverviewDemons.length)}, hardest to easiest</p>
             </div>
           </div>
           <span aria-hidden="true" />
