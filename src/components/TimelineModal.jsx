@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { CalendarDays, ChevronLeft, ChevronRight, Crown, Play, Plus, Search, X } from "lucide-react";
+import { ArrowLeftRight, CalendarDays, ChevronLeft, ChevronRight, Crown, Play, Plus, Search, X } from "lucide-react";
 import { comparePlacements, isInProgressDemon, parseDemonDate, placementSortValue } from "../demonUtils.js";
 import { findMonthlyHighlightStyle, getHardestMonthlyDemon, monthlyHighlightTextStyle } from "../monthlyHighlightUtils.js";
 
@@ -33,6 +33,14 @@ const DIFFICULTY_FACE_BY_NAME = {
   "insane demon": "/difficulties/insane_demon.png",
   "extreme demon": "/difficulties/extreme_demon.png"
 };
+
+const COMPARISON_DIFFICULTIES = [
+  { key: "easy", label: "Easy Demon" },
+  { key: "medium", label: "Medium Demon" },
+  { key: "hard", label: "Hard Demon" },
+  { key: "insane", label: "Insane Demon" },
+  { key: "extreme", label: "Extreme Demon" }
+];
 
 function parseTimelineDate(demon) {
   const parsedDate = parseDemonDate(demon?.date);
@@ -184,6 +192,241 @@ function buildTimelineData(demons, timelineEntries) {
     });
 }
 
+function formatComparisonNumber(value, decimals = 0) {
+  const number = Number(value || 0);
+  return number.toLocaleString("nl-NL", {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals
+  });
+}
+
+function buildYearComparisonStats(yearData) {
+  const demons = (yearData?.demons || []).map(item => item.demon);
+  const tieredDemons = demons.filter(demon => Number(demon.tier) > 0);
+  const hardestDemon = getHardestMonthlyDemon(demons);
+  const busiestMonth = (yearData?.months || []).reduce((busiest, month) => {
+    if (!busiest || month.demons.length > busiest.demons.length) return month;
+    return busiest;
+  }, null);
+  const difficultyCounts = COMPARISON_DIFFICULTIES.reduce((counts, difficulty) => {
+    counts[difficulty.key] = demons.filter(demon =>
+      String(demon.difficulty || "").trim().toLowerCase() === difficulty.label.toLowerCase()
+    ).length;
+    return counts;
+  }, {});
+
+  return {
+    totalDemons: demons.length,
+    totalAttempts: demons.reduce((total, demon) => total + Number(demon.attempts || 0), 0),
+    hardestDemon,
+    hardestTier: Number(hardestDemon?.tier || 0),
+    busiestMonth,
+    extremeDemons: difficultyCounts.extreme || 0,
+    averageTier: tieredDemons.length
+      ? tieredDemons.reduce((total, demon) => total + Number(demon.tier), 0) / tieredDemons.length
+      : 0,
+    difficultyCounts
+  };
+}
+
+function comparisonWinnerClass(leftValue, rightValue, side) {
+  if (Number(leftValue) === Number(rightValue)) return "";
+  const leftWins = Number(leftValue) > Number(rightValue);
+  return (side === "left" && leftWins) || (side === "right" && !leftWins)
+    ? "comparison-winner"
+    : "";
+}
+
+function TimelineYearComparison({ timeline, preferredYear, onBack }) {
+  const availableYears = timeline.filter(yearData => yearData.demons.length > 0);
+  const matchedPreferredIndex = availableYears.findIndex(yearData => yearData.year === preferredYear);
+  const preferredIndex = matchedPreferredIndex >= 0 ? matchedPreferredIndex : Math.max(0, availableYears.length - 1);
+  const defaultRightYear = availableYears[preferredIndex]?.year || availableYears.at(-1)?.year || null;
+  const defaultLeftYear = availableYears[Math.max(0, preferredIndex - 1)]?.year || defaultRightYear;
+  const [leftYear, setLeftYear] = useState(defaultLeftYear);
+  const [rightYear, setRightYear] = useState(defaultRightYear);
+
+  useEffect(() => {
+    if (!availableYears.length) return;
+    if (!availableYears.some(yearData => yearData.year === leftYear)) {
+      setLeftYear(availableYears[Math.max(0, availableYears.length - 2)].year);
+    }
+    if (!availableYears.some(yearData => yearData.year === rightYear)) {
+      setRightYear(availableYears.at(-1).year);
+    }
+  }, [availableYears, leftYear, rightYear]);
+
+  const leftData = availableYears.find(yearData => yearData.year === leftYear) || availableYears[0];
+  const rightData = availableYears.find(yearData => yearData.year === rightYear) || availableYears.at(-1);
+  const leftStats = buildYearComparisonStats(leftData);
+  const rightStats = buildYearComparisonStats(rightData);
+
+  if (!leftData || !rightData) {
+    return <div className="timeline-empty">Not enough timeline data to compare years.</div>;
+  }
+
+  const statRows = [
+    {
+      label: "Total Demons",
+      left: formatComparisonNumber(leftStats.totalDemons),
+      right: formatComparisonNumber(rightStats.totalDemons),
+      leftValue: leftStats.totalDemons,
+      rightValue: rightStats.totalDemons
+    },
+    {
+      label: "Total Attempts",
+      left: formatComparisonNumber(leftStats.totalAttempts),
+      right: formatComparisonNumber(rightStats.totalAttempts)
+    },
+    {
+      label: "Hardest Demon",
+      left: leftStats.hardestDemon?.name || "—",
+      right: rightStats.hardestDemon?.name || "—",
+      leftDetail: leftStats.hardestTier ? `Tier ${formatComparisonNumber(leftStats.hardestTier, 2)}` : "",
+      rightDetail: rightStats.hardestTier ? `Tier ${formatComparisonNumber(rightStats.hardestTier, 2)}` : "",
+      leftValue: leftStats.hardestTier,
+      rightValue: rightStats.hardestTier
+    },
+    {
+      label: "Busiest Month",
+      left: leftStats.busiestMonth?.name || "—",
+      right: rightStats.busiestMonth?.name || "—",
+      leftDetail: pluralizeDemons(leftStats.busiestMonth?.demons.length || 0),
+      rightDetail: pluralizeDemons(rightStats.busiestMonth?.demons.length || 0),
+      leftValue: leftStats.busiestMonth?.demons.length || 0,
+      rightValue: rightStats.busiestMonth?.demons.length || 0
+    },
+    {
+      label: "Extreme Demons",
+      left: formatComparisonNumber(leftStats.extremeDemons),
+      right: formatComparisonNumber(rightStats.extremeDemons),
+      leftValue: leftStats.extremeDemons,
+      rightValue: rightStats.extremeDemons
+    },
+    {
+      label: "Average Tier",
+      left: formatComparisonNumber(leftStats.averageTier, 2),
+      right: formatComparisonNumber(rightStats.averageTier, 2),
+      leftValue: leftStats.averageTier,
+      rightValue: rightStats.averageTier
+    }
+  ];
+
+  return (
+    <section className="timeline-page timeline-comparison-page">
+      <div className="timeline-month-page-header timeline-year-overview-header">
+        <button className="timeline-back-link" onClick={onBack} type="button">
+          Back to timeline
+        </button>
+        <div className="timeline-month-title-block">
+          <p className="eyebrow">Timeline</p>
+          <div className="timeline-month-title-copy">
+            <h2>Compare Years</h2>
+            <p>See how your progress changed from one year to another.</p>
+          </div>
+        </div>
+        <span aria-hidden="true" />
+      </div>
+
+      <div className="timeline-comparison-selectors">
+        <label>
+          <span>First year</span>
+          <select value={leftData.year} onChange={event => setLeftYear(Number(event.target.value))}>
+            {availableYears.map(yearData => <option key={yearData.year} value={yearData.year}>{yearData.year}</option>)}
+          </select>
+        </label>
+        <ArrowLeftRight aria-hidden="true" />
+        <label>
+          <span>Second year</span>
+          <select value={rightData.year} onChange={event => setRightYear(Number(event.target.value))}>
+            {availableYears.map(yearData => <option key={yearData.year} value={yearData.year}>{yearData.year}</option>)}
+          </select>
+        </label>
+      </div>
+
+      <div className="timeline-comparison-scorecard">
+        <div className="timeline-comparison-score-heading">
+          <strong>{leftData.year}</strong>
+          <span>Comparison</span>
+          <strong>{rightData.year}</strong>
+        </div>
+        {statRows.map(row => (
+          <div className="timeline-comparison-stat-row" key={row.label}>
+            <div className={row.leftValue === undefined ? "" : comparisonWinnerClass(row.leftValue, row.rightValue, "left")}>
+              <strong>{row.left}</strong>
+              {row.leftDetail && <small>{row.leftDetail}</small>}
+            </div>
+            <span>{row.label}</span>
+            <div className={row.rightValue === undefined ? "" : comparisonWinnerClass(row.leftValue, row.rightValue, "right")}>
+              <strong>{row.right}</strong>
+              {row.rightDetail && <small>{row.rightDetail}</small>}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="timeline-comparison-panels">
+        <section className="timeline-comparison-panel">
+          <div className="timeline-comparison-panel-heading">
+            <div>
+              <p className="eyebrow">Difficulty</p>
+              <h3>Difficulty distribution</h3>
+            </div>
+          </div>
+          <div className="timeline-difficulty-legend">
+            {COMPARISON_DIFFICULTIES.map(difficulty => (
+              <span className={`difficulty-${difficulty.key}`} key={difficulty.key}>{difficulty.label.replace(" Demon", "")}</span>
+            ))}
+          </div>
+          {[{ data: leftData, stats: leftStats }, { data: rightData, stats: rightStats }].map(entry => (
+            <div className="timeline-difficulty-row" key={entry.data.year}>
+              <strong>{entry.data.year}</strong>
+              <div className="timeline-difficulty-bar">
+                {COMPARISON_DIFFICULTIES.map(difficulty => {
+                  const count = entry.stats.difficultyCounts[difficulty.key] || 0;
+                  return count > 0 ? (
+                    <span
+                      className={`difficulty-${difficulty.key}`}
+                      key={difficulty.key}
+                      style={{ flexGrow: count }}
+                      title={`${difficulty.label}: ${count}`}
+                    />
+                  ) : null;
+                })}
+              </div>
+            </div>
+          ))}
+        </section>
+
+        <section className="timeline-comparison-panel timeline-month-comparison-panel">
+          <div className="timeline-comparison-panel-heading">
+            <div>
+              <p className="eyebrow">Monthly pace</p>
+              <h3>Demons per month</h3>
+            </div>
+          </div>
+          <div className="timeline-month-comparison-heading">
+            <strong>{leftData.year}</strong>
+            <span>Month</span>
+            <strong>{rightData.year}</strong>
+          </div>
+          {MONTHS.map((month, index) => {
+            const leftCount = leftData.months[index]?.demons.length || 0;
+            const rightCount = rightData.months[index]?.demons.length || 0;
+            return (
+              <div className="timeline-month-comparison-row" key={month.slug}>
+                <strong className={comparisonWinnerClass(leftCount, rightCount, "left")}>{leftCount}</strong>
+                <span>{month.name}</span>
+                <strong className={comparisonWinnerClass(leftCount, rightCount, "right")}>{rightCount}</strong>
+              </div>
+            );
+          })}
+        </section>
+      </div>
+    </section>
+  );
+}
+
 function TimelineDemonCard({ demon, canRemove, onSelectDemon, onRemove, key: _key }) {
   const difficultyFace = getDifficultyFace(demon?.difficulty);
 
@@ -321,10 +564,12 @@ export function TimelinePage({
   routeYear,
   routeMonth,
   routeOverview = false,
+  routeCompare = false,
   isAdmin,
   onSelectDemon,
   onOpenMonth,
   onOpenYearOverview,
+  onOpenYearComparison,
   onBackToTimeline,
   onAddTimelineEntry,
   onRemoveTimelineEntry
@@ -419,6 +664,16 @@ export function TimelinePage({
           </div>
         </div>
       </section>
+    );
+  }
+
+  if (routeCompare) {
+    return (
+      <TimelineYearComparison
+        timeline={timeline}
+        preferredYear={selectedYearData.year}
+        onBack={onBackToTimeline}
+      />
     );
   }
 
@@ -570,14 +825,24 @@ export function TimelinePage({
           <h3>{selectedYearData.year}</h3>
           <p>{pluralizeDemons(selectedYearData.demons.length)} completed, {pluralizeDemons(selectedYearData.exactDemons.length)} placed in months</p>
         </div>
-        <button
-          className="timeline-year-overview-button"
-          onClick={() => onOpenYearOverview?.(selectedYearData.year)}
-          type="button"
-        >
-          <CalendarDays size={18} />
-          <span>Year Overview</span>
-        </button>
+        <div className="timeline-detail-actions">
+          <button
+            className="timeline-year-overview-button timeline-compare-years-button"
+            onClick={onOpenYearComparison}
+            type="button"
+          >
+            <ArrowLeftRight size={18} />
+            <span>Compare Years</span>
+          </button>
+          <button
+            className="timeline-year-overview-button"
+            onClick={() => onOpenYearOverview?.(selectedYearData.year)}
+            type="button"
+          >
+            <CalendarDays size={18} />
+            <span>Year Overview</span>
+          </button>
+        </div>
       </div>
 
       <div className="timeline-month-grid">

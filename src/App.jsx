@@ -122,7 +122,7 @@ export default function App() {
   const [requestView, setRequestView] = useState(false);
   const [historyView, setHistoryView] = useState(false);
   const [timelineView, setTimelineView] = useState(false);
-  const [timelineRoute, setTimelineRoute] = useState({ year: null, month: null, overview: false });
+  const [timelineRoute, setTimelineRoute] = useState({ year: null, month: null, overview: false, compare: false });
 const [requestForm, setRequestForm] = useState({
   levelId: "",
   type: "Demon",
@@ -1352,10 +1352,12 @@ async function handleRequestQuickStatus(rowNumber, status) {
           routeYear={timelineRoute.year}
           routeMonth={timelineRoute.month}
           routeOverview={timelineRoute.overview}
+          routeCompare={timelineRoute.compare}
           isAdmin={isAdmin}
           onSelectDemon={setSelected}
           onOpenMonth={(year, month) => navigateTo(`${ROUTES.timeline}/${year}/${month}`)}
           onOpenYearOverview={year => navigateTo(`${ROUTES.timeline}/${year}/overview`)}
+          onOpenYearComparison={() => navigateTo(`${ROUTES.timeline}/compare`)}
           onBackToTimeline={() => navigateTo(ROUTES.timeline)}
           onAddTimelineEntry={addTimelineEntry}
           onRemoveTimelineEntry={removeTimelineEntry}

@@ -25,6 +25,7 @@ export const TIMELINE_MONTH_SLUGS = new Set([
 export function normalizeRoute(pathname) {
   const path = pathname.replace(/\/+$/, "") || ROUTES.home;
   if (/^\/news\/[a-z0-9-]+$/i.test(path)) return path;
+  if (/^\/timeline\/compare$/i.test(path)) return `${ROUTES.timeline}/compare`;
   if (/^\/timeline\/\d{4}\/overview$/i.test(path)) return path.toLowerCase();
   if (/^\/timeline\/\d{4}\/[a-z]+$/i.test(path)) {
     const month = path.split("/")[3].toLowerCase();
@@ -41,16 +42,19 @@ export function parseNewsRoute(pathname) {
 
 export function parseTimelineRoute(pathname) {
   const path = pathname.replace(/\/+$/, "") || ROUTES.home;
+  if (path.toLowerCase() === `${ROUTES.timeline}/compare`) {
+    return { year: null, month: null, overview: false, compare: true };
+  }
   const match = path.match(/^\/timeline\/(\d{4})\/([a-z]+)$/i);
 
-  if (!match) return { year: null, month: null, overview: false };
+  if (!match) return { year: null, month: null, overview: false, compare: false };
 
   const month = match[2].toLowerCase();
   if (month === "overview") {
-    return { year: Number(match[1]), month: null, overview: true };
+    return { year: Number(match[1]), month: null, overview: true, compare: false };
   }
 
   return TIMELINE_MONTH_SLUGS.has(month)
-    ? { year: Number(match[1]), month, overview: false }
-    : { year: null, month: null, overview: false };
+    ? { year: Number(match[1]), month, overview: false, compare: false }
+    : { year: null, month: null, overview: false, compare: false };
 }
