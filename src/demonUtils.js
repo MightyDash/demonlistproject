@@ -26,6 +26,8 @@ export function normalizeDemon(row) {
     soloTier: Number(row.soloTier ?? 0),
     twoPlayerTier: Number(row.twoPlayerTier ?? 0),
     device: normalizeDevice(row.device ?? row.Device) || "PC",
+    durationSeconds: Math.max(0, Math.round(Number(row.durationSeconds ?? row.seconds ?? 0) || 0)),
+    length: String(row.length ?? row.Length ?? "").trim(),
     formerTop1Year: FORMER_TOP_1[name] || null,
     skillsetDistribution: Array.isArray(row.skillsetDistribution)
       ? row.skillsetDistribution
@@ -127,6 +129,20 @@ export function formatTier(value) {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   });
+}
+
+export function formatDemonDuration(demon) {
+  const totalSeconds = Math.max(0, Math.round(Number(demon?.durationSeconds || 0)));
+  if (totalSeconds > 0) {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return hours > 0
+      ? `${hours}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`
+      : `${minutes}:${String(seconds).padStart(2, "0")}`;
+  }
+
+  return String(demon?.length || "").trim();
 }
 
 export function parseDemonDate(value) {

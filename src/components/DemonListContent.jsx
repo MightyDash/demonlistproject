@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { BarChart3, Check, Info, Search, SlidersHorizontal, Target, Trophy, X } from "lucide-react";
+import { BarChart3, Check, Clock3, Info, Search, SlidersHorizontal, Target, Trophy, X } from "lucide-react";
 import { StatCard } from "./StatCard.jsx";
 import { DeviceLabel } from "./DeviceLabel.jsx";
-import { difficultyClass, formatNumber, formatTier, isInProgressDemon } from "../demonUtils.js";
+import { difficultyClass, formatDemonDuration, formatNumber, formatTier, isInProgressDemon } from "../demonUtils.js";
 import { DEVICE_OPTIONS } from "../deviceUtils.js";
 
 function displayPlacement(value) {
@@ -419,6 +419,7 @@ export function DemonListContent({
                     const isCommunityRequested = requestedIds.has(String(demon.id));
                     const placementLabel = displayPlacement(isFutureView ? (demon.futurePlacement || demon.placement) : demon.placement);
                     const trendClass = placementTrendClass(demon);
+                    const durationLabel = formatDemonDuration(demon);
 
                     return (
                       <article
@@ -482,6 +483,12 @@ export function DemonListContent({
                           <div className="banner-side">
                             <DeviceLabel device={demon.device} />
                             <span>Tier {formatTier(demon.tier)}</span>
+                            {durationLabel && (
+                              <span className="duration-label" title="Level duration">
+                                <Clock3 size={15} aria-hidden="true" />
+                                {durationLabel}
+                              </span>
+                            )}
                             <strong className={difficultyClass(demon.difficulty)}>{demon.difficulty || "Unknown"}</strong>
                             <span>{formatNumber(demon.attempts)} attempts</span>
                             <span>{demon.date || demon.year || "Unknown"}</span>
@@ -501,6 +508,7 @@ export function DemonListContent({
                     const isCommunityRequested = requestedIds.has(String(demon.id));
                     const placementLabel = displayPlacement(isFutureView ? (demon.futurePlacement || demon.placement) : demon.placement);
                     const trendClass = placementTrendClass(demon);
+                    const durationLabel = formatDemonDuration(demon);
 
                     return (
                     <article
@@ -565,6 +573,12 @@ export function DemonListContent({
                         ) : (
                           <div className="grid-meta">
                             <span className="grid-chip tier-chip">Tier {formatTier(demon.tier)}</span>
+                            {durationLabel && (
+                              <span className="grid-chip duration-chip" title="Level duration">
+                                <Clock3 size={15} aria-hidden="true" />
+                                {durationLabel}
+                              </span>
+                            )}
                             <span className={`grid-chip difficulty-chip ${difficultyClass(demon.difficulty)}`}>
                               {demon.difficulty || "Unknown"}
                             </span>

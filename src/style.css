@@ -11401,6 +11401,20 @@ body::before {
   flex: 0 0 auto;
 }
 
+.duration-label,
+.duration-chip {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  white-space: nowrap;
+}
+
+.duration-label svg,
+.duration-chip svg {
+  flex: 0 0 auto;
+}
+
 .overview-list .device-label {
   justify-content: flex-end;
 }
