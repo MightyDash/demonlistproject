@@ -11415,6 +11415,60 @@ body::before {
   flex: 0 0 auto;
 }
 
+.duration-sort-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.duration-sort-controls > span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.duration-sort-options {
+  display: inline-flex;
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid var(--obs-line);
+  border-radius: 10px;
+  background: rgba(8, 9, 14, 0.62);
+}
+
+.duration-sort-options button {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 7px;
+  color: var(--obs-muted);
+  background: transparent;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.duration-sort-options button.active {
+  color: #fff;
+  background: var(--obs-purple);
+}
+
+@media (max-width: 640px) {
+  .duration-sort-controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .duration-sort-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 .overview-list .device-label {
   justify-content: flex-end;
 }

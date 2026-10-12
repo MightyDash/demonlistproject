@@ -768,7 +768,6 @@ export function TimelinePage({
             <p className="eyebrow">Timeline</p>
             <div className="timeline-month-title-copy">
               <h2>{selectedYearData.year} Year Overview</h2>
-              <p>{pluralizeDemons(yearOverviewDemons.length)}, hardest to easiest</p>
             </div>
           </div>
           <span aria-hidden="true" />

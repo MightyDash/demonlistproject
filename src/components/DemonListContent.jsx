@@ -26,6 +26,8 @@ export function DemonListContent({
   setSegment,
   yearView,
   setYearView,
+  durationSort,
+  setDurationSort,
   viewMode,
   setViewMode,
   filtered,
@@ -77,7 +79,8 @@ export function DemonListContent({
     ["2019", "2019"],
     ["2018", "2018"],
     ["progress", "In Progress"],
-    ["future", "Future List"]
+    ["future", "Future List"],
+    ["duration", "Length"]
   ];
 
   useEffect(() => {
@@ -103,6 +106,7 @@ export function DemonListContent({
     setDifficulty("all");
     setSegment("all");
     setYearView("all");
+    setDurationSort("longest");
     setViewMode(isMobileView ? "grid" : "banner");
   }
 
@@ -284,6 +288,28 @@ export function DemonListContent({
                   </button>
                 ))}
               </div>
+
+              {yearView === "duration" && (
+                <div className="duration-sort-controls" role="group" aria-label="Sort demons by level duration">
+                  <span>Sort by length</span>
+                  <div className="duration-sort-options">
+                    <button
+                      className={durationSort === "longest" ? "active" : ""}
+                      onClick={() => setDurationSort("longest")}
+                      type="button"
+                    >
+                      Longest to shortest
+                    </button>
+                    <button
+                      className={durationSort === "shortest" ? "active" : ""}
+                      onClick={() => setDurationSort("shortest")}
+                      type="button"
+                    >
+                      Shortest to longest
+                    </button>
+                  </div>
+                </div>
+              )}
     
               <button
                 className="mobile-filter-apply"

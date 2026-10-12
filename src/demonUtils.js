@@ -145,6 +145,21 @@ export function formatDemonDuration(demon) {
   return String(demon?.length || "").trim();
 }
 
+export function demonDurationSortValue(demon) {
+  const exactSeconds = Math.max(0, Math.round(Number(demon?.durationSeconds || 0)));
+  if (exactSeconds > 0) return exactSeconds;
+
+  const fallbackSeconds = {
+    tiny: 15,
+    short: 35,
+    medium: 60,
+    long: 100,
+    xl: 180,
+    platformer: 240
+  };
+  return fallbackSeconds[String(demon?.length || "").trim().toLowerCase()] || 0;
+}
+
 export function parseDemonDate(value) {
   return parseSupportedDate(value);
 }

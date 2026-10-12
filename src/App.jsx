@@ -12,7 +12,7 @@ import { RecentChanges } from "./components/RecentChanges.jsx";
 import { RequestPanel } from "./components/RequestPanel.jsx";
 import { ScrollToTopButton } from "./components/ScrollToTopButton.jsx";
 import { TimelinePage } from "./components/TimelineModal.jsx";
-import { buildHistoricalRanking, comparePlacements, isInProgressDemon, normalizeDemon, segmentForPlacement } from "./demonUtils.js";
+import { buildHistoricalRanking, comparePlacements, demonDurationSortValue, isInProgressDemon, normalizeDemon, segmentForPlacement } from "./demonUtils.js";
 import { requestJson } from "./api.js";
 import { normalizeNewsArticle } from "./newsUtils.js";
 import { normalizeRoute, parseNewsRoute, parseTimelineRoute, ROUTES } from "./routeUtils.js";
@@ -102,6 +102,7 @@ export default function App() {
   const [segment, setSegment] = useState("all");
   const [selected, setSelected] = useState(null);
   const [yearView, setYearView] = useState("all");
+  const [durationSort, setDurationSort] = useState("longest");
   const [apiLatestDemon, setApiLatestDemon] = useState(() => initialDemonData?.apiLatestDemon || "");
   const [listUpdatedAt, setListUpdatedAt] = useState(() => initialDemonData?.listUpdatedAt || "");
   const [siteVersion, setSiteVersion] = useState(() => initialDemonData?.siteVersion || DEFAULT_SITE_VERSION);
@@ -1015,6 +1016,20 @@ async function handleRequestQuickStatus(rowNumber, status) {
         });
     }
 
+    if (yearView === "duration") {
+      const direction = durationSort === "shortest" ? 1 : -1;
+      return demons
+        .filter(demon => {
+          const matchesSegment = segment === "all" || segmentForPlacement(demon.placement) === segment;
+          return !isInProgressDemon(demon) && matchesSearchAndDifficulty(demon) && matchesSegment;
+        })
+        .sort((a, b) => {
+          const durationDifference = demonDurationSortValue(a) - demonDurationSortValue(b);
+          if (durationDifference !== 0) return durationDifference * direction;
+          return String(a.name || "").localeCompare(String(b.name || ""));
+        });
+    }
+
     const historicalYearSelected = /^\d{4}$/.test(String(yearView));
     if (historicalYearSelected) {
       return buildHistoricalRanking(demons, yearView)
@@ -1050,7 +1065,7 @@ async function handleRequestQuickStatus(rowNumber, status) {
 
         return comparePlacements(a.placement, b.placement);
       });
-  }, [demons, query, device, difficulty, segment, yearView, futureListIds]);
+  }, [demons, query, device, difficulty, segment, yearView, futureListIds, durationSort]);
 
   const currentIndex = useMemo(() => {
     if (!selected) return -1;
@@ -1220,6 +1235,8 @@ async function handleRequestQuickStatus(rowNumber, status) {
       setSegment={setSegment}
       yearView={yearView}
       setYearView={setYearView}
+      durationSort={durationSort}
+      setDurationSort={setDurationSort}
       viewMode={viewMode}
       setViewMode={setViewMode}
       filtered={displayedDemons}
