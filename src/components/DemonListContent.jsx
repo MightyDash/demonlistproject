@@ -516,7 +516,7 @@ export function DemonListContent({
                               </span>
                             )}
                             <strong className={difficultyClass(demon.difficulty)}>{demon.difficulty || "Unknown"}</strong>
-                            <span>{formatNumber(demon.attempts)} attempts</span>
+                            <span>{formatNumber(demon.attempts)} {Number(demon.attempts) === 1 ? "attempt" : "attempts"}</span>
                             <span>{demon.date || demon.year || "Unknown"}</span>
                           </div>
                         )}
