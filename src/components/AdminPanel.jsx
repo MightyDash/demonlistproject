@@ -73,6 +73,15 @@ function isValidYouTubeUrl(value) {
   return /^https:\/\/(www\.)?(youtube\.com\/watch\?v=|youtube\.com\/shorts\/|youtu\.be\/)[A-Za-z0-9_-]{6,}/i.test(text);
 }
 
+function formatGDDLDuration(seconds, fallback) {
+  const totalSeconds = Math.max(0, Math.round(Number(seconds || 0)));
+  if (!totalSeconds) return String(fallback || "Unknown length");
+
+  const minutes = Math.floor(totalSeconds / 60);
+  const remainder = totalSeconds % 60;
+  return `${minutes}:${String(remainder).padStart(2, "0")}`;
+}
+
 function getMonthlyRecapUrl(monthlyRecaps, year, monthSlug) {
   const recap = monthlyRecaps.find(item =>
     Number(item.year) === Number(year) &&
@@ -244,6 +253,8 @@ export function AdminPanel({
     progressPercent: "",
     twoPlayerMode: "standard"
   });
+  const [gddlPreview, setGddlPreview] = useState(null);
+  const [gddlPreviewLoading, setGddlPreviewLoading] = useState(false);
 
   const [removeLevelId, setRemoveLevelId] = useState("");
 
@@ -301,6 +312,8 @@ export function AdminPanel({
     setRecapPopoverMonth("");
     setRecapUrlDraft("");
     setHighlightStyleDraft({ ...DEFAULT_MONTHLY_HIGHLIGHT_STYLE });
+    setGddlPreview(null);
+    setGddlPreviewLoading(false);
     setPendingAdminPreview(null);
     setAdminMessage("");
     setAdminError("");
@@ -431,6 +444,46 @@ export function AdminPanel({
       return { success: false, message: error.message };
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function handleFetchGDDLLevel(levelId, options = {}) {
+    const cleanLevelId = String(levelId || "").trim();
+    if (!/^\d+$/.test(cleanLevelId)) {
+      const result = { success: false, message: "Enter a valid numeric Level ID." };
+      if (!options.silent) setAdminError(result.message);
+      return result;
+    }
+
+    if (!options.silent) {
+      setAdminMessage("");
+      setAdminError("");
+      setGddlPreviewLoading(true);
+    }
+
+    try {
+      const data = await sendAdminRequest({
+        action: "previewGDDLLevel",
+        levelId: cleanLevelId,
+        forceRefresh: options.forceRefresh === true
+      });
+
+      if (!data.success) {
+        if (!options.silent) setAdminError(data.message || "Could not load this level from GDDL.");
+        return data;
+      }
+
+      if (!options.silent) {
+        setGddlPreview(data.level || null);
+        setAdminMessage(data.message || "GDDL level loaded.");
+      }
+      return data;
+    } catch (error) {
+      const result = { success: false, message: error.message || "Could not connect to Apps Script." };
+      if (!options.silent) setAdminError(result.message);
+      return result;
+    } finally {
+      if (!options.silent) setGddlPreviewLoading(false);
     }
   }
 
@@ -1252,10 +1305,48 @@ export function AdminPanel({
             Level ID
             <input
               value={addForm.levelId}
-              onChange={e => setAddForm({ ...addForm, levelId: e.target.value })}
+              onChange={e => {
+                setAddForm({ ...addForm, levelId: e.target.value });
+                setGddlPreview(null);
+              }}
               placeholder="Example: 10565740"
             />
           </label>
+
+          <button
+            className="gddl-fetch-button"
+            type="button"
+            onClick={() => handleFetchGDDLLevel(addForm.levelId, { forceRefresh: true })}
+            disabled={gddlPreviewLoading || isSubmitting}
+          >
+            <Download size={17} /> {gddlPreviewLoading ? "Loading from GDDL..." : "Fetch from GDDL"}
+          </button>
+
+          {gddlPreview && (
+            <article className="gddl-level-preview">
+              <img
+                src={`https://levelthumbs.prevter.me/thumbnail/${gddlPreview.levelId}`}
+                alt=""
+                onError={event => { event.currentTarget.style.display = "none"; }}
+              />
+              <div className="gddl-level-preview-main">
+                <span>GDDL match</span>
+                <strong>{gddlPreview.name}</strong>
+                <small>by {gddlPreview.creator || "Unknown creator"}</small>
+              </div>
+              <div className="gddl-level-preview-stats">
+                <span>{gddlPreview.difficulty || "Unknown difficulty"}</span>
+                <span>Tier {Number(gddlPreview.rating || 0).toFixed(2).replace(".", ",")}</span>
+                <span>{formatGDDLDuration(gddlPreview.durationSeconds, gddlPreview.length)}</span>
+                {gddlPreview.enjoyment > 0 && <span>{Number(gddlPreview.enjoyment).toFixed(2)} enjoyment</span>}
+              </div>
+              {gddlPreview.song?.name && (
+                <small className="gddl-level-preview-song">
+                  {gddlPreview.song.author ? `${gddlPreview.song.author} — ` : ""}{gddlPreview.song.name}
+                </small>
+              )}
+            </article>
+          )}
 
           <label>
             Attempts
@@ -1377,6 +1468,7 @@ export function AdminPanel({
           demons={demons}
           saving={isSubmitting}
           onSave={handleBulkEditDemons}
+          onFetchGDDL={levelId => handleFetchGDDLLevel(levelId, { silent: true, forceRefresh: true })}
           onClose={() => setShowEditForm(false)}
         />
       )}

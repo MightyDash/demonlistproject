@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { ChevronDown, ChevronUp, RotateCcw, RotateCw, Save, X } from "lucide-react";
+import { ChevronDown, ChevronUp, Download, RotateCcw, RotateCw, Save, X } from "lucide-react";
 import { DEVICE_OPTIONS } from "../deviceUtils.js";
 import {
   buildBulkEditChanges,
@@ -7,13 +7,14 @@ import {
   validateBulkEditChanges
 } from "../bulkEditUtils.js";
 
-export function BulkDemonEditor({ demons, saving, onSave, onClose }) {
+export function BulkDemonEditor({ demons, saving, onSave, onFetchGDDL, onClose }) {
   const [search, setSearch] = useState("");
   const [openIds, setOpenIds] = useState([]);
   const [drafts, setDrafts] = useState({});
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
   const [error, setError] = useState("");
+  const [fetchingId, setFetchingId] = useState("");
 
   const originalById = useMemo(
     () => new Map(demons.map(demon => [String(demon.id), createDemonEditDraft(demon)])),
@@ -85,6 +86,29 @@ export function BulkDemonEditor({ demons, saving, onSave, onClose }) {
     setError("");
   }
 
+  async function fetchFromGDDL(levelId) {
+    if (!onFetchGDDL || fetchingId) return;
+    setFetchingId(levelId);
+    setError("");
+
+    try {
+      const result = await onFetchGDDL(levelId);
+      if (!result?.success || !result.level) {
+        setError(result?.message || "Could not load this level from GDDL.");
+        return;
+      }
+
+      const level = result.level;
+      updateDraft(levelId, "name", level.name || currentDraft(levelId).name);
+      updateDraft(levelId, "creator", level.creator || currentDraft(levelId).creator);
+      updateDraft(levelId, "difficulty", level.difficulty || currentDraft(levelId).difficulty);
+    } catch (fetchError) {
+      setError(fetchError?.message || "Could not load this level from GDDL.");
+    } finally {
+      setFetchingId("");
+    }
+  }
+
   async function saveAll() {
     const validationError = validateBulkEditChanges(changes);
     if (validationError) {
@@ -147,6 +171,17 @@ export function BulkDemonEditor({ demons, saving, onSave, onClose }) {
 
               {isOpen && (
                 <div className="bulk-edit-fields">
+                  <div className="bulk-edit-gddl-row">
+                    <span>Refresh the public level fields without changing your attempts, date, status or device.</span>
+                    <button
+                      className="gddl-fetch-button"
+                      type="button"
+                      onClick={() => fetchFromGDDL(levelId)}
+                      disabled={Boolean(fetchingId) || saving}
+                    >
+                      <Download size={16} /> {fetchingId === levelId ? "Loading..." : "Fetch from GDDL"}
+                    </button>
+                  </div>
                   <div className="edit-fields-grid">
                     <label>Name<input value={draft.name} onChange={event => updateDraft(levelId, "name", event.target.value)} /></label>
                     <label>Difficulty<input value={draft.difficulty} onChange={event => updateDraft(levelId, "difficulty", event.target.value)} /></label>
