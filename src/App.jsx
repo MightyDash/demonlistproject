@@ -103,6 +103,7 @@ export default function App() {
   const [selected, setSelected] = useState(null);
   const [yearView, setYearView] = useState("all");
   const [durationSort, setDurationSort] = useState("longest");
+  const [levelIdSort, setLevelIdSort] = useState("newest");
   const [apiLatestDemon, setApiLatestDemon] = useState(() => initialDemonData?.apiLatestDemon || "");
   const [listUpdatedAt, setListUpdatedAt] = useState(() => initialDemonData?.listUpdatedAt || "");
   const [siteVersion, setSiteVersion] = useState(() => initialDemonData?.siteVersion || DEFAULT_SITE_VERSION);
@@ -1030,6 +1031,25 @@ async function handleRequestQuickStatus(rowNumber, status) {
         });
     }
 
+    if (yearView === "level-id") {
+      const direction = levelIdSort === "oldest" ? 1 : -1;
+      return demons
+        .filter(demon => {
+          const matchesSegment = segment === "all" || segmentForPlacement(demon.placement) === segment;
+          return !isInProgressDemon(demon) && matchesSearchAndDifficulty(demon) && matchesSegment;
+        })
+        .sort((a, b) => {
+          const firstId = Number(String(a.id || "").replace(/\D/g, ""));
+          const secondId = Number(String(b.id || "").replace(/\D/g, ""));
+          const firstHasId = Number.isFinite(firstId) && firstId > 0;
+          const secondHasId = Number.isFinite(secondId) && secondId > 0;
+
+          if (firstHasId !== secondHasId) return firstHasId ? -1 : 1;
+          if (firstHasId && firstId !== secondId) return (firstId - secondId) * direction;
+          return String(a.name || "").localeCompare(String(b.name || ""));
+        });
+    }
+
     const historicalYearSelected = /^\d{4}$/.test(String(yearView));
     if (historicalYearSelected) {
       return buildHistoricalRanking(demons, yearView)
@@ -1065,7 +1085,7 @@ async function handleRequestQuickStatus(rowNumber, status) {
 
         return comparePlacements(a.placement, b.placement);
       });
-  }, [demons, query, device, difficulty, segment, yearView, futureListIds, durationSort]);
+  }, [demons, query, device, difficulty, segment, yearView, futureListIds, durationSort, levelIdSort]);
 
   const currentIndex = useMemo(() => {
     if (!selected) return -1;
@@ -1237,6 +1257,8 @@ async function handleRequestQuickStatus(rowNumber, status) {
       setYearView={setYearView}
       durationSort={durationSort}
       setDurationSort={setDurationSort}
+      levelIdSort={levelIdSort}
+      setLevelIdSort={setLevelIdSort}
       viewMode={viewMode}
       setViewMode={setViewMode}
       filtered={displayedDemons}

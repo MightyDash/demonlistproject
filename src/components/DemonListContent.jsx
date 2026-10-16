@@ -28,6 +28,8 @@ export function DemonListContent({
   setYearView,
   durationSort,
   setDurationSort,
+  levelIdSort,
+  setLevelIdSort,
   viewMode,
   setViewMode,
   filtered,
@@ -80,7 +82,8 @@ export function DemonListContent({
     ["2018", "2018"],
     ["progress", "In Progress"],
     ["future", "Future List"],
-    ["duration", "Length"]
+    ["duration", "Length"],
+    ["level-id", "Level ID"]
   ];
 
   useEffect(() => {
@@ -107,6 +110,7 @@ export function DemonListContent({
     setSegment("all");
     setYearView("all");
     setDurationSort("longest");
+    setLevelIdSort("newest");
     setViewMode(isMobileView ? "grid" : "banner");
   }
 
@@ -306,6 +310,28 @@ export function DemonListContent({
                       type="button"
                     >
                       Shortest to longest
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {yearView === "level-id" && (
+                <div className="duration-sort-controls" role="group" aria-label="Sort demons by level ID">
+                  <span>Sort by Level ID</span>
+                  <div className="duration-sort-options">
+                    <button
+                      className={levelIdSort === "newest" ? "active" : ""}
+                      onClick={() => setLevelIdSort("newest")}
+                      type="button"
+                    >
+                      Newest to oldest
+                    </button>
+                    <button
+                      className={levelIdSort === "oldest" ? "active" : ""}
+                      onClick={() => setLevelIdSort("oldest")}
+                      type="button"
+                    >
+                      Oldest to newest
                     </button>
                   </div>
                 </div>
