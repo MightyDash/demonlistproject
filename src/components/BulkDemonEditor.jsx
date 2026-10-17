@@ -176,7 +176,12 @@ export function BulkDemonEditor({ demons, manualPlacementIds = [], saving, onSav
 
     const currentIndex = completedIds.indexOf(levelId);
     const targetIndex = requested - 1;
-    if (currentIndex < 0 || currentIndex === targetIndex) return;
+    if (currentIndex < 0) return;
+    if (currentIndex === targetIndex) {
+      applyOrder([...orderedIds], levelId);
+      setPlacementTargets(current => ({ ...current, [levelId]: "" }));
+      return;
+    }
     const reorderedCompleted = [...completedIds];
     reorderedCompleted.splice(currentIndex, 1);
     reorderedCompleted.splice(targetIndex, 0, levelId);
