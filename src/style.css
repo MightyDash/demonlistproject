@@ -6123,6 +6123,32 @@ textarea:focus-visible {
   background: color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
+.bulk-edit-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bulk-edit-header-actions > span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid color-mix(in srgb, var(--accent) 42%, transparent);
+  border-radius: 999px;
+  color: var(--accent-2);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  font-size: 0.76rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.bulk-edit-header-actions .close-button.active {
+  color: #fff;
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
 .bulk-edit-list {
   display: grid;
   gap: 10px;
@@ -6148,7 +6174,7 @@ textarea:focus-visible {
 
 .bulk-edit-summary {
   display: grid;
-  grid-template-columns: 86px minmax(220px, 1fr) auto auto 24px;
+  grid-template-columns: minmax(260px, 1fr) auto auto auto 34px;
   gap: 14px;
   align-items: center;
   width: 100%;
@@ -6157,11 +6183,24 @@ textarea:focus-visible {
   background: transparent;
   color: var(--text);
   text-align: left;
-  cursor: pointer;
 }
 
 .bulk-edit-summary:hover {
   background: rgba(255, 255, 255, 0.04);
+}
+
+.bulk-edit-summary-main {
+  display: grid;
+  grid-template-columns: 86px minmax(220px, 1fr);
+  gap: 14px;
+  align-items: center;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
 }
 
 .bulk-edit-summary img {
@@ -6170,6 +6209,37 @@ textarea:focus-visible {
   object-fit: cover;
   border: 1px solid var(--line);
   border-radius: 7px;
+}
+
+.bulk-edit-expand,
+.bulk-edit-reorder-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.035);
+  cursor: pointer;
+}
+
+.bulk-edit-reorder-actions {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.bulk-edit-reorder-actions button:hover,
+.bulk-edit-expand:hover {
+  color: var(--accent-2);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+}
+
+.bulk-edit-reorder-actions button:disabled {
+  opacity: 0.32;
+  cursor: not-allowed;
 }
 
 .bulk-edit-identity {
@@ -6208,6 +6278,20 @@ textarea:focus-visible {
   padding: 18px 18px 16px;
   border-top: 1px solid var(--line);
   background: rgba(0, 0, 0, 0.12);
+}
+
+.bulk-edit-placement-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+
+.bulk-edit-placement-row label {
+  width: min(260px, 100%);
+  margin: 0;
 }
 
 .bulk-edit-gddl-row {
@@ -6340,8 +6424,17 @@ textarea:focus-visible {
     margin-bottom: 12px;
   }
 
+  .bulk-edit-header-actions {
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
   .bulk-edit-summary {
-    grid-template-columns: 70px minmax(0, 1fr) 22px;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+
+  .bulk-edit-summary-main {
+    grid-template-columns: 70px minmax(0, 1fr);
   }
 
   .bulk-edit-summary img {
@@ -6352,6 +6445,10 @@ textarea:focus-visible {
   .bulk-edit-device,
   .bulk-edit-unsaved {
     display: none;
+  }
+
+  .bulk-edit-reorder-actions {
+    flex-direction: column;
   }
 
   .bulk-edit-toolbar {

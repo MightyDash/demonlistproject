@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { ChevronDown, ChevronUp, Download, RotateCcw, RotateCw, Save, X } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronDown, ChevronUp, Download, ListOrdered, RotateCcw, RotateCw, Save, X } from "lucide-react";
 import { DEVICE_OPTIONS } from "../deviceUtils.js";
 import {
   buildBulkEditChanges,
@@ -15,17 +15,38 @@ export function BulkDemonEditor({ demons, saving, onSave, onFetchGDDL, onClose }
   const [redoStack, setRedoStack] = useState([]);
   const [error, setError] = useState("");
   const [fetchingId, setFetchingId] = useState("");
+  const [reorderMode, setReorderMode] = useState(false);
+  const [orderedIds, setOrderedIds] = useState(() => demons.map(demon => String(demon.id)));
+  const [placementTargets, setPlacementTargets] = useState({});
 
   const originalById = useMemo(
     () => new Map(demons.map(demon => [String(demon.id), createDemonEditDraft(demon)])),
     [demons]
   );
+  const orderedDemons = useMemo(() => {
+    const byId = new Map(demons.map(demon => [String(demon.id), demon]));
+    return orderedIds.map(id => byId.get(id)).filter(Boolean);
+  }, [demons, orderedIds]);
   const filteredDemons = useMemo(() => {
     const query = search.trim().toLowerCase();
-    return demons.filter(demon => !query || [demon.name, demon.creator, demon.id]
+    return orderedDemons.filter(demon => !query || [demon.name, demon.creator, demon.id]
       .some(value => String(value || "").toLowerCase().includes(query)));
-  }, [demons, search]);
-  const changes = useMemo(() => buildBulkEditChanges(demons, drafts), [demons, drafts]);
+  }, [orderedDemons, search]);
+  const completedIds = useMemo(() => orderedDemons
+    .filter(demon => String(demon.status || "COMPLETED").toUpperCase() !== "IN PROGRESS")
+    .map(demon => String(demon.id)), [orderedDemons]);
+  const originalCompletedIds = useMemo(() => demons
+    .filter(demon => String(demon.status || "COMPLETED").toUpperCase() !== "IN PROGRESS")
+    .map(demon => String(demon.id)), [demons]);
+  const changes = useMemo(() => {
+    const byId = new Map(buildBulkEditChanges(demons, drafts).map(change => [String(change.levelId), change]));
+    const originalPlacement = new Map(originalCompletedIds.map((id, index) => [id, index + 1]));
+    completedIds.forEach((id, index) => {
+      if (originalPlacement.get(id) === index + 1) return;
+      byId.set(id, { ...(byId.get(id) || { levelId: id }), placement: index + 1 });
+    });
+    return Array.from(byId.values());
+  }, [demons, drafts, completedIds, originalCompletedIds]);
   const dirtyIds = useMemo(() => new Set(changes.map(change => String(change.levelId))), [changes]);
 
   function currentDraft(levelId) {
@@ -46,12 +67,16 @@ export function BulkDemonEditor({ demons, saving, onSave, onFetchGDDL, onClose }
       ...current,
       [levelId]: { ...(current[levelId] || originalById.get(levelId)), [field]: value }
     }));
-    setUndoStack(current => [...current, { levelId, field, before, after: value }]);
+    setUndoStack(current => [...current, { type: "field", levelId, field, before, after: value }]);
     setRedoStack([]);
     setError("");
   }
 
   function applyHistoryValue(action, value) {
+    if (action.type === "order") {
+      setOrderedIds(value);
+      return;
+    }
     setDrafts(current => ({
       ...current,
       [action.levelId]: {
@@ -81,9 +106,49 @@ export function BulkDemonEditor({ demons, saving, onSave, onFetchGDDL, onClose }
 
   function discardAll() {
     setDrafts({});
+    setOrderedIds(demons.map(demon => String(demon.id)));
     setUndoStack([]);
     setRedoStack([]);
     setError("");
+  }
+
+  function applyOrder(nextOrder) {
+    if (nextOrder.join("|") === orderedIds.join("|")) return;
+    setUndoStack(current => [...current, { type: "order", before: orderedIds, after: nextOrder }]);
+    setRedoStack([]);
+    setOrderedIds(nextOrder);
+    setError("");
+  }
+
+  function moveDemon(levelId, offset) {
+    const completedIndex = completedIds.indexOf(levelId);
+    const targetIndex = completedIndex + offset;
+    if (completedIndex < 0 || targetIndex < 0 || targetIndex >= completedIds.length) return;
+
+    const otherId = completedIds[targetIndex];
+    const nextOrder = [...orderedIds];
+    const firstIndex = nextOrder.indexOf(levelId);
+    const secondIndex = nextOrder.indexOf(otherId);
+    [nextOrder[firstIndex], nextOrder[secondIndex]] = [nextOrder[secondIndex], nextOrder[firstIndex]];
+    applyOrder(nextOrder);
+  }
+
+  function moveToPlacement(levelId) {
+    const requested = Number(placementTargets[levelId]);
+    if (!Number.isInteger(requested) || requested < 1 || requested > completedIds.length) {
+      setError(`Placement must be between 1 and ${completedIds.length}.`);
+      return;
+    }
+
+    const currentIndex = completedIds.indexOf(levelId);
+    const targetIndex = requested - 1;
+    if (currentIndex < 0 || currentIndex === targetIndex) return;
+    const reorderedCompleted = [...completedIds];
+    reorderedCompleted.splice(currentIndex, 1);
+    reorderedCompleted.splice(targetIndex, 0, levelId);
+    let completedCursor = 0;
+    applyOrder(orderedIds.map(id => completedIds.includes(id) ? reorderedCompleted[completedCursor++] : id));
+    setPlacementTargets(current => ({ ...current, [levelId]: "" }));
   }
 
   async function fetchFromGDDL(levelId) {
@@ -120,6 +185,7 @@ export function BulkDemonEditor({ demons, saving, onSave, onFetchGDDL, onClose }
     const result = await onSave(changes);
     if (result?.success) {
       setDrafts({});
+      setOrderedIds(demons.map(demon => String(demon.id)));
       setUndoStack([]);
       setRedoStack([]);
       setError("");
@@ -133,7 +199,12 @@ export function BulkDemonEditor({ demons, saving, onSave, onFetchGDDL, onClose }
           <h3>Edit Demon</h3>
           <p className="admin-form-note">Open demons, edit multiple entries and save every change in one batch.</p>
         </div>
-        <span>{demons.length} demons</span>
+        <div className="bulk-edit-header-actions">
+          <button className={`close-button${reorderMode ? " active" : ""}`} type="button" onClick={() => setReorderMode(active => !active)}>
+            <ListOrdered size={17} /> {reorderMode ? "Done reordering" : "Reorder list"}
+          </button>
+          <span>{demons.length} demons</span>
+        </div>
       </div>
 
       <label>
@@ -151,23 +222,34 @@ export function BulkDemonEditor({ demons, saving, onSave, onFetchGDDL, onClose }
           const draft = currentDraft(levelId);
           const isOpen = openIds.includes(levelId);
           const isDirty = dirtyIds.has(levelId);
+          const completedIndex = completedIds.indexOf(levelId);
 
           return (
             <article className={`bulk-edit-row${isOpen ? " is-open" : ""}${isDirty ? " is-dirty" : ""}`} key={levelId || demon.name}>
-              <button className="bulk-edit-summary" type="button" onClick={() => toggleDemon(levelId)}>
-                <img
-                  src={`https://levelthumbs.prevter.me/thumbnail/${levelId}`}
-                  alt=""
-                  onError={event => { event.currentTarget.style.display = "none"; }}
-                />
-                <span className="bulk-edit-identity">
-                  <strong>{demon.name}</strong>
-                  <small>{demon.placement || "Unplaced"} · ID: {levelId} · {demon.creator || "Unknown creator"}</small>
-                </span>
+              <div className="bulk-edit-summary">
+                <button className="bulk-edit-summary-main" type="button" onClick={() => toggleDemon(levelId)}>
+                  <img
+                    src={`https://levelthumbs.prevter.me/thumbnail/${levelId}`}
+                    alt=""
+                    onError={event => { event.currentTarget.style.display = "none"; }}
+                  />
+                  <span className="bulk-edit-identity">
+                    <strong>{demon.name}</strong>
+                    <small>{completedIndex >= 0 ? `#${completedIndex + 1}` : "Unplaced"} · ID: {levelId} · {demon.creator || "Unknown creator"}</small>
+                  </span>
+                </button>
+                {reorderMode && completedIndex >= 0 && (
+                  <span className="bulk-edit-reorder-actions">
+                    <button type="button" onClick={() => moveDemon(levelId, -1)} disabled={completedIndex === 0 || saving} aria-label={`Move ${demon.name} up`}><ArrowUp size={17} /></button>
+                    <button type="button" onClick={() => moveDemon(levelId, 1)} disabled={completedIndex === completedIds.length - 1 || saving} aria-label={`Move ${demon.name} down`}><ArrowDown size={17} /></button>
+                  </span>
+                )}
                 <span className="bulk-edit-device">{draft.device || "No device"}</span>
                 {isDirty && <span className="bulk-edit-unsaved">Unsaved</span>}
-                {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-              </button>
+                <button className="bulk-edit-expand" type="button" onClick={() => toggleDemon(levelId)} aria-label={`${isOpen ? "Close" : "Open"} ${demon.name} editor`}>
+                  {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                </button>
+              </div>
 
               {isOpen && (
                 <div className="bulk-edit-fields">
@@ -210,6 +292,21 @@ export function BulkDemonEditor({ demons, saving, onSave, onFetchGDDL, onClose }
                       <label>Progress %<input type="number" min="0" max="100" value={draft.progressPercent} onChange={event => updateDraft(levelId, "progressPercent", event.target.value)} /></label>
                     )}
                   </div>
+                  {completedIndex >= 0 && (
+                    <div className="bulk-edit-placement-row">
+                      <label>Move to placement
+                        <input
+                          type="number"
+                          min="1"
+                          max={completedIds.length}
+                          value={placementTargets[levelId] ?? ""}
+                          placeholder={String(completedIndex + 1)}
+                          onChange={event => setPlacementTargets(current => ({ ...current, [levelId]: event.target.value }))}
+                        />
+                      </label>
+                      <button className="close-button" type="button" onClick={() => moveToPlacement(levelId)} disabled={!placementTargets[levelId] || saving}>Move</button>
+                    </div>
+                  )}
                   <button className="close-button bulk-edit-collapse" type="button" onClick={() => toggleDemon(levelId)}>
                     <X size={16} /> Close editor
                   </button>

@@ -50,6 +50,9 @@ export function buildBulkEditChanges(demons, drafts) {
 
 export function validateBulkEditChanges(changes) {
   for (const change of changes) {
+    if (change.placement !== undefined && (!Number.isInteger(Number(change.placement)) || Number(change.placement) < 1)) {
+      return "Placement must be a positive whole number.";
+    }
     if (change.name !== undefined && !String(change.name).trim()) return "Name is required.";
     if (change.date !== undefined && !/^\d{4}$|^\d{1,2}[/-]\d{1,2}[/-](?:\d{2}|\d{4})$/.test(String(change.date).trim())) {
       return "Date must be a four-digit year or dd/mm/yyyy.";
