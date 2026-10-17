@@ -185,7 +185,6 @@ export function BulkDemonEditor({ demons, saving, onSave, onFetchGDDL, onClose }
     const result = await onSave(changes);
     if (result?.success) {
       setDrafts({});
-      setOrderedIds(demons.map(demon => String(demon.id)));
       setUndoStack([]);
       setRedoStack([]);
       setError("");
