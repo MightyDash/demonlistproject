@@ -6174,7 +6174,7 @@ textarea:focus-visible {
 
 .bulk-edit-summary {
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) auto auto auto 34px;
+  grid-template-columns: minmax(260px, 1fr) repeat(4, auto) 34px;
   gap: 14px;
   align-items: center;
   width: 100%;
@@ -6226,6 +6226,10 @@ textarea:focus-visible {
   cursor: pointer;
 }
 
+.bulk-edit-expand {
+  grid-column: -1;
+}
+
 .bulk-edit-reorder-actions {
   display: inline-flex;
   gap: 6px;
@@ -6272,6 +6276,20 @@ textarea:focus-visible {
   color: var(--accent-2);
   border-color: color-mix(in srgb, var(--accent) 48%, transparent);
   background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.bulk-edit-manual {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid color-mix(in srgb, var(--accent) 48%, transparent);
+  border-radius: 999px;
+  color: var(--accent-2);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  font-size: 0.72rem;
+  font-weight: 900;
+  white-space: nowrap;
 }
 
 .bulk-edit-fields {
@@ -6443,7 +6461,8 @@ textarea:focus-visible {
   }
 
   .bulk-edit-device,
-  .bulk-edit-unsaved {
+  .bulk-edit-unsaved,
+  .bulk-edit-manual {
     display: none;
   }
 

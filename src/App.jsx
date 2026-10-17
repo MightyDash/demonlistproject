@@ -51,6 +51,7 @@ function normalizeDemonPayload(payload) {
     siteVersion: payload?.siteVersion || DEFAULT_SITE_VERSION,
     siteChangelog: Array.isArray(payload?.siteChangelog) ? payload.siteChangelog : DEFAULT_SITE_CHANGELOG,
     futureListIds: Array.isArray(payload?.futureListIds) ? payload.futureListIds.map(String) : [],
+    manualPlacementIds: Array.isArray(payload?.manualPlacementIds) ? payload.manualPlacementIds.map(String) : [],
     timelineEntries: Array.isArray(payload?.timelineEntries) ? payload.timelineEntries : [],
     monthlyRecaps: Array.isArray(payload?.monthlyRecaps) ? payload.monthlyRecaps : [],
     monthlyHighlightStyles: Array.isArray(payload?.monthlyHighlightStyles) ? payload.monthlyHighlightStyles : [],
@@ -109,6 +110,7 @@ export default function App() {
   const [siteVersion, setSiteVersion] = useState(() => initialDemonData?.siteVersion || DEFAULT_SITE_VERSION);
   const [siteChangelog, setSiteChangelog] = useState(() => initialDemonData?.siteChangelog || DEFAULT_SITE_CHANGELOG);
   const [futureListIds, setFutureListIds] = useState(() => initialDemonData?.futureListIds || []);
+  const [manualPlacementIds, setManualPlacementIds] = useState(() => initialDemonData?.manualPlacementIds || []);
   const [timelineEntries, setTimelineEntries] = useState(() => initialDemonData?.timelineEntries || []);
   const [monthlyRecaps, setMonthlyRecaps] = useState(() => initialDemonData?.monthlyRecaps || []);
   const [monthlyHighlightStyles, setMonthlyHighlightStyles] = useState(() => initialDemonData?.monthlyHighlightStyles || []);
@@ -461,6 +463,7 @@ const [requestForm, setRequestForm] = useState({
       setSiteVersion(nextData.siteVersion);
       setSiteChangelog(nextData.siteChangelog);
       setFutureListIds(nextData.futureListIds);
+      setManualPlacementIds(nextData.manualPlacementIds);
       setTimelineEntries(nextData.timelineEntries);
       setMonthlyRecaps(nextData.monthlyRecaps);
       setMonthlyHighlightStyles(nextData.monthlyHighlightStyles);
@@ -1332,6 +1335,7 @@ async function handleRequestQuickStatus(rowNumber, status) {
           onBack={() => navigateTo(ROUTES.home)}
           onDataChanged={() => loadDemonData({ silent: true })}
           demons={demons}
+          manualPlacementIds={manualPlacementIds}
           timelineEntries={timelineEntries}
           monthlyRecaps={monthlyRecaps}
           monthlyHighlightStyles={monthlyHighlightStyles}

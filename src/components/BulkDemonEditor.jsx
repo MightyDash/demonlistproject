@@ -7,7 +7,7 @@ import {
   validateBulkEditChanges
 } from "../bulkEditUtils.js";
 
-export function BulkDemonEditor({ demons, saving, onSave, onFetchGDDL, onClose }) {
+export function BulkDemonEditor({ demons, manualPlacementIds = [], saving, onSave, onFetchGDDL, onClose }) {
   const [search, setSearch] = useState("");
   const [openIds, setOpenIds] = useState([]);
   const [drafts, setDrafts] = useState({});
@@ -18,6 +18,8 @@ export function BulkDemonEditor({ demons, saving, onSave, onFetchGDDL, onClose }
   const [reorderMode, setReorderMode] = useState(false);
   const [orderedIds, setOrderedIds] = useState(() => demons.map(demon => String(demon.id)));
   const [placementTargets, setPlacementTargets] = useState({});
+  const [manualOverrides, setManualOverrides] = useState(() => new Set(manualPlacementIds.map(String)));
+  const [manualTouchedIds, setManualTouchedIds] = useState(() => new Set());
 
   const originalById = useMemo(
     () => new Map(demons.map(demon => [String(demon.id), createDemonEditDraft(demon)])),
@@ -38,6 +40,7 @@ export function BulkDemonEditor({ demons, saving, onSave, onFetchGDDL, onClose }
   const originalCompletedIds = useMemo(() => demons
     .filter(demon => String(demon.status || "COMPLETED").toUpperCase() !== "IN PROGRESS")
     .map(demon => String(demon.id)), [demons]);
+  const originalManualOverrides = useMemo(() => new Set(manualPlacementIds.map(String)), [manualPlacementIds]);
   const changes = useMemo(() => {
     const byId = new Map(buildBulkEditChanges(demons, drafts).map(change => [String(change.levelId), change]));
     const originalPlacement = new Map(originalCompletedIds.map((id, index) => [id, index + 1]));
@@ -45,8 +48,18 @@ export function BulkDemonEditor({ demons, saving, onSave, onFetchGDDL, onClose }
       if (originalPlacement.get(id) === index + 1) return;
       byId.set(id, { ...(byId.get(id) || { levelId: id }), placement: index + 1 });
     });
+    manualTouchedIds.forEach(id => {
+      const change = byId.get(id) || { levelId: id };
+      if (manualOverrides.has(id)) {
+        change.placement = completedIds.indexOf(id) + 1;
+        change.manualPlacement = true;
+      } else if (originalManualOverrides.has(id)) {
+        change.clearManualPlacement = true;
+      }
+      byId.set(id, change);
+    });
     return Array.from(byId.values());
-  }, [demons, drafts, completedIds, originalCompletedIds]);
+  }, [demons, drafts, completedIds, originalCompletedIds, manualOverrides, manualTouchedIds, originalManualOverrides]);
   const dirtyIds = useMemo(() => new Set(changes.map(change => String(change.levelId))), [changes]);
 
   function currentDraft(levelId) {
@@ -72,9 +85,11 @@ export function BulkDemonEditor({ demons, saving, onSave, onFetchGDDL, onClose }
     setError("");
   }
 
-  function applyHistoryValue(action, value) {
+  function applyHistoryValue(action, value, overrides, touchedIds) {
     if (action.type === "order") {
       setOrderedIds(value);
+      setManualOverrides(new Set(overrides));
+      setManualTouchedIds(new Set(touchedIds));
       return;
     }
     setDrafts(current => ({
@@ -89,7 +104,7 @@ export function BulkDemonEditor({ demons, saving, onSave, onFetchGDDL, onClose }
   function undo() {
     const action = undoStack[undoStack.length - 1];
     if (!action) return;
-    applyHistoryValue(action, action.before);
+    applyHistoryValue(action, action.before, action.beforeOverrides, action.beforeTouchedIds);
     setUndoStack(current => current.slice(0, -1));
     setRedoStack(current => [...current, action]);
     setError("");
@@ -98,7 +113,7 @@ export function BulkDemonEditor({ demons, saving, onSave, onFetchGDDL, onClose }
   function redo() {
     const action = redoStack[redoStack.length - 1];
     if (!action) return;
-    applyHistoryValue(action, action.after);
+    applyHistoryValue(action, action.after, action.afterOverrides, action.afterTouchedIds);
     setRedoStack(current => current.slice(0, -1));
     setUndoStack(current => [...current, action]);
     setError("");
@@ -107,16 +122,35 @@ export function BulkDemonEditor({ demons, saving, onSave, onFetchGDDL, onClose }
   function discardAll() {
     setDrafts({});
     setOrderedIds(demons.map(demon => String(demon.id)));
+    setManualOverrides(new Set(manualPlacementIds.map(String)));
+    setManualTouchedIds(new Set());
     setUndoStack([]);
     setRedoStack([]);
     setError("");
   }
 
-  function applyOrder(nextOrder) {
-    if (nextOrder.join("|") === orderedIds.join("|")) return;
-    setUndoStack(current => [...current, { type: "order", before: orderedIds, after: nextOrder }]);
+  function applyOrder(nextOrder, manualLevelId, keepManual = true) {
+    const nextOverrides = new Set(manualOverrides);
+    if (manualLevelId) {
+      if (keepManual) nextOverrides.add(manualLevelId);
+      else nextOverrides.delete(manualLevelId);
+    }
+    const nextTouchedIds = new Set(manualTouchedIds);
+    if (manualLevelId) nextTouchedIds.add(manualLevelId);
+    if (nextOrder.join("|") === orderedIds.join("|") && nextOverrides.has(manualLevelId) === manualOverrides.has(manualLevelId)) return;
+    setUndoStack(current => [...current, {
+      type: "order",
+      before: orderedIds,
+      after: nextOrder,
+      beforeOverrides: Array.from(manualOverrides),
+      afterOverrides: Array.from(nextOverrides),
+      beforeTouchedIds: Array.from(manualTouchedIds),
+      afterTouchedIds: Array.from(nextTouchedIds)
+    }]);
     setRedoStack([]);
     setOrderedIds(nextOrder);
+    setManualOverrides(nextOverrides);
+    setManualTouchedIds(nextTouchedIds);
     setError("");
   }
 
@@ -130,7 +164,7 @@ export function BulkDemonEditor({ demons, saving, onSave, onFetchGDDL, onClose }
     const firstIndex = nextOrder.indexOf(levelId);
     const secondIndex = nextOrder.indexOf(otherId);
     [nextOrder[firstIndex], nextOrder[secondIndex]] = [nextOrder[secondIndex], nextOrder[firstIndex]];
-    applyOrder(nextOrder);
+    applyOrder(nextOrder, levelId);
   }
 
   function moveToPlacement(levelId) {
@@ -147,7 +181,7 @@ export function BulkDemonEditor({ demons, saving, onSave, onFetchGDDL, onClose }
     reorderedCompleted.splice(currentIndex, 1);
     reorderedCompleted.splice(targetIndex, 0, levelId);
     let completedCursor = 0;
-    applyOrder(orderedIds.map(id => completedIds.includes(id) ? reorderedCompleted[completedCursor++] : id));
+    applyOrder(orderedIds.map(id => completedIds.includes(id) ? reorderedCompleted[completedCursor++] : id), levelId);
     setPlacementTargets(current => ({ ...current, [levelId]: "" }));
   }
 
@@ -185,6 +219,7 @@ export function BulkDemonEditor({ demons, saving, onSave, onFetchGDDL, onClose }
     const result = await onSave(changes);
     if (result?.success) {
       setDrafts({});
+      setManualTouchedIds(new Set());
       setUndoStack([]);
       setRedoStack([]);
       setError("");
@@ -245,6 +280,7 @@ export function BulkDemonEditor({ demons, saving, onSave, onFetchGDDL, onClose }
                 )}
                 <span className="bulk-edit-device">{draft.device || "No device"}</span>
                 {isDirty && <span className="bulk-edit-unsaved">Unsaved</span>}
+                {manualOverrides.has(levelId) && <span className="bulk-edit-manual">Manual</span>}
                 <button className="bulk-edit-expand" type="button" onClick={() => toggleDemon(levelId)} aria-label={`${isOpen ? "Close" : "Open"} ${demon.name} editor`}>
                   {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                 </button>
@@ -304,6 +340,9 @@ export function BulkDemonEditor({ demons, saving, onSave, onFetchGDDL, onClose }
                         />
                       </label>
                       <button className="close-button" type="button" onClick={() => moveToPlacement(levelId)} disabled={!placementTargets[levelId] || saving}>Move</button>
+                      {manualOverrides.has(levelId) && (
+                        <button className="close-button" type="button" onClick={() => applyOrder([...orderedIds], levelId, false)} disabled={saving}>Use automatic placement</button>
+                      )}
                     </div>
                   )}
                   <button className="close-button bulk-edit-collapse" type="button" onClick={() => toggleDemon(levelId)}>

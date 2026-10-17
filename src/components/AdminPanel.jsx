@@ -220,6 +220,7 @@ export function AdminPanel({
   onBack,
   onDataChanged,
   demons = [],
+  manualPlacementIds = [],
   timelineEntries = [],
   monthlyRecaps = [],
   monthlyHighlightStyles = [],
@@ -1466,6 +1467,7 @@ export function AdminPanel({
       {showEditForm && (
         <BulkDemonEditor
           demons={demons}
+          manualPlacementIds={manualPlacementIds}
           saving={isSubmitting}
           onSave={handleBulkEditDemons}
           onFetchGDDL={levelId => handleFetchGDDLLevel(levelId, { silent: true, forceRefresh: true })}
