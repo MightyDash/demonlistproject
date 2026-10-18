@@ -34,11 +34,15 @@ function naturalJoin(names) {
 function eventImpacts(items) {
   const explicit = items.filter(item => String(item.type || "").toUpperCase() === "IMPACT").map(item => item.message).filter(Boolean);
   if (explicit.length) return explicit;
+  const movedItems = items.filter(item => {
+    const type = String(item.type || "").toUpperCase();
+    return type !== "NEW ENTRY" && placement(item.oldPlacement) > 0 && placement(item.newPlacement) > 0;
+  });
   const messages = [10, 25, 50, 100, 150].flatMap(limit => {
-    const names = items.filter(item => placement(item.oldPlacement) <= limit && placement(item.newPlacement) > limit).map(item => item.demon).filter(Boolean);
+    const names = movedItems.filter(item => placement(item.oldPlacement) <= limit && placement(item.newPlacement) > limit).map(item => item.demon).filter(Boolean);
     return names.length ? [`This change pushes ${naturalJoin(names)} out of the Top ${limit}.`] : [];
   });
-  const legacy = items.filter(item => placement(item.oldPlacement) <= 200 && placement(item.newPlacement) > 200).map(item => item.demon).filter(Boolean);
+  const legacy = movedItems.filter(item => placement(item.oldPlacement) <= 200 && placement(item.newPlacement) > 200).map(item => item.demon).filter(Boolean);
   if (legacy.length) messages.push(legacy.length === 1 ? `This level has been pushed into the legacy list: ${legacy[0]}.` : `These levels have been pushed into the legacy list: ${naturalJoin(legacy)}.`);
   return messages;
 }
