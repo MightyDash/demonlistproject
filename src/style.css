@@ -10754,6 +10754,7 @@ body,
 .change-event-impacts { margin-top: 12px; padding: 11px 13px; border-left: 3px solid var(--accent); border-radius: 0 7px 7px 0; background: color-mix(in srgb, var(--accent) 9%, transparent); }
 .change-event-impacts p { margin: 0; color: var(--muted); line-height: 1.55; }
 .change-event-impacts p + p { margin-top: 5px; }
+.change-addition-summary { margin: 14px 0 0; color: var(--muted); font-size: .96rem; line-height: 1.65; }
 
 @media (max-width: 640px) {
   .changes-feed-panel { padding: 14px !important; }

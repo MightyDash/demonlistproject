@@ -27,29 +27,33 @@ function buildEvents(changes) {
 
 function naturalJoin(names) {
   if (names.length < 2) return names[0] || "";
-  if (names.length === 2) return `${names[0]} & ${names[1]}`;
-  return `${names.slice(0, -1).join(", ")} & ${names[names.length - 1]}`;
+  if (names.length === 2) return `${names[0]} and ${names[1]}`;
+  return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
 }
 
-function eventImpacts(items) {
-  const explicit = items.filter(item => String(item.type || "").toUpperCase() === "IMPACT").map(item => item.message).filter(Boolean);
-  if (explicit.length) return explicit;
-  const movedItems = items.filter(item => {
-    const type = String(item.type || "").toUpperCase();
-    return type !== "NEW ENTRY" && placement(item.oldPlacement) > 0 && placement(item.newPlacement) > 0;
+function additionSummary(additions, items) {
+  const addedPlacements = additions.map(item => placement(item.newPlacement)).filter(Boolean);
+  const placements = additions.map(item => {
+    const position = formatPlacement(item.newPlacement);
+    const below = String(item.below || "").trim();
+    return `${item.demon || "A new demon"} has been placed at ${position}${below ? `, above ${below}` : ""}`;
   });
-  const messages = [10, 25, 50, 100, 150].flatMap(limit => {
-    const names = movedItems.filter(item => placement(item.oldPlacement) <= limit && placement(item.newPlacement) > limit).map(item => item.demon).filter(Boolean);
-    return names.length ? [`This change pushes ${naturalJoin(names)} out of the Top ${limit}.`] : [];
+  const consequences = items.filter(item => String(item.type || "").toUpperCase() === "IMPACT").flatMap(item => {
+    const names = String(item.message || "").split(":").slice(1).join(":").trim().replace(/\.$/, "");
+    if (!names) return [];
+    if (/legacy/i.test(`${item.demon} ${item.message}`)) {
+      return addedPlacements.some(value => value <= 200) ? [`${names} into the legacy list`] : [];
+    }
+    const topMatch = String(item.demon || item.message || "").match(/Top\s+(\d+)/i);
+    return topMatch && addedPlacements.some(value => value <= Number(topMatch[1]))
+      ? [`${names} out of the Top ${topMatch[1]}`]
+      : [];
   });
-  const legacy = movedItems.filter(item => placement(item.oldPlacement) <= 200 && placement(item.newPlacement) > 200).map(item => item.demon).filter(Boolean);
-  if (legacy.length) messages.push(legacy.length === 1 ? `This level has been pushed into the legacy list: ${legacy[0]}.` : `These levels have been pushed into the legacy list: ${naturalJoin(legacy)}.`);
-  return messages;
+  return `${naturalJoin(placements)}${consequences.length ? `, pushing ${naturalJoin(consequences)}` : ""}.`;
 }
 
 function ChangeEvent({ event }) {
   const additions = event.items.filter(item => String(item.type || "").toUpperCase() === "NEW ENTRY");
-  const impacts = eventImpacts(event.items);
   const isNew = event.kind === "new";
   return (
     <article className={`change-event ${event.kind}`}>
@@ -59,8 +63,7 @@ function ChangeEvent({ event }) {
           <div><span>{isNew ? "New demons" : "List update"}</span><h3>{isNew ? `${additions.length} ${additions.length === 1 ? "demon has" : "demons have"} been added` : "The List has been refreshed"}</h3></div>
           <time>{formatEventTime(event.timestamp)}</time>
         </div>
-        {isNew && <div className="change-event-additions">{additions.map((item, index) => <div className="change-added-demon" key={`${item.demon}-${index}`}><strong>{item.demon || "New demon"}</strong><span>has been placed at <b>{formatPlacement(item.newPlacement)}</b></span></div>)}</div>}
-        {isNew && impacts.length > 0 && <div className="change-event-impacts">{impacts.map((message, index) => <p key={`${message}-${index}`}>{message}</p>)}</div>}
+        {isNew && <p className="change-addition-summary">{additionSummary(additions, event.items)}</p>}
       </div>
     </article>
   );
