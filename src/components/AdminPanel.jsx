@@ -41,6 +41,17 @@ const TIMELINE_MONTHS = [
   { name: "December", slug: "december" }
 ];
 
+function createAddDemonDraft() {
+  return {
+    levelId: "",
+    attempts: "",
+    date: String(new Date().getFullYear()),
+    status: "COMPLETED",
+    progressPercent: "",
+    twoPlayerMode: "standard"
+  };
+}
+
 function normalizeDateInput(value) {
   const text = String(value || "").trim();
   if (/^\d{4}$/.test(text)) return { valid: true, value: text };
@@ -246,14 +257,9 @@ export function AdminPanel({
   const [highlightStyleDraft, setHighlightStyleDraft] = useState({ ...DEFAULT_MONTHLY_HIGHLIGHT_STYLE });
   const [highlightStyleSaving, setHighlightStyleSaving] = useState(false);
 
-  const [addForm, setAddForm] = useState({
-    levelId: "",
-    attempts: "",
-    date: String(new Date().getFullYear()),
-    status: "COMPLETED",
-    progressPercent: "",
-    twoPlayerMode: "standard"
-  });
+  const [addForm, setAddForm] = useState(createAddDemonDraft);
+  const [addMode, setAddMode] = useState("single");
+  const [batchAddForms, setBatchAddForms] = useState(() => [createAddDemonDraft(), createAddDemonDraft()]);
   const [gddlPreview, setGddlPreview] = useState(null);
   const [gddlPreviewLoading, setGddlPreviewLoading] = useState(false);
 
@@ -656,6 +662,56 @@ export function AdminPanel({
       });
       setShowAddForm(false);
 
+      if (onDataChanged) onDataChanged();
+    } catch (error) {
+      setAdminError(error.message || "Could not connect to Apps Script.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  function updateBatchAddForm(index, patch) {
+    setBatchAddForms(current => current.map((form, formIndex) => formIndex === index ? { ...form, ...patch } : form));
+  }
+
+  async function handleAddDemons() {
+    setAdminMessage("");
+    setAdminError("");
+    setAdminToast(null);
+
+    let demonsToAdd;
+    try {
+      demonsToAdd = batchAddForms.map((form, index) => {
+        const dateInput = normalizeDateInput(form.date);
+        const attempts = Number(form.attempts);
+        const progressPercent = Number(form.progressPercent);
+        const status = String(form.status || "COMPLETED").toUpperCase();
+        if (!String(form.levelId || "").trim()) throw new Error(`Demon ${index + 1}: Level ID is required.`);
+        if (!Number.isInteger(attempts) || attempts < 0) throw new Error(`Demon ${index + 1}: attempts must be a valid number.`);
+        if (!dateInput.valid) throw new Error(`Demon ${index + 1}: enter a valid date.`);
+        if (status === "IN PROGRESS" && (!Number.isInteger(progressPercent) || progressPercent < 0 || progressPercent > 100)) {
+          throw new Error(`Demon ${index + 1}: progress must be between 0 and 100.`);
+        }
+        return {
+          levelId: String(form.levelId).trim(), attempts, date: dateInput.value, status,
+          progressPercent: status === "IN PROGRESS" ? progressPercent : "", twoPlayerMode: form.twoPlayerMode
+        };
+      });
+    } catch (error) {
+      setAdminError(error.message);
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const data = await sendAdminRequest({ action: "addDemons", demons: demonsToAdd });
+      if (!data.success) {
+        setAdminError(data.message || "Could not add the demons.");
+        return;
+      }
+      showAdminToast(data.message || `${demonsToAdd.length} demons added.`);
+      setBatchAddForms([createAddDemonDraft(), createAddDemonDraft()]);
+      setShowAddForm(false);
       if (onDataChanged) onDataChanged();
     } catch (error) {
       setAdminError(error.message || "Could not connect to Apps Script.");
@@ -1302,6 +1358,13 @@ export function AdminPanel({
         <div className="admin-form">
           <h3>Add Demon</h3>
 
+          <div className="add-mode-switch" role="group" aria-label="Add demon mode">
+            <button className={addMode === "single" ? "active" : ""} onClick={() => setAddMode("single")} type="button">Single demon</button>
+            <button className={addMode === "multiple" ? "active" : ""} onClick={() => setAddMode("multiple")} type="button">Multiple demons</button>
+          </div>
+
+          {addMode === "single" ? <>
+
           <label>
             Level ID
             <input
@@ -1410,14 +1473,42 @@ export function AdminPanel({
             </label>
           )}
 
+          </> : (
+            <div className="batch-add-list">
+              <p className="admin-form-note">Every row is checked before anything is saved. If one entry fails, the entire batch is cancelled.</p>
+              {batchAddForms.map((form, index) => (
+                <section className="batch-add-row" key={index}>
+                  <div className="batch-add-row-heading">
+                    <strong>Demon {index + 1}</strong>
+                    <button
+                      type="button"
+                      aria-label={`Remove demon ${index + 1}`}
+                      onClick={() => setBatchAddForms(current => current.filter((_, formIndex) => formIndex !== index))}
+                      disabled={batchAddForms.length <= 1 || isSubmitting}
+                    ><Trash2 size={16} /></button>
+                  </div>
+                  <div className="batch-add-fields">
+                    <label>Level ID<input value={form.levelId} onChange={event => updateBatchAddForm(index, { levelId: event.target.value })} placeholder="10565740" /></label>
+                    <label>Attempts<input type="number" min="0" value={form.attempts} onChange={event => updateBatchAddForm(index, { attempts: event.target.value })} placeholder="0" /></label>
+                    <label>Date<input value={form.date} onChange={event => updateBatchAddForm(index, { date: event.target.value })} placeholder="2026 or dd/mm/yyyy" /></label>
+                    <label>Status<select value={form.status} onChange={event => updateBatchAddForm(index, { status: event.target.value, progressPercent: "" })}><option value="COMPLETED">COMPLETED</option><option value="IN PROGRESS">IN PROGRESS</option></select></label>
+                    <label>Play mode<select value={form.twoPlayerMode} onChange={event => updateBatchAddForm(index, { twoPlayerMode: event.target.value })}><option value="standard">Standard</option><option value="solo">Solo</option><option value="two-player">Two players</option></select></label>
+                    {form.status === "IN PROGRESS" && <label>Progress %<input type="number" min="0" max="100" value={form.progressPercent} onChange={event => updateBatchAddForm(index, { progressPercent: event.target.value })} /></label>}
+                  </div>
+                </section>
+              ))}
+              <button className="gddl-fetch-button batch-add-another" type="button" onClick={() => setBatchAddForms(current => [...current, createAddDemonDraft()])} disabled={isSubmitting || batchAddForms.length >= 25}><Plus size={16} /> Add another demon</button>
+            </div>
+          )}
+
           <div className="admin-form-actions">
             <button
               className="login-button"
-              onClick={handleAddDemon}
+              onClick={addMode === "single" ? handleAddDemon : handleAddDemons}
               disabled={isSubmitting}
               type="button"
             >
-              {isSubmitting ? "Adding..." : "Add Demon"}
+              {isSubmitting ? "Adding..." : addMode === "single" ? "Add Demon" : `Add all demons (${batchAddForms.length})`}
             </button>
 
             <button className="close-button" onClick={() => setShowAddForm(false)} type="button">
