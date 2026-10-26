@@ -12433,3 +12433,45 @@ body::before {
     display: grid !important;
   }
 }
+
+/* Keep styled monthly champion names readable inside the phone carousel. */
+@media (max-width: 760px) {
+  .timeline-mobile-months .timeline-month-hardest {
+    left: 62%;
+    gap: 5px;
+    width: 70%;
+    padding: 4px;
+  }
+
+  .timeline-mobile-months .timeline-month-hardest-face,
+  .timeline-mobile-months .timeline-month-hardest-face img {
+    width: 54px;
+    height: 54px;
+  }
+
+  .timeline-mobile-months .timeline-month-hardest-label {
+    gap: 3px;
+    min-width: 0;
+  }
+
+  .timeline-mobile-months .timeline-month-hardest-label svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .timeline-mobile-months .timeline-month-hardest-label b {
+    display: -webkit-box;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    font-size: clamp(15px, 4.8vw, 21px) !important;
+    line-height: 1.08 !important;
+    letter-spacing: 0 !important;
+    overflow-wrap: anywhere;
+    word-break: normal;
+    white-space: normal;
+    text-align: center;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+}
