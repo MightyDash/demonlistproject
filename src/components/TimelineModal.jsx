@@ -580,6 +580,7 @@ export function TimelinePage({
   );
   const defaultYear = timeline[timeline.length - 1]?.year || null;
   const [selectedYear, setSelectedYear] = useState(defaultYear);
+  const [showEmptyMonths, setShowEmptyMonths] = useState(false);
   const activeYear = routeYear || selectedYear || defaultYear;
   const selectedYearData = timeline.find(item => item.year === activeYear) || timeline[timeline.length - 1] || null;
   const selectedMonthData = selectedYearData?.months.find(month => month.slug === routeMonth) || null;
@@ -600,6 +601,18 @@ export function TimelinePage({
   const nextMonth = selectedYearData && selectedMonthData
     ? getAdjacentTimelineMonth(timeline, selectedYearData.year, selectedMonthData.slug, 1)
     : null;
+  const selectedYearIndex = timeline.findIndex(item => item.year === selectedYearData?.year);
+  const previousYear = selectedYearIndex > 0 ? timeline[selectedYearIndex - 1] : null;
+  const nextYear = selectedYearIndex >= 0 && selectedYearIndex < timeline.length - 1 ? timeline[selectedYearIndex + 1] : null;
+  const activeMonths = selectedYearData?.months.filter(month => month.demons.length > 0) || [];
+  const busiestMonth = activeMonths.reduce((best, month) => !best || month.demons.length > best.demons.length ? month : best, null);
+  const hardestYearDemon = getHardestMonthlyDemon((selectedYearData?.demons || []).map(item => item.demon));
+  const longestActiveStreak = (selectedYearData?.months || []).reduce((result, month) => {
+    const current = month.demons.length > 0 ? result.current + 1 : 0;
+    return { current, longest: Math.max(result.longest, current) };
+  }, { current: 0, longest: 0 }).longest;
+  const mobileMonths = showEmptyMonths ? selectedYearData?.months || [] : activeMonths;
+  const maxMonthlyCount = Math.max(1, ...(selectedYearData?.months || []).map(month => month.demons.length));
 
   useEffect(() => {
     if (!isMonthPage || !onOpenMonth) return undefined;
@@ -798,6 +811,56 @@ export function TimelinePage({
         <div>
           <h2>Timeline</h2>
           <p>{pluralizeDemons(timeline.reduce((sum, year) => sum + year.demons.length, 0))} with known years</p>
+        </div>
+      </div>
+
+      <div className="timeline-mobile-dashboard">
+        <div className="timeline-mobile-year-bar">
+          <button type="button" disabled={!previousYear} onClick={() => previousYear && handleSelectYear(previousYear.year)} aria-label="Previous year"><ChevronLeft size={20} /></button>
+          <div><CalendarDays size={17} /><strong>{selectedYearData.year}</strong><span>{pluralizeDemons(selectedYearData.demons.length)}</span></div>
+          <button type="button" disabled={!nextYear} onClick={() => nextYear && handleSelectYear(nextYear.year)} aria-label="Next year"><ChevronRight size={20} /></button>
+        </div>
+
+        <div className="timeline-mobile-records">
+          <article><span>Most active month</span><strong>{busiestMonth?.name || "—"}</strong><small>{busiestMonth ? pluralizeDemons(busiestMonth.demons.length) : "No completions"}</small></article>
+          <article><span>Hardest demon</span><strong>{hardestYearDemon?.name || "—"}</strong><small>{hardestYearDemon?.difficulty || "No demon"}</small></article>
+          <article><span>Active months</span><strong>{activeMonths.length}</strong><small>of 12 months</small></article>
+          <article><span>Longest streak</span><strong>{longestActiveStreak}</strong><small>{longestActiveStreak === 1 ? "month" : "months"}</small></article>
+        </div>
+
+        <section className="timeline-mobile-activity" aria-label={`${selectedYearData.year} activity by month`}>
+          <div className="timeline-mobile-section-heading"><div><span>Year activity</span><strong>{selectedYearData.year} Activity</strong></div><b>{pluralizeDemons(selectedYearData.exactDemons.length)}</b></div>
+          <div className="timeline-mobile-chart">
+            {selectedYearData.months.map(month => (
+              <div className="timeline-mobile-chart-column" key={month.slug} title={`${month.name}: ${pluralizeDemons(month.demons.length)}`}>
+                <span style={{ height: `${Math.max(month.demons.length ? 8 : 2, (month.demons.length / maxMonthlyCount) * 100)}%` }} />
+                <small>{month.name.slice(0, 3)}</small>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <div className="timeline-mobile-month-heading">
+          <div><span>Monthly highlights</span><strong>Explore {selectedYearData.year}</strong></div>
+          <label><input type="checkbox" checked={showEmptyMonths} onChange={event => setShowEmptyMonths(event.target.checked)} /><span>Show empty months</span></label>
+        </div>
+
+        <div className="timeline-mobile-months">
+          {mobileMonths.map(month => {
+            const highlight = getHardestMonthHighlight(selectedYearData.year, month.slug);
+            const hardestDemon = getHardestMonthlyDemon(month.demons);
+            const hardestStyle = findMonthlyHighlightStyle(monthlyHighlightStyles, selectedYearData.year, month.slug);
+            const hardestDifficultyFace = getDifficultyFace(hardestDemon?.difficulty);
+            return (
+              <button className={`timeline-month-card ${highlight ? `hardest-month ${highlight}` : ""}`} key={month.slug} onClick={() => onOpenMonth(selectedYearData.year, month.slug)} type="button">
+                <span>{month.name}</span><strong>{month.demons.length}</strong><small>{pluralizeDemons(month.demons.length)}</small>
+                {hardestDemon && <span className="timeline-month-hardest" aria-label={`Hardest demon: ${hardestDemon.name}`}>
+                  {hardestDifficultyFace && <span className="timeline-month-hardest-face" aria-label={`Hardest difficulty: ${hardestDemon.difficulty}`}><img src={hardestDifficultyFace} alt="" loading="lazy" /></span>}
+                  <span className="timeline-month-hardest-label"><Crown aria-hidden="true" /><b style={monthlyHighlightTextStyle(hardestStyle)}>{hardestDemon.name}</b></span>
+                </span>}
+              </button>
+            );
+          })}
         </div>
       </div>
 
