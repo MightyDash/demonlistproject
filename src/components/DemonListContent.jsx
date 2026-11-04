@@ -41,10 +41,8 @@ export function DemonListContent({
   onLatestDemonClick,
   demonListError,
   onRetryDemonList,
-  isAdmin,
   isMobileView = false,
   futureListIds = [],
-  onToggleFutureListDemon,
   communityRequestedIds = new Set()
 }) {
   const [showProgressInfo, setShowProgressInfo] = useState(false);
@@ -514,16 +512,6 @@ export function DemonListContent({
 
                         {renderAsProgress ? (
                           <div className="banner-side progress-side">
-                            {isAdmin && (
-                              <label className="future-list-toggle" onClick={event => event.stopPropagation()}>
-                                <input
-                                  type="checkbox"
-                                  checked={isFuturePick}
-                                  onChange={() => onToggleFutureListDemon?.(demon)}
-                                />
-                                <span>Future List</span>
-                              </label>
-                            )}
                             <span className={`difficulty ${difficultyClass(demon.difficulty)}`}>
                               {demon.difficulty || "Unknown"}
                             </span>
@@ -602,17 +590,7 @@ export function DemonListContent({
 
                         {renderAsProgress ? (
                           <>
-                            {isAdmin && (
-                              <label className="future-list-toggle" onClick={event => event.stopPropagation()}>
-                                <input
-                                  type="checkbox"
-                                  checked={isFuturePick}
-                                  onChange={() => onToggleFutureListDemon?.(demon)}
-                                />
-                                <span>Future List</span>
-                              </label>
-                            )}
-                            {!isAdmin && isFuturePick && <span className="future-list-badge">Future List</span>}
+                            {isFuturePick && <span className="future-list-badge">Future List</span>}
                             <span className={`difficulty ${difficultyClass(demon.difficulty)}`}>
                               {demon.difficulty || "Unknown"}
                             </span>

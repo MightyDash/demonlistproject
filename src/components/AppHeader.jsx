@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CalendarDays, FileClock, Home, Inbox, LogIn, LogOut, Menu, Pencil, Radio, Rss, Shield, X } from "lucide-react";
+import { CalendarDays, FileClock, Home, Inbox, Menu, Radio, Rss, X } from "lucide-react";
 
 const DEFAULT_SITE_VERSION = "v0.62";
 const DEFAULT_VERSION_CHANGES = [
@@ -10,9 +10,7 @@ const DEFAULT_VERSION_CHANGES = [
 ];
 
 export function AppHeader({
-  adminView,
   source,
-  isAdmin,
   historyView,
   newsView,
   requestView,
@@ -21,30 +19,18 @@ export function AppHeader({
   onOpenNews,
   onOpenRequests,
   onOpenHistory,
-  onOpenLogin,
-  onOpenAdmin,
   onOpenTimeline,
-  onOpenLogout,
   siteVersion,
   siteChangelog,
-  onSaveChangelog,
   hasUnreadNews
 }) {
   const [showVersionInfo, setShowVersionInfo] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [editingVersionInfo, setEditingVersionInfo] = useState(false);
-  const [versionDraft, setVersionDraft] = useState("");
-  const [changelogDraft, setChangelogDraft] = useState("");
-  const [versionSaveError, setVersionSaveError] = useState("");
-  const [versionSaveMessage, setVersionSaveMessage] = useState("");
-  const [versionSaving, setVersionSaving] = useState(false);
   const resolvedVersion = String(siteVersion || DEFAULT_SITE_VERSION).trim();
   const resolvedChangelog = Array.isArray(siteChangelog) && siteChangelog.length > 0
     ? siteChangelog
     : DEFAULT_VERSION_CHANGES;
-  const pageTitle = adminView
-    ? "Admin Panel"
-    : newsView
+  const pageTitle = newsView
       ? "News"
       : requestView
         ? "Demon Requests"
@@ -53,9 +39,7 @@ export function AppHeader({
           : timelineView
             ? "Timeline"
             : "Demon Archive";
-  const pageSubtitle = adminView
-    ? "Manage your demon list tools and admin actions."
-    : newsView
+  const pageSubtitle = newsView
       ? "Updates, uploads and announcements from across my social channels."
       : requestView
         ? "Community requests to add new demons to the list."
@@ -66,53 +50,11 @@ export function AppHeader({
             : "A clean, searchable demon list powered by my Google Spreadsheet.";
 
   function openVersionInfo() {
-    setVersionDraft(resolvedVersion);
-    setChangelogDraft(resolvedChangelog.join("\n"));
-    setVersionSaveError("");
-    setVersionSaveMessage("");
-    setEditingVersionInfo(false);
     setShowVersionInfo(true);
   }
 
   function closeVersionInfo() {
     setShowVersionInfo(false);
-    setEditingVersionInfo(false);
-    setVersionSaveError("");
-    setVersionSaveMessage("");
-  }
-
-  async function handleSaveVersionInfo() {
-    if (!onSaveChangelog) return;
-
-    const changes = changelogDraft
-      .split("\n")
-      .map(line => line.trim())
-      .filter(Boolean);
-
-    setVersionSaveError("");
-    setVersionSaveMessage("");
-
-    if (!versionDraft.trim()) {
-      setVersionSaveError("Version is required.");
-      return;
-    }
-
-    if (changes.length === 0) {
-      setVersionSaveError("Add at least one changelog line.");
-      return;
-    }
-
-    setVersionSaving(true);
-    const result = await onSaveChangelog(versionDraft.trim(), changes);
-    setVersionSaving(false);
-
-    if (!result?.success) {
-      setVersionSaveError(result?.message || "Could not save changelog.");
-      return;
-    }
-
-    setVersionSaveMessage(result.message || "Changelog saved.");
-    setEditingVersionInfo(false);
   }
 
   function navigate(action) {
@@ -120,7 +62,7 @@ export function AppHeader({
     action?.();
   }
 
-  const listActive = !adminView && !newsView && !requestView && !historyView && !timelineView;
+  const listActive = !newsView && !requestView && !historyView && !timelineView;
   const sourceLabel = source === "live"
     ? "Live Sheet Data"
     : source === "cache"
@@ -159,20 +101,6 @@ export function AppHeader({
           <div className={`observatory-source ${source}`} title={sourceLabel}>
             <Radio size={17} /><span>{sourceLabel}</span>
           </div>
-          {!isAdmin ? (
-            <button onClick={() => navigate(onOpenLogin)} type="button">
-              <LogIn size={20} /><span>Admin</span>
-            </button>
-          ) : (
-            <>
-              <button className={adminView ? "active" : ""} onClick={() => navigate(adminView ? onOpenList : onOpenAdmin)} type="button">
-                <Shield size={20} /><span>{adminView ? "Archive" : "Admin"}</span>
-              </button>
-              <button onClick={() => navigate(onOpenLogout)} type="button">
-                <LogOut size={20} /><span>Logout</span>
-              </button>
-            </>
-          )}
           <button className="observatory-version" onClick={openVersionInfo} type="button">
             {resolvedVersion}
           </button>
@@ -214,47 +142,8 @@ export function AppHeader({
             <button className="progress-info-close" onClick={closeVersionInfo} type="button" aria-label="Close"><X size={20} /></button>
             <div className="version-info-header">
               <h2>Changes in {resolvedVersion}</h2>
-              {isAdmin && onSaveChangelog && (
-                <button
-                  className="version-edit-button"
-                  onClick={() => {
-                    setVersionDraft(resolvedVersion);
-                    setChangelogDraft(resolvedChangelog.join("\n"));
-                    setVersionSaveError("");
-                    setVersionSaveMessage("");
-                    setEditingVersionInfo(value => !value);
-                  }}
-                  type="button"
-                  aria-label="Edit changelog"
-                >
-                  <Pencil size={16} />
-                </button>
-              )}
             </div>
-
-            {editingVersionInfo ? (
-              <div className="version-edit-form">
-                <label>
-                  Version
-                  <input className="version-edit-input" value={versionDraft} onChange={event => setVersionDraft(event.target.value)} placeholder="v0.62" />
-                </label>
-                <label>
-                  Changes
-                  <textarea className="version-edit-textarea" value={changelogDraft} onChange={event => setChangelogDraft(event.target.value)} placeholder="One change per line" rows={7} />
-                </label>
-                {versionSaveError && <p className="version-edit-status error">{versionSaveError}</p>}
-                {versionSaveMessage && <p className="version-edit-status success">{versionSaveMessage}</p>}
-                <div className="version-edit-actions">
-                  <button onClick={handleSaveVersionInfo} disabled={versionSaving} type="button">{versionSaving ? "Saving..." : "Save changelog"}</button>
-                  <button onClick={() => { setEditingVersionInfo(false); setVersionSaveError(""); setVersionSaveMessage(""); }} type="button">Cancel</button>
-                </div>
-              </div>
-            ) : (
-              <>
-                {versionSaveMessage && <p className="version-edit-status success">{versionSaveMessage}</p>}
-                <ul>{resolvedChangelog.map(change => <li key={change}>{change}</li>)}</ul>
-              </>
-            )}
+            <ul>{resolvedChangelog.map(change => <li key={change}>{change}</li>)}</ul>
           </section>
         </div>
       )}

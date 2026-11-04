@@ -1,15 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { ADMIN_API_URL, SHEET_API_URL } from "./config.js";
 import { mockDemons } from "./mockData.js";
-import { AdminPanel } from "./components/AdminPanel.jsx";
 import { AppHeader } from "./components/AppHeader.jsx";
 import { DemonListContent } from "./components/DemonListContent.jsx";
 import { DemonModal } from "./components/DemonModal.jsx";
-import { LoginModal } from "./components/LoginModal.jsx";
-import { LogoutConfirm } from "./components/LogoutConfirm.jsx";
 import { NewsPage } from "./components/NewsPage.jsx";
 import { RecentChanges } from "./components/RecentChanges.jsx";
-import { RequestPanel } from "./components/RequestPanel.jsx";
 import { ScrollToTopButton } from "./components/ScrollToTopButton.jsx";
 import { TimelinePage } from "./components/TimelineModal.jsx";
 import { buildHistoricalRanking, comparePlacements, demonDurationSortValue, isInProgressDemon, normalizeDemon, segmentForPlacement } from "./demonUtils.js";
@@ -127,27 +123,11 @@ export default function App() {
   const [historyView, setHistoryView] = useState(false);
   const [timelineView, setTimelineView] = useState(false);
   const [timelineRoute, setTimelineRoute] = useState({ year: null, month: null, overview: false, compare: false });
-const [requestForm, setRequestForm] = useState({
-  levelId: "",
-  type: "Demon",
-  notes: ""
-});
-  const [requestSort, setRequestSort] = useState("newest");
-  const [requestStatusFilter, setRequestStatusFilter] = useState("all");
   const [requests, setRequests] = useState([]);
   const [requestsLoading, setRequestsLoading] = useState(false);
-  const [requestLoading, setRequestLoading] = useState(false);
-  const [requestMessage, setRequestMessage] = useState("");
-  const [requestError, setRequestError] = useState("");
-  const [showLogin, setShowLogin] = useState(false);
   const [historyChanges, setHistoryChanges] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState("");
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [loginData, setLoginData] = useState({ username: "", password: "" });
-  const [loginError, setLoginError] = useState("");
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const [adminView, setAdminView] = useState(false);
   const [visibleDemonCount, setVisibleDemonCount] = useState(MOBILE_DEMON_BATCH_SIZE);
   const [demonListError, setDemonListError] = useState("");
   const requestsLoadRef = useRef({ id: 0, controller: null });
@@ -165,7 +145,6 @@ const [requestForm, setRequestForm] = useState({
     setHistoryView(route === ROUTES.history);
     setTimelineView(route === ROUTES.timeline || route.startsWith(`${ROUTES.timeline}/`));
     setTimelineRoute(parseTimelineRoute(route));
-    setAdminView(route === ROUTES.admin);
   }
 
   function navigateTo(pathname, { replace = false } = {}) {
@@ -305,15 +284,8 @@ const [requestForm, setRequestForm] = useState({
     }
 
     try {
-      const token = localStorage.getItem("admin_token");
       const separator = SHEET_API_URL.includes("?") ? "&" : "?";
-      const data = isAdmin && token
-        ? await requestJson(ADMIN_API_URL, {
-            method: "POST",
-            signal: controller.signal,
-            body: JSON.stringify({ action: "getAdminNews", token })
-          })
-        : await requestJson(`${SHEET_API_URL}${separator}view=news`, { signal: controller.signal });
+      const data = await requestJson(`${SHEET_API_URL}${separator}view=news`, { signal: controller.signal });
 
       if (data.aborted || newsLoadRef.current.id !== requestId) return;
       if (data.success === false) throw new Error(data.message || "Could not load news.");
@@ -349,20 +321,6 @@ const [requestForm, setRequestForm] = useState({
   }, []);
 
   useEffect(() => {
-    if (!requestView || !isAdmin) return;
-
-    loadRequests();
-    const intervalId = window.setInterval(() => {
-      loadRequests({ silent: true });
-    }, 15000);
-
-    return () => {
-      window.clearInterval(intervalId);
-      abortRequestsLoad();
-    };
-  }, [requestView, isAdmin]);
-
-  useEffect(() => {
     if (!historyView) return;
 
     loadHistoryChanges();
@@ -380,7 +338,7 @@ const [requestForm, setRequestForm] = useState({
     if (!newsView) return;
     loadNews();
     return () => abortNewsLoad();
-  }, [newsView, isAdmin]);
+  }, [newsView]);
 
   useEffect(() => {
     const latest = String(newsMeta?.latestPublishedAt || "");
@@ -400,11 +358,11 @@ const [requestForm, setRequestForm] = useState({
   }, []);
 
   useEffect(() => {
-    if (!requestView || isAdmin || !isMobileView) return;
+    if (!requestView || !isMobileView) return;
 
     window.alert("This page is currently unavailable.");
     navigateTo(ROUTES.home, { replace: true });
-  }, [requestView, isAdmin, isMobileView]);
+  }, [requestView, isMobileView]);
 
   useEffect(() => {
     setVisibleDemonCount(MOBILE_DEMON_BATCH_SIZE);
@@ -414,27 +372,6 @@ const [requestForm, setRequestForm] = useState({
     const responsiveView = isMobileView ? "grid" : "banner";
     if (viewMode !== responsiveView) setViewMode(responsiveView);
   }, [isMobileView, viewMode]);
-
-  useEffect(() => {
-    const savedToken = localStorage.getItem("admin_token");
-    if (!savedToken) return;
-
-    const adminUrl = ADMIN_API_URL;
-    if (!adminUrl) return;
-
-    requestJson(adminUrl, {
-      method: "POST",
-      body: JSON.stringify({ action: "verifyToken", token: savedToken }),
-    })
-      .then(data => {
-        if (data.success) {
-          setIsAdmin(true);
-        } else if (String(data.message || "").toLowerCase().includes("invalid token")) {
-          localStorage.removeItem("admin_token");
-        }
-      })
-      .catch(() => {});
-  }, []);
 
   async function loadDemonData({ silent = false } = {}) {
     if (!SHEET_API_URL) {
@@ -497,474 +434,6 @@ const [requestForm, setRequestForm] = useState({
     return () => abortDemonDataLoad();
   }, []);
 
-  async function handleLogin() {
-    setLoginError("");
-    const adminUrl = ADMIN_API_URL;
-
-    if (!adminUrl) {
-      setLoginError("Admin URL not configured.");
-      return;
-    }
-
-    try {
-      const data = await requestJson(adminUrl, {
-        method: "POST",
-        body: JSON.stringify({
-          action: "login",
-          username: loginData.username,
-          password: loginData.password,
-        }),
-      });
-
-      if (data.success && data.token) {
-        setIsAdmin(true);
-        setShowLogin(false);
-        localStorage.setItem("admin_token", data.token);
-        navigateTo(ROUTES.admin, { replace: true });
-      } else {
-        setLoginError(data.message || "Wrong login");
-      }
-    } catch {
-      setLoginError("Could not reach server.");
-    }
-  }
-
-  async function saveDemonNote(demon, note) {
-    const adminUrl = ADMIN_API_URL;
-    const token = localStorage.getItem("admin_token");
-
-    if (!adminUrl || !token) {
-      return { success: false, message: "Admin connection is not configured." };
-    }
-
-    try {
-      const data = await requestJson(adminUrl, {
-        method: "POST",
-        body: JSON.stringify({
-          action: "updateDemonNote",
-          token,
-          levelId: demon.id,
-          note
-        })
-      });
-
-      if (!data.success) {
-        return { success: false, message: data.message || "Could not save note." };
-      }
-
-      const savedNote = data.note || "";
-
-      setDemons(previous =>
-        previous.map(item =>
-          String(item.id) === String(demon.id) ? { ...item, notes: savedNote } : item
-        )
-      );
-      setSelected(previous =>
-        previous && String(previous.id) === String(demon.id)
-          ? { ...previous, notes: savedNote }
-          : previous
-      );
-
-      return { success: true, message: data.message || "Note saved." };
-    } catch {
-      return { success: false, message: "Could not connect." };
-    }
-  }
-
-  async function saveSiteChangelog(version, changes) {
-    const adminUrl = ADMIN_API_URL;
-    const token = localStorage.getItem("admin_token");
-
-    if (!adminUrl || !token) {
-      return { success: false, message: "Admin connection is not configured." };
-    }
-
-    try {
-      const data = await requestJson(adminUrl, {
-        method: "POST",
-        body: JSON.stringify({
-          action: "setSiteChangelog",
-          token,
-          version,
-          changes
-        })
-      });
-
-      if (!data.success) {
-        return { success: false, message: data.message || "Could not save changelog." };
-      }
-
-      setSiteVersion(data.version || version);
-      setSiteChangelog(Array.isArray(data.changes) ? data.changes : changes);
-
-      return { success: true, message: data.message || "Changelog saved." };
-    } catch {
-      return { success: false, message: "Could not connect." };
-    }
-  }
-
-  async function toggleFutureListDemon(demon) {
-    const adminUrl = ADMIN_API_URL;
-    const token = localStorage.getItem("admin_token");
-    const levelId = String(demon?.id || "").trim();
-
-    if (!adminUrl || !token || !levelId) return;
-
-    const enabled = !futureListIds.map(String).includes(levelId);
-
-    setFutureListIds(previous =>
-      enabled
-        ? Array.from(new Set([...previous.map(String), levelId]))
-        : previous.filter(id => String(id) !== levelId)
-    );
-
-    try {
-      const data = await requestJson(adminUrl, {
-        method: "POST",
-        body: JSON.stringify({
-          action: "setFutureListDemon",
-          token,
-          levelId,
-          enabled
-        })
-      });
-
-      if (!data.success) {
-        setFutureListIds(previous =>
-          enabled
-            ? previous.filter(id => String(id) !== levelId)
-            : Array.from(new Set([...previous.map(String), levelId]))
-        );
-        return;
-      }
-
-      setFutureListIds(Array.isArray(data.futureListIds) ? data.futureListIds.map(String) : []);
-    } catch {
-      setFutureListIds(previous =>
-        enabled
-          ? previous.filter(id => String(id) !== levelId)
-          : Array.from(new Set([...previous.map(String), levelId]))
-      );
-    }
-  }
-
-  async function addTimelineEntry({ year, month, levelId }) {
-    const adminUrl = ADMIN_API_URL;
-    const token = localStorage.getItem("admin_token");
-
-    if (!adminUrl || !token) {
-      return { success: false, message: "Admin connection is not configured." };
-    }
-
-    try {
-      const data = await requestJson(adminUrl, {
-        method: "POST",
-        body: JSON.stringify({
-          action: "addTimelineEntry",
-          token,
-          year,
-          month,
-          levelId
-        })
-      });
-
-      if (!data.success) {
-        return { success: false, message: data.message || "Could not add demon to timeline." };
-      }
-
-      setTimelineEntries(Array.isArray(data.timelineEntries) ? data.timelineEntries : []);
-      return { success: true, message: data.message || "Demon added to timeline." };
-    } catch (error) {
-      return {
-        success: false,
-        message: error?.message
-          ? `Could not connect: ${error.message}`
-          : "Could not connect."
-      };
-    }
-  }
-
-  async function removeTimelineEntry({ year, month, levelId }) {
-    const adminUrl = ADMIN_API_URL;
-    const token = localStorage.getItem("admin_token");
-
-    if (!adminUrl || !token) {
-      return { success: false, message: "Admin connection is not configured." };
-    }
-
-    try {
-      const data = await requestJson(adminUrl, {
-        method: "POST",
-        body: JSON.stringify({
-          action: "removeTimelineEntry",
-          token,
-          year,
-          month,
-          levelId
-        })
-      });
-
-      if (!data.success) {
-        return { success: false, message: data.message || "Could not remove demon from timeline." };
-      }
-
-      setTimelineEntries(Array.isArray(data.timelineEntries) ? data.timelineEntries : []);
-      return { success: true, message: data.message || "Demon removed from timeline." };
-    } catch (error) {
-      return {
-        success: false,
-        message: error?.message
-          ? `Could not connect: ${error.message}`
-          : "Could not connect."
-      };
-    }
-  }
-
-  async function saveMonthlyRecap({ year, month, url }) {
-    const adminUrl = ADMIN_API_URL;
-    const token = localStorage.getItem("admin_token");
-
-    if (!adminUrl || !token) {
-      return { success: false, message: "Admin connection is not configured." };
-    }
-
-    try {
-      const data = await requestJson(adminUrl, {
-        method: "POST",
-        body: JSON.stringify({
-          action: "setMonthlyRecap",
-          token,
-          year,
-          month,
-          url
-        })
-      });
-
-      if (!data.success) {
-        return { success: false, message: data.message || "Could not save recap video." };
-      }
-
-      setMonthlyRecaps(Array.isArray(data.monthlyRecaps) ? data.monthlyRecaps : []);
-      return { success: true, message: data.message || "Recap video saved." };
-    } catch (error) {
-      return {
-        success: false,
-        message: error?.message
-          ? `Could not connect: ${error.message}`
-          : "Could not connect."
-      };
-    }
-  }
-
-  async function saveMonthlyHighlightStyle({ year, month, style, reset = false }) {
-    const token = localStorage.getItem("admin_token");
-    if (!ADMIN_API_URL || !token) {
-      return { success: false, message: "Admin connection is not configured." };
-    }
-
-    try {
-      const data = await requestJson(ADMIN_API_URL, {
-        method: "POST",
-        body: JSON.stringify({
-          action: "setMonthlyHighlightStyle",
-          token,
-          year,
-          month,
-          style,
-          reset
-        })
-      });
-
-      if (!data.success) {
-        return { success: false, message: data.message || "Could not save monthly hardest styling." };
-      }
-
-      setMonthlyHighlightStyles(Array.isArray(data.monthlyHighlightStyles) ? data.monthlyHighlightStyles : []);
-      return { success: true, message: data.message || "Monthly hardest styling saved." };
-    } catch (error) {
-      return {
-        success: false,
-        message: error?.message ? `Could not connect: ${error.message}` : "Could not connect."
-      };
-    }
-  }
-
-  async function saveNewsArticle(article) {
-    const token = localStorage.getItem("admin_token");
-    if (!ADMIN_API_URL || !token) return { success: false, message: "Admin connection is not configured." };
-
-    try {
-      const data = await requestJson(ADMIN_API_URL, {
-        method: "POST",
-        body: JSON.stringify({ action: "saveNewsArticle", token, ...article })
-      });
-      if (!data.success) return { success: false, message: data.message || "Could not save article." };
-      if (Array.isArray(data.articles)) setNewsArticles(data.articles.map(normalizeNewsArticle));
-      if (data.newsMeta) setNewsMeta(data.newsMeta);
-      return { success: true, message: data.message || "Article saved.", article: data.article };
-    } catch (error) {
-      return { success: false, message: error?.message || "Could not connect to the news service." };
-    }
-  }
-
-  async function deleteNewsArticle(id) {
-    const token = localStorage.getItem("admin_token");
-    if (!ADMIN_API_URL || !token) return { success: false, message: "Admin connection is not configured." };
-
-    try {
-      const data = await requestJson(ADMIN_API_URL, {
-        method: "POST",
-        body: JSON.stringify({ action: "deleteNewsArticle", token, id })
-      });
-      if (!data.success) return { success: false, message: data.message || "Could not delete article." };
-      if (Array.isArray(data.articles)) setNewsArticles(data.articles.map(normalizeNewsArticle));
-      if (data.newsMeta) setNewsMeta(data.newsMeta);
-      return { success: true, message: data.message || "Article deleted." };
-    } catch (error) {
-      return { success: false, message: error?.message || "Could not connect to the news service." };
-    }
-  }
-
-  async function uploadNewsImage(file) {
-    const token = localStorage.getItem("admin_token");
-    if (!ADMIN_API_URL || !token) return { success: false, message: "Admin connection is not configured." };
-    if (!file?.type?.startsWith("image/")) return { success: false, message: "Choose an image file." };
-    if (file.size > 8 * 1024 * 1024) return { success: false, message: "Image must be smaller than 8 MB." };
-
-    const dataUrl = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = () => reject(new Error("Image could not be read."));
-      reader.readAsDataURL(file);
-    }).catch(error => ({ error }));
-
-    if (dataUrl?.error) return { success: false, message: dataUrl.error.message };
-    try {
-      const data = await requestJson(ADMIN_API_URL, {
-        method: "POST",
-        body: JSON.stringify({ action: "uploadNewsImage", token, fileName: file.name, dataUrl })
-      });
-      return data.success
-        ? { success: true, imageUrl: data.imageUrl, fileUrl: data.fileUrl }
-        : { success: false, message: data.message || "Image upload failed." };
-    } catch (error) {
-      return { success: false, message: error?.message || "Could not upload the image." };
-    }
-  }
-
-  function handleLogout() {
-    localStorage.removeItem("admin_token");
-    setIsAdmin(false);
-    setAdminView(false);
-    setShowLogoutConfirm(false);
-    navigateTo(ROUTES.home);
-  }
-
-  async function handleSubmitRequest() {
-  setRequestLoading(true);
-  setRequestMessage("");
-  setRequestError("");
-
-  try {
-    const levelId = String(requestForm.levelId || "").trim();
-    const alreadyRequested = requests.some(request => String(request.levelId || "").trim() === levelId);
-
-    if (!levelId) {
-      setRequestError("Please enter a level ID.");
-      return;
-    }
-
-    if (alreadyRequested) {
-      setRequestError("This demon has already been requested.");
-      return;
-    }
-
-    abortRequestsLoad();
-    const data = await requestJson(ADMIN_API_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        action: "submitRequest",
-        levelId,
-        type: "Demon",
-        notes: requestForm.notes
-      })
-    });
-
-    if (!data.success) {
-      setRequestError(data.message || "Request failed.");
-      return;
-    }
-
-    setRequestMessage("Request submitted successfully!");
-
-    setRequestForm({
-      levelId: "",
-      type: "Demon",
-      notes: ""
-    });
-    await loadRequests({ silent: true });
-  } catch {
-    setRequestError("Could not connect.");
-  } finally {
-    setRequestLoading(false);
-  }
-}
-async function handleRequestQuickStatus(rowNumber, status) {
-  setRequestError("");
-  setRequestMessage("");
-
-  try {
-    abortRequestsLoad();
-    const data = await requestJson(ADMIN_API_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        action: "updateRequestStatus",
-        rowNumber: Number(rowNumber),
-        status,
-        token: localStorage.getItem("admin_token")
-      })
-    });
-
-    if (!data.success) {
-      setRequestError(data.message || "Could not update the status.");
-      return;
-    }
-
-    setRequestMessage(data.message || `Request marked as ${status}.`);
-    await loadRequests({ silent: true });
-  } catch {
-    setRequestError("Could not connect.");
-  }
-}
-  async function handleDeleteRequest(rowNumber) {
-  setRequestError("");
-  setRequestMessage("");
-
-  const confirmDelete = window.confirm("Are you sure you want to delete this rejected request?");
-  if (!confirmDelete) return;
-
-  try {
-    abortRequestsLoad();
-    const data = await requestJson(ADMIN_API_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        action: "deleteRequest",
-        rowNumber,
-        token: localStorage.getItem("admin_token")
-      })
-    });
-
-    if (!data.success) {
-      setRequestError(data.message || "Could not delete the request.");
-      return;
-    }
-
-    setRequestMessage("Request deleted.");
-    await loadRequests({ silent: true });
-  } catch {
-    setRequestError("Could not connect.");
-  }
-}
   const difficulties = useMemo(() => {
     const unique = new Set(demons.map(d => d.difficulty).filter(Boolean));
     return ["all", ...Array.from(unique)];
@@ -1222,11 +691,6 @@ async function handleRequestQuickStatus(rowNumber, status) {
       return;
     }
 
-    if (isAdmin) {
-      navigateTo(ROUTES.requests);
-      return;
-    }
-
     if (isMobileView) {
       window.alert("This page is currently unavailable.");
       return;
@@ -1273,10 +737,8 @@ async function handleRequestQuickStatus(rowNumber, status) {
       onLatestDemonClick={handleLatestDemonClick}
       demonListError={demonListError}
       onRetryDemonList={() => loadDemonData()}
-      isAdmin={isAdmin}
       isMobileView={isMobileView}
       futureListIds={futureListIds}
-      onToggleFutureListDemon={toggleFutureListDemon}
       communityRequestedIds={communityRequestedIds}
     />
   );
@@ -1284,9 +746,7 @@ async function handleRequestQuickStatus(rowNumber, status) {
   return (
     <div className="app">
       <AppHeader
-          adminView={adminView}
           source={source}
-          isAdmin={isAdmin}
           historyView={historyView}
           newsView={newsView}
           requestView={requestView}
@@ -1297,72 +757,23 @@ async function handleRequestQuickStatus(rowNumber, status) {
           onOpenHistory={() => {
             navigateTo(historyView ? ROUTES.home : ROUTES.history);
           }}
-          onOpenLogin={() => setShowLogin(true)}
-          onOpenAdmin={() => navigateTo(ROUTES.admin)}
           onOpenTimeline={() => {
             navigateTo(timelineView ? ROUTES.home : ROUTES.timeline);
           }}
-          onOpenLogout={() => setShowLogoutConfirm(true)}
           siteVersion={siteVersion}
           siteChangelog={siteChangelog}
-          onSaveChangelog={saveSiteChangelog}
           hasUnreadNews={hasUnreadNews}
         />
-
-      {showLogoutConfirm && (
-        <LogoutConfirm
-          onConfirm={handleLogout}
-          onCancel={() => setShowLogoutConfirm(false)}
-        />
-      )}
 
       {newsView ? (
         <NewsPage
           articles={newsArticles}
           loading={newsLoading}
           error={newsError}
-          isAdmin={isAdmin}
           selectedArticleId={newsArticleId}
           onOpenArticle={id => navigateTo(`${ROUTES.news}/${id}`)}
           onBackToNews={() => navigateTo(ROUTES.news)}
           onReload={() => loadNews()}
-          onSave={saveNewsArticle}
-          onDelete={deleteNewsArticle}
-          onUploadImage={uploadNewsImage}
-        />
-      ) : adminView ? (
-        <AdminPanel
-          onBack={() => navigateTo(ROUTES.home)}
-          onDataChanged={() => loadDemonData({ silent: true })}
-          demons={demons}
-          manualPlacementIds={manualPlacementIds}
-          timelineEntries={timelineEntries}
-          monthlyRecaps={monthlyRecaps}
-          monthlyHighlightStyles={monthlyHighlightStyles}
-          requests={requests}
-          onOpenRequests={() => navigateTo(ROUTES.requests)}
-          onSaveNote={saveDemonNote}
-          onSaveMonthlyRecap={saveMonthlyRecap}
-          onSaveMonthlyHighlightStyle={saveMonthlyHighlightStyle}
-        />
-      ) : requestView && isAdmin ? (
-        <RequestPanel
-          onBack={() => navigateTo(ROUTES.home)}
-          requestForm={requestForm}
-          setRequestForm={setRequestForm}
-          requestLoading={requestLoading}
-          requestMessage={requestMessage}
-          requestError={requestError}
-          handleSubmitRequest={handleSubmitRequest}
-          requests={requests}
-          requestsLoading={requestsLoading}
-          isAdmin={isAdmin}
-          handleRequestQuickStatus={handleRequestQuickStatus}
-          handleDeleteRequest={handleDeleteRequest}
-          requestSort={requestSort}
-          setRequestSort={setRequestSort}
-          requestStatusFilter={requestStatusFilter}
-          setRequestStatusFilter={setRequestStatusFilter}
         />
       ) : requestView ? (
         <>
@@ -1396,14 +807,11 @@ async function handleRequestQuickStatus(rowNumber, status) {
           routeMonth={timelineRoute.month}
           routeOverview={timelineRoute.overview}
           routeCompare={timelineRoute.compare}
-          isAdmin={isAdmin}
           onSelectDemon={setSelected}
           onOpenMonth={(year, month) => navigateTo(`${ROUTES.timeline}/${year}/${month}`)}
           onOpenYearOverview={year => navigateTo(`${ROUTES.timeline}/${year}/overview`)}
           onOpenYearComparison={() => navigateTo(`${ROUTES.timeline}/compare`)}
           onBackToTimeline={() => navigateTo(ROUTES.timeline)}
-          onAddTimelineEntry={addTimelineEntry}
-          onRemoveTimelineEntry={removeTimelineEntry}
         />
       ) : demonListContent}
 
@@ -1415,22 +823,7 @@ async function handleRequestQuickStatus(rowNumber, status) {
           onNext={goToNext}
           hasPrev={currentIndex > 0}
           hasNext={currentIndex < filtered.length - 1}
-          isAdmin={isAdmin}
-          onSaveNote={saveDemonNote}
           isCommunityRequested={communityRequestedIds.has(String(selected.id || "").trim())}
-        />
-      )}
-
-      {showLogin && (
-        <LoginModal
-          loginData={loginData}
-          setLoginData={setLoginData}
-          loginError={loginError}
-          handleLogin={handleLogin}
-          onClose={() => {
-            setShowLogin(false);
-            setLoginError("");
-          }}
         />
       )}
 

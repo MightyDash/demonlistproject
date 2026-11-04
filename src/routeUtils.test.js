@@ -10,7 +10,7 @@ describe("routeUtils", () => {
     ["/news/abc-123", "/news/abc-123"],
     ["/timeline", ROUTES.timeline],
     ["/beta-list", ROUTES.home],
-    ["/admin-panel", ROUTES.admin],
+    ["/admin-panel", ROUTES.home],
     ["/unknown", ROUTES.home],
     ["/timeline/2018/january", "/timeline/2018/january"],
     ["/timeline/2018/January", "/timeline/2018/january"],

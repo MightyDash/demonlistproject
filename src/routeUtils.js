@@ -3,8 +3,7 @@ export const ROUTES = {
   requests: "/demon-requests",
   history: "/recent-changes",
   news: "/news",
-  timeline: "/timeline",
-  admin: "/admin-panel"
+  timeline: "/timeline"
 };
 
 export const TIMELINE_MONTH_SLUGS = new Set([

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ArrowLeftRight, CalendarDays, ChevronLeft, ChevronRight, Crown, Play, Plus, Search, X } from "lucide-react";
+import { ArrowLeftRight, CalendarDays, ChevronLeft, ChevronRight, Crown, Play } from "lucide-react";
 import { comparePlacements, isInProgressDemon, parseDemonDate, placementSortValue } from "../demonUtils.js";
 import { findMonthlyHighlightStyle, getHardestMonthlyDemon, monthlyHighlightTextStyle } from "../monthlyHighlightUtils.js";
 
@@ -427,7 +427,7 @@ function TimelineYearComparison({ timeline, preferredYear, onBack }) {
   );
 }
 
-function TimelineDemonCard({ demon, canRemove, onSelectDemon, onRemove, key: _key }) {
+function TimelineDemonCard({ demon, onSelectDemon, key: _key }) {
   const difficultyFace = getDifficultyFace(demon?.difficulty);
 
   return (
@@ -436,20 +436,6 @@ function TimelineDemonCard({ demon, canRemove, onSelectDemon, onRemove, key: _ke
       onClick={() => onSelectDemon(demon)}
       type="button"
     >
-      {canRemove && (
-        <span
-          className="timeline-remove-demon"
-          onClick={event => {
-            event.stopPropagation();
-            onRemove(demon);
-          }}
-          role="button"
-          tabIndex={0}
-          aria-label={`Remove ${demon.name} from timeline month`}
-        >
-          <X size={15} />
-        </span>
-      )}
       {demon.thumbnail && (
         <img src={demon.thumbnail} alt="" loading="lazy" />
       )}
@@ -463,99 +449,6 @@ function TimelineDemonCard({ demon, canRemove, onSelectDemon, onRemove, key: _ke
   );
 }
 
-function TimelineAddPopover({ demons, existingIds, year, month, onAddTimelineEntry }) {
-  const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const [savingId, setSavingId] = useState("");
-  const [message, setMessage] = useState("");
-
-  const suggestions = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
-    if (!normalizedQuery) return [];
-
-    return demons
-      .filter(demon => !isInProgressDemon(demon))
-      .filter(demon => !existingIds.has(String(demon.id)))
-      .filter(demon => {
-        const name = String(demon.name || "").toLowerCase();
-        const id = String(demon.id || "").toLowerCase();
-        return name.includes(normalizedQuery) || id.includes(normalizedQuery);
-      })
-      .slice(0, 7);
-  }, [demons, existingIds, query]);
-
-  async function handleAdd(demon) {
-    setSavingId(String(demon.id));
-    setMessage("");
-
-    const result = await onAddTimelineEntry({
-      year,
-      month,
-      levelId: demon.id
-    });
-
-    setSavingId("");
-
-    if (!result.success) {
-      setMessage(result.message || "Could not add demon.");
-      return;
-    }
-
-    setQuery("");
-    setOpen(false);
-  }
-
-  return (
-    <div className="timeline-add-tool">
-      <button
-        className="timeline-add-button"
-        onClick={() => {
-          setOpen(value => !value);
-          setMessage("");
-        }}
-        type="button"
-        aria-label="Add demon to timeline month"
-      >
-        <Plus size={20} />
-      </button>
-
-      {open && (
-        <div className="timeline-add-popover">
-          <label className="timeline-search-box">
-            <Search size={17} />
-            <input
-              autoFocus
-              value={query}
-              onChange={event => setQuery(event.target.value)}
-              placeholder="Search demon or ID..."
-            />
-          </label>
-
-          <div className="timeline-suggestions">
-            {suggestions.length > 0 ? (
-              suggestions.map(demon => (
-                <button
-                  key={demon.id || demon.name}
-                  onClick={() => handleAdd(demon)}
-                  disabled={savingId === String(demon.id)}
-                  type="button"
-                >
-                  <strong>{demon.name}</strong>
-                  <span>{demon.placement || demon.id}</span>
-                </button>
-              ))
-            ) : (
-              <p>{query.trim() ? "No matching demon found." : "Start typing to find a demon."}</p>
-            )}
-          </div>
-
-          {message && <p className="timeline-tool-message">{message}</p>}
-        </div>
-      )}
-    </div>
-  );
-}
-
 export function TimelinePage({
   demons,
   timelineEntries = [],
@@ -565,14 +458,11 @@ export function TimelinePage({
   routeMonth,
   routeOverview = false,
   routeCompare = false,
-  isAdmin,
   onSelectDemon,
   onOpenMonth,
   onOpenYearOverview,
   onOpenYearComparison,
-  onBackToTimeline,
-  onAddTimelineEntry,
-  onRemoveTimelineEntry
+  onBackToTimeline
 }) {
   const timeline = useMemo(
     () => buildTimelineData(demons, timelineEntries),
@@ -656,16 +546,6 @@ export function TimelinePage({
     setSelectedYear(year);
   }
 
-  async function handleRemoveFromMonth(demon) {
-    if (!onRemoveTimelineEntry || !selectedYearData || !selectedMonthData) return;
-
-    await onRemoveTimelineEntry({
-      year: selectedYearData.year,
-      month: selectedMonthData.slug,
-      levelId: demon.id
-    });
-  }
-
   if (!selectedYearData) {
     return (
       <section className="timeline-page">
@@ -691,7 +571,6 @@ export function TimelinePage({
   }
 
   if (isMonthPage) {
-    const existingIds = new Set(selectedMonthData.demons.map(item => String(item.demon.id)));
     const recapUrl = getMonthlyRecapUrl(monthlyRecaps, selectedYearData.year, selectedMonthData.slug);
 
     return (
@@ -739,15 +618,6 @@ export function TimelinePage({
                 <span>Watch Recap</span>
               </a>
             )}
-            {isAdmin && onAddTimelineEntry && (
-              <TimelineAddPopover
-                demons={demons}
-                existingIds={existingIds}
-                year={selectedYearData.year}
-                month={selectedMonthData.slug}
-                onAddTimelineEntry={onAddTimelineEntry}
-              />
-            )}
           </div>
         </div>
 
@@ -757,9 +627,7 @@ export function TimelinePage({
               <TimelineDemonCard
                 demon={demon}
                 key={`${demon.id || demon.name}-${demon.placement}`}
-                canRemove={isAdmin}
                 onSelectDemon={onSelectDemon}
-                onRemove={handleRemoveFromMonth}
               />
             ))}
           </div>
@@ -792,7 +660,6 @@ export function TimelinePage({
               <TimelineDemonCard
                 demon={demon}
                 key={`${date.month}-${demon.id || demon.name}-${demon.placement}`}
-                canRemove={false}
                 onSelectDemon={onSelectDemon}
               />
             ))}

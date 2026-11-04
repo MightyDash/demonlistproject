@@ -5,7 +5,6 @@ import {
   ChevronRight,
   Clock3,
   FileText,
-  Save,
   Search,
   X
 } from "lucide-react";
@@ -36,12 +35,8 @@ export function DemonModal({
   onNext,
   hasPrev,
   hasNext,
-  isAdmin,
-  onSaveNote,
   isCommunityRequested = false
 }) {
-  const [noteDraft, setNoteDraft] = useState(demon.notes || "");
-  const [noteState, setNoteState] = useState({ saving: false, message: "", error: "" });
   const thumbnailSrc = demon.id
     ? `https://levelthumbs.prevter.me/thumbnail/${demon.id}`
     : "";
@@ -130,19 +125,6 @@ export function DemonModal({
       cancelled = true;
     };
   }, [demon.id, demon.skillsetDistribution]);
-
-  async function handleSaveNote() {
-    if (!onSaveNote) return;
-
-    setNoteState({ saving: true, message: "", error: "" });
-    const result = await onSaveNote(demon, noteDraft);
-
-    if (result?.success) {
-      setNoteState({ saving: false, message: result.message || "Saved.", error: "" });
-    } else {
-      setNoteState({ saving: false, message: "", error: result?.message || "Could not save note." });
-    }
-  }
 
   return (
     <div className="modal-backdrop" onMouseDown={onClose}>
@@ -234,31 +216,7 @@ export function DemonModal({
 
             <section className="modal-info-card description-card">
               <h3><FileText size={22} /> Description</h3>
-              {isAdmin ? (
-                <>
-                  <textarea
-                    value={noteDraft}
-                    onChange={event => setNoteDraft(event.target.value)}
-                    placeholder="Write a note for this demon..."
-                    rows={6}
-                  />
-                  <div className="memory-actions">
-                    <button
-                      className="login-button memory-save-button"
-                      onClick={handleSaveNote}
-                      disabled={noteState.saving}
-                      type="button"
-                    >
-                      <Save size={16} />
-                      {noteState.saving ? "Saving..." : "Save note"}
-                    </button>
-                    {noteState.message && <span className="memory-message">{noteState.message}</span>}
-                    {noteState.error && <span className="memory-error">{noteState.error}</span>}
-                  </div>
-                </>
-              ) : (
-                <p className="memory-text">{noteText}</p>
-              )}
+              <p className="memory-text">{noteText}</p>
             </section>
 
             <aside className="modal-side-stack">
