@@ -91,11 +91,6 @@ export function DemonModal({
   }, [distribution]);
 
   useEffect(() => {
-    setNoteDraft(demon.notes || "");
-    setNoteState({ saving: false, message: "", error: "" });
-  }, [demon.id, demon.notes]);
-
-  useEffect(() => {
     setSkillsetDistribution(Array.isArray(demon.skillsetDistribution) ? demon.skillsetDistribution : []);
 
     if (!SHEET_API_URL || !demon.id) return;
