@@ -970,6 +970,54 @@ h1 {
   cursor: pointer;
 }
 
+.progress-info-popover {
+  position: fixed;
+  z-index: 10000;
+  width: min(320px, calc(100vw - 32px));
+  padding: 18px 42px 18px 18px;
+  border: 1px solid rgba(189, 154, 255, 0.3);
+  border-radius: 14px;
+  background: linear-gradient(145deg, #181a25, #0d0f17);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.58);
+  transform: translateX(-50%);
+}
+
+.progress-info-popover::before {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  border-top: 1px solid rgba(189, 154, 255, 0.3);
+  border-left: 1px solid rgba(189, 154, 255, 0.3);
+  background: #171923;
+  transform: translate(-50%, 5px) rotate(45deg);
+}
+
+.progress-info-popover p {
+  margin: 0;
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.progress-info-popover-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  cursor: pointer;
+}
+
 .progress-info-backdrop {
   position: fixed;
   inset: 0;

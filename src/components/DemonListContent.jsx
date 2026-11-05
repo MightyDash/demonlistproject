@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { BarChart3, Check, Clock3, Info, Search, SlidersHorizontal, Target, Trophy, X } from "lucide-react";
 import { StatCard } from "./StatCard.jsx";
@@ -47,6 +47,10 @@ export function DemonListContent({
   communityRequestedIds = new Set()
 }) {
   const [showProgressInfo, setShowProgressInfo] = useState(false);
+  const progressInfoRef = useRef(null);
+  const progressInfoButtonRef = useRef(null);
+  const progressInfoPopoverRef = useRef(null);
+  const [progressInfoPosition, setProgressInfoPosition] = useState({ top: 0, left: 0 });
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const isProgressView = yearView === "progress";
   const isFutureView = yearView === "future";
@@ -105,14 +109,41 @@ export function DemonListContent({
   useEffect(() => {
     if (!showProgressInfo) return;
 
-    const root = document.getElementById("root");
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    root?.setAttribute("inert", "");
+    function handleOutsideClick(event) {
+      const clickedTrigger = progressInfoRef.current?.contains(event.target);
+      const clickedPopover = progressInfoPopoverRef.current?.contains(event.target);
+      if (!clickedTrigger && !clickedPopover) {
+        setShowProgressInfo(false);
+      }
+    }
+
+    function handleEscape(event) {
+      if (event.key === "Escape") setShowProgressInfo(false);
+    }
+
+    function updatePosition() {
+      const rect = progressInfoButtonRef.current?.getBoundingClientRect();
+      if (!rect) return;
+
+      const popoverWidth = Math.min(320, window.innerWidth - 32);
+      const halfWidth = popoverWidth / 2;
+      setProgressInfoPosition({
+        top: rect.bottom + 10,
+        left: Math.max(16 + halfWidth, Math.min(rect.left + rect.width / 2, window.innerWidth - 16 - halfWidth))
+      });
+    }
+
+    updatePosition();
+    document.addEventListener("pointerdown", handleOutsideClick);
+    window.addEventListener("keydown", handleEscape);
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
 
     return () => {
-      document.body.style.overflow = previousOverflow;
-      root?.removeAttribute("inert");
+      document.removeEventListener("pointerdown", handleOutsideClick);
+      window.removeEventListener("keydown", handleEscape);
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
     };
   }, [showProgressInfo]);
 
@@ -367,15 +398,36 @@ export function DemonListContent({
                 ? `${totalCount} demons shown`
                 : `${filtered.length} of ${totalCount} demons shown`}
               {isProgressView && (
-                <span className="progress-info-wrap">
+                <span className="progress-info-wrap" ref={progressInfoRef}>
                   <button
+                    ref={progressInfoButtonRef}
                     className="progress-info-button"
-                    onClick={() => setShowProgressInfo(true)}
+                    onClick={() => setShowProgressInfo(current => !current)}
                     type="button"
                     aria-label="In progress info"
+                    aria-expanded={showProgressInfo}
                   >
                     <Info size={15} />
                   </button>
+                  {showProgressInfo && createPortal(
+                    <section
+                      ref={progressInfoPopoverRef}
+                      className="progress-info-popover"
+                      role="status"
+                      style={{ top: progressInfoPosition.top, left: progressInfoPosition.left }}
+                    >
+                      <button
+                        className="progress-info-popover-close"
+                        onClick={() => setShowProgressInfo(false)}
+                        type="button"
+                        aria-label="Close"
+                      >
+                        <X size={16} />
+                      </button>
+                      <p>{progressInfoText}</p>
+                    </section>,
+                    document.body
+                  )}
                 </span>
               )}
             </span>
@@ -387,25 +439,6 @@ export function DemonListContent({
               )}
             </div>
           </div>
-
-          {showProgressInfo && createPortal(
-            <div className="progress-info-backdrop">
-              <section className="progress-info-modal" role="dialog" aria-modal="true" aria-label="In progress information">
-                <button
-                  className="progress-info-close"
-                  onClick={() => setShowProgressInfo(false)}
-                  type="button"
-                  aria-label="Close"
-                >
-                  <X size={20} />
-                </button>
-                <p>
-                  {progressInfoText}
-                </p>
-              </section>
-            </div>,
-            document.body
-          )}
 
           {demonListError && (
             <div className="admin-error">
