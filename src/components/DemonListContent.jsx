@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { BarChart3, Check, Clock3, Info, Search, SlidersHorizontal, Target, Trophy, X } from "lucide-react";
 import { StatCard } from "./StatCard.jsx";
 import { DeviceLabel } from "./DeviceLabel.jsx";
@@ -100,6 +101,20 @@ export function DemonListContent({
       window.removeEventListener("keydown", handleEscape);
     };
   }, [filterDrawerOpen]);
+
+  useEffect(() => {
+    if (!showProgressInfo) return;
+
+    const root = document.getElementById("root");
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    root?.setAttribute("inert", "");
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      root?.removeAttribute("inert");
+    };
+  }, [showProgressInfo]);
 
   function resetFilters() {
     setQuery("");
@@ -373,9 +388,9 @@ export function DemonListContent({
             </div>
           </div>
 
-          {showProgressInfo && (
-            <div className="progress-info-backdrop" onClick={() => setShowProgressInfo(false)}>
-              <section className="progress-info-modal" onClick={event => event.stopPropagation()}>
+          {showProgressInfo && createPortal(
+            <div className="progress-info-backdrop">
+              <section className="progress-info-modal" role="dialog" aria-modal="true" aria-label="In progress information">
                 <button
                   className="progress-info-close"
                   onClick={() => setShowProgressInfo(false)}
@@ -388,7 +403,8 @@ export function DemonListContent({
                   {progressInfoText}
                 </p>
               </section>
-            </div>
+            </div>,
+            document.body
           )}
 
           {demonListError && (
