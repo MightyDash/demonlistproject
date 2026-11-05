@@ -65,7 +65,7 @@ export function DemonListContent({
     segment !== "all",
     yearView !== "all"
   ].filter(Boolean).length;
-  const progressInfoText = "It is not yet clear whether these demons will be beaten in the future. I am certain that some will, but I still have my doubts about others. This is just a reminder to myself.";
+  const progressInfoText = 'Demons I have progress on. This view will one day be made clearer with types of progresses like "Planned", "Dropped" & "On Hold"';
   const formattedUpdatedAt = listUpdatedAt
     ? new Intl.DateTimeFormat("en-GB", {
         dateStyle: "long",
