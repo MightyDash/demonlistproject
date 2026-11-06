@@ -1617,6 +1617,12 @@ h1 {
   text-align: right;
 }
 
+.overview-list .overview-song {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.35;
+}
+
 .overview-list .overview-danger {
   color: #ff5b6c;
 }

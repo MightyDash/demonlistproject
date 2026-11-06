@@ -7,6 +7,18 @@ export function normalizeDemon(row) {
   const dateLabel = formatDateLabel(rawDate);
   const dateYear = extractDateYear(rawDate);
   const placement = normalizePlacement(row.placement ?? row.Placement ?? row["#"]);
+  const rawSong = row.song ?? row.Song ?? null;
+  const song = rawSong && typeof rawSong === "object"
+    ? {
+        id: String(rawSong.id ?? rawSong.ID ?? "").trim(),
+        name: String(rawSong.name ?? rawSong.Name ?? "").trim(),
+        artist: String(rawSong.artist ?? rawSong.author ?? rawSong.Artist ?? rawSong.Author ?? "").trim()
+      }
+    : {
+        id: String(row.songId ?? "").trim(),
+        name: String(row.songName ?? "").trim(),
+        artist: String(row.songArtist ?? "").trim()
+      };
 
   return {
     placement,
@@ -28,6 +40,7 @@ export function normalizeDemon(row) {
     device: normalizeDevice(row.device ?? row.Device) || "PC",
     durationSeconds: Math.max(0, Math.round(Number(row.durationSeconds ?? row.seconds ?? 0) || 0)),
     length: String(row.length ?? row.Length ?? "").trim(),
+    song: song.name ? song : null,
     formerTop1Year: FORMER_TOP_1[name] || null,
     skillsetDistribution: Array.isArray(row.skillsetDistribution)
       ? row.skillsetDistribution

@@ -37,6 +37,9 @@ export function DemonModal({
   hasNext,
   isCommunityRequested = false
 }) {
+  const songLabel = demon.song?.name
+    ? [demon.song.artist, demon.song.name].filter(Boolean).join(" — ")
+    : "Unknown";
   const thumbnailSrc = demon.id
     ? `https://levelthumbs.prevter.me/thumbnail/${demon.id}`
     : "";
@@ -206,6 +209,7 @@ export function DemonModal({
                 )}
                 <div><span>Attempts (Total)</span><strong>{formatNumber(demon.attempts)}</strong></div>
                 <div><span>Date</span><strong>{demon.date || demon.year || "Unknown"}</strong></div>
+                <div><span>Song</span><strong className="overview-song">{songLabel}</strong></div>
               </div>
             </section>
 
