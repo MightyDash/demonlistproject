@@ -175,13 +175,14 @@ export function DemonListContent({
 
   return (
           <>
-            <section className="stats-grid">
+            {!progressTrackerView && <section className="stats-grid">
               <StatCard icon={<Trophy />} label="Total Demons" value={formatNumber(stats.total)} />
               <StatCard icon={<Target />} label="Total Attempts" value={formatNumber(stats.attempts)} />
               <StatCard icon={<BarChart3 />} label="Hardest Demon" value={stats.hardest?.name || "Unknown"} detail={stats.hardest?.difficulty || ""} highlight />
-            </section>
+            </section>}
     
             <div className={`desktop-list-shell ${isProgressView ? "progress-shell" : ""}`}>
+            {!progressTrackerView && <>
             <div className="mobile-filter-bar">
               <button
                 className="mobile-filter-button"
@@ -390,6 +391,7 @@ export function DemonListContent({
                 Show {totalCount} demons
               </button>
             </section>
+            </>}
     
             <main className="panel table-panel">
           <div className="table-header">
@@ -432,7 +434,7 @@ export function DemonListContent({
               )}
             </span>
             <div className="list-status-links">
-              {apiLatestDemon && (
+              {!progressTrackerView && apiLatestDemon && (
                 <button className="latest-link" onClick={onLatestDemonClick} type="button">
                   Latest: {apiLatestDemon}
                 </button>

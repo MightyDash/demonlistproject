@@ -144,6 +144,14 @@ export default function App() {
     setRequestView(route === ROUTES.requests);
     setProgressView(isProgressRoute);
     setYearView(current => isProgressRoute ? "progress" : current === "progress" ? "all" : current);
+    if (isProgressRoute) {
+      setQuery("");
+      setDevice("all");
+      setDeviceOpen(false);
+      setDifficulty("all");
+      setDifficultyOpen(false);
+      setSegment("all");
+    }
     setNewsView(route === ROUTES.news || route.startsWith(`${ROUTES.news}/`));
     setNewsArticleId(parseNewsRoute(route));
     setHistoryView(route === ROUTES.history);

@@ -120,7 +120,7 @@ export function AppHeader({
         <button className="observatory-nav-backdrop" onClick={() => setMobileNavOpen(false)} type="button" aria-label="Close navigation" />
       )}
 
-      <header className="hero observatory-hero">
+      {!progressView && <header className="hero observatory-hero">
         <button
           className="observatory-menu-button"
           onClick={() => setMobileNavOpen(open => !open)}
@@ -143,7 +143,7 @@ export function AppHeader({
           <span className="orbit orbit-two" />
           <span className="observatory-gem" />
         </div>
-      </header>
+      </header>}
 
       {showVersionInfo && (
         <div className="progress-info-backdrop" onClick={closeVersionInfo}>
