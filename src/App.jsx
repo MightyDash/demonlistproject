@@ -120,6 +120,7 @@ export default function App() {
   const [isMobileView, setIsMobileView] = useState(getInitialMobileView);
   const [viewMode, setViewMode] = useState(() => getInitialMobileView() ? "grid" : "banner");
   const [requestView, setRequestView] = useState(false);
+  const [progressView, setProgressView] = useState(false);
   const [historyView, setHistoryView] = useState(false);
   const [timelineView, setTimelineView] = useState(false);
   const [timelineRoute, setTimelineRoute] = useState({ year: null, month: null, overview: false, compare: false });
@@ -138,8 +139,11 @@ export default function App() {
 
   function applyRoute(pathname) {
     const route = normalizeRoute(pathname);
+    const isProgressRoute = route === ROUTES.progress;
 
     setRequestView(route === ROUTES.requests);
+    setProgressView(isProgressRoute);
+    setYearView(current => isProgressRoute ? "progress" : current === "progress" ? "all" : current);
     setNewsView(route === ROUTES.news || route.startsWith(`${ROUTES.news}/`));
     setNewsArticleId(parseNewsRoute(route));
     setHistoryView(route === ROUTES.history);
@@ -737,6 +741,7 @@ export default function App() {
       onLatestDemonClick={handleLatestDemonClick}
       demonListError={demonListError}
       onRetryDemonList={() => loadDemonData()}
+      progressTrackerView={progressView}
       isMobileView={isMobileView}
       futureListIds={futureListIds}
       communityRequestedIds={communityRequestedIds}
@@ -748,10 +753,12 @@ export default function App() {
       <AppHeader
           source={source}
           historyView={historyView}
+          progressView={progressView}
           newsView={newsView}
           requestView={requestView}
           timelineView={timelineView}
           onOpenList={() => navigateTo(ROUTES.home)}
+          onOpenProgress={() => navigateTo(progressView ? ROUTES.home : ROUTES.progress)}
           onOpenNews={() => navigateTo(newsView ? ROUTES.home : ROUTES.news)}
           onOpenRequests={handleOpenRequests}
           onOpenHistory={() => {

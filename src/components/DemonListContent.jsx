@@ -42,6 +42,7 @@ export function DemonListContent({
   onLatestDemonClick,
   demonListError,
   onRetryDemonList,
+  progressTrackerView = false,
   isMobileView = false,
   futureListIds = [],
   communityRequestedIds = new Set()
@@ -52,7 +53,7 @@ export function DemonListContent({
   const progressInfoPopoverRef = useRef(null);
   const [progressInfoPosition, setProgressInfoPosition] = useState({ top: 0, left: 0 });
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
-  const isProgressView = yearView === "progress";
+  const isProgressView = progressTrackerView || yearView === "progress";
   const isFutureView = yearView === "future";
   const futureIds = new Set(futureListIds.map(id => String(id)));
   const requestedIds = communityRequestedIds instanceof Set
@@ -63,7 +64,7 @@ export function DemonListContent({
     device !== "all",
     difficulty !== "all",
     segment !== "all",
-    yearView !== "all"
+    yearView !== "all" && !progressTrackerView
   ].filter(Boolean).length;
   const progressInfoText = 'Demons I have progress on. This view will one day be made clearer with types of progresses like "Planned", "Dropped" & "On Hold"';
   const formattedUpdatedAt = listUpdatedAt
@@ -83,7 +84,6 @@ export function DemonListContent({
     ["2020", "2020"],
     ["2019", "2019"],
     ["2018", "2018"],
-    ["progress", "In Progress"],
     ["future", "Future List"],
     ["duration", "Length"],
     ["level-id", "Level ID"]
@@ -152,7 +152,7 @@ export function DemonListContent({
     setDevice("all");
     setDifficulty("all");
     setSegment("all");
-    setYearView("all");
+    setYearView(progressTrackerView ? "progress" : "all");
     setDurationSort("longest");
     setLevelIdSort("newest");
     setViewMode(isMobileView ? "grid" : "banner");

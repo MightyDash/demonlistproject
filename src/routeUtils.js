@@ -1,5 +1,6 @@
 export const ROUTES = {
   home: "/",
+  progress: "/progress",
   requests: "/demon-requests",
   history: "/recent-changes",
   news: "/news",

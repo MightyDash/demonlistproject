@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CalendarDays, FileClock, Home, Inbox, Menu, Radio, Rss, X } from "lucide-react";
+import { CalendarDays, FileClock, Home, Inbox, ListChecks, Menu, Radio, Rss, X } from "lucide-react";
 
 const DEFAULT_SITE_VERSION = "v0.62";
 const DEFAULT_VERSION_CHANGES = [
@@ -12,10 +12,12 @@ const DEFAULT_VERSION_CHANGES = [
 export function AppHeader({
   source,
   historyView,
+  progressView,
   newsView,
   requestView,
   timelineView,
   onOpenList,
+  onOpenProgress,
   onOpenNews,
   onOpenRequests,
   onOpenHistory,
@@ -31,7 +33,9 @@ export function AppHeader({
     ? siteChangelog
     : DEFAULT_VERSION_CHANGES;
   const pageTitle = newsView
-      ? "News"
+    ? "News"
+    : progressView
+      ? "Progress Tracker"
       : requestView
         ? "Demon Requests"
         : historyView
@@ -40,7 +44,9 @@ export function AppHeader({
             ? "Timeline"
             : "Demon Archive";
   const pageSubtitle = newsView
-      ? "Updates, uploads and announcements from across my social channels."
+    ? "Updates, uploads and announcements from across my social channels."
+    : progressView
+      ? "Track the demons I am currently working toward completing."
       : requestView
         ? "Community requests to add new demons to the list."
         : historyView
@@ -62,7 +68,7 @@ export function AppHeader({
     action?.();
   }
 
-  const listActive = !newsView && !requestView && !historyView && !timelineView;
+  const listActive = !newsView && !progressView && !requestView && !historyView && !timelineView;
   const sourceLabel = source === "live"
     ? "Live Sheet Data"
     : source === "cache"
@@ -82,6 +88,9 @@ export function AppHeader({
         <nav className="observatory-nav" aria-label="Main navigation">
           <button className={listActive ? "active" : ""} onClick={() => navigate(onOpenList)} type="button">
             <Home size={21} /><span>Archive</span>
+          </button>
+          <button className={progressView ? "active" : ""} onClick={() => navigate(onOpenProgress)} type="button">
+            <ListChecks size={21} /><span>Progress Tracker</span>
           </button>
           <button className={newsView ? "active" : ""} onClick={() => navigate(onOpenNews)} type="button">
             <Rss size={21} /><span>News</span>{hasUnreadNews && <i className="observatory-news-dot" aria-label="New news" />}

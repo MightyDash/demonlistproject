@@ -4,6 +4,7 @@ import { normalizeRoute, parseNewsRoute, parseTimelineRoute, ROUTES } from "./ro
 describe("routeUtils", () => {
   it.each([
     ["/", ROUTES.home],
+    ["/progress", ROUTES.progress],
     ["/demon-requests/", ROUTES.requests],
     ["/recent-changes", ROUTES.history],
     ["/news", ROUTES.news],
