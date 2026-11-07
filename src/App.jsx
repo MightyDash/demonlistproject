@@ -6,6 +6,7 @@ import { DemonListContent } from "./components/DemonListContent.jsx";
 import { DemonModal } from "./components/DemonModal.jsx";
 import { NewsPage } from "./components/NewsPage.jsx";
 import { RecentChanges } from "./components/RecentChanges.jsx";
+import { ProgressTrackerPage } from "./components/ProgressTrackerPage.jsx";
 import { ScrollToTopButton } from "./components/ScrollToTopButton.jsx";
 import { TimelinePage } from "./components/TimelineModal.jsx";
 import { buildHistoricalRanking, comparePlacements, demonDurationSortValue, isInProgressDemon, normalizeDemon, segmentForPlacement } from "./demonUtils.js";
@@ -121,6 +122,7 @@ export default function App() {
   const [viewMode, setViewMode] = useState(() => getInitialMobileView() ? "grid" : "banner");
   const [requestView, setRequestView] = useState(false);
   const [progressView, setProgressView] = useState(false);
+  const [progressCategory, setProgressCategory] = useState("all");
   const [historyView, setHistoryView] = useState(false);
   const [timelineView, setTimelineView] = useState(false);
   const [timelineRoute, setTimelineRoute] = useState({ year: null, month: null, overview: false, compare: false });
@@ -151,6 +153,7 @@ export default function App() {
       setDifficulty("all");
       setDifficultyOpen(false);
       setSegment("all");
+      setProgressCategory("all");
     }
     setNewsView(route === ROUTES.news || route.startsWith(`${ROUTES.news}/`));
     setNewsArticleId(parseNewsRoute(route));
@@ -560,7 +563,8 @@ export default function App() {
         const matchesYearView =
           showingInProgress || yearView === "all" || Number(demon.dateYear || demon.year || 0) <= Number(yearView);
 
-        return matchesSearchAndDifficulty(demon) && matchesStatus && matchesSegment && matchesYearView;
+        const matchesProgressCategory = !showingInProgress || progressCategory === "all" || String(demon.progressCategory || "IN PROGRESS") === progressCategory;
+        return matchesSearchAndDifficulty(demon) && matchesStatus && matchesSegment && matchesYearView && matchesProgressCategory;
       })
       .sort((a, b) => {
         if (yearView === "progress") {
@@ -569,7 +573,7 @@ export default function App() {
 
         return comparePlacements(a.placement, b.placement);
       });
-  }, [demons, query, device, difficulty, segment, yearView, futureListIds, durationSort, levelIdSort]);
+  }, [demons, query, device, difficulty, segment, yearView, futureListIds, durationSort, levelIdSort, progressCategory]);
 
   const currentIndex = useMemo(() => {
     if (!selected) return -1;
@@ -828,6 +832,8 @@ export default function App() {
           onOpenYearComparison={() => navigateTo(`${ROUTES.timeline}/compare`)}
           onBackToTimeline={() => navigateTo(ROUTES.timeline)}
         />
+      ) : progressView ? (
+        <ProgressTrackerPage demons={demons.filter(isInProgressDemon)} activeFilter={progressCategory} onFilterChange={setProgressCategory} onSelectDemon={setSelected} />
       ) : demonListContent}
 
       {selected && (

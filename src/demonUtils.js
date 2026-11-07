@@ -46,6 +46,7 @@ export function normalizeDemon(row) {
       ? row.skillsetDistribution
       : [],
     status: row.status ?? row["Done/Progress?"] ?? "COMPLETED",
+    progressCategory: String(row.progressCategory || "IN PROGRESS").toUpperCase(),
     progressPercent: Number(row.progressPercent ?? row["Progress %"] ?? 0),
     thumbnail: id ? `https://levelthumbs.prevter.me/thumbnail/${id}` : "",
     notes: row.notes ?? ""
