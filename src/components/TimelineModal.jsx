@@ -503,9 +503,6 @@ export function TimelinePage({
   }, { current: 0, longest: 0 }).longest;
   const mobileMonths = showEmptyMonths ? selectedYearData?.months || [] : activeMonths;
   const maxMonthlyCount = Math.max(1, ...(selectedYearData?.months || []).map(month => month.demons.length));
-  const completedThroughSelectedYear = timeline
-    .filter(yearData => yearData.year <= (selectedYearData?.year || 0))
-    .reduce((total, yearData) => total + yearData.demons.length, 0);
 
   useEffect(() => {
     if (!isMonthPage || !onOpenMonth) return undefined;
@@ -750,11 +747,6 @@ export function TimelinePage({
             <span className="timeline-year-circle">{yearData.year}</span>
           </button>
         ))}
-      </div>
-
-      <div className="timeline-through-summary" aria-live="polite">
-        <strong>{pluralizeDemons(completedThroughSelectedYear)}</strong>
-        <span>completed through {selectedYearData.year}</span>
       </div>
 
       <div className="timeline-detail-header">
