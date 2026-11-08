@@ -701,6 +701,16 @@ export default function App() {
     };
   }, [demons]);
 
+  const projectedFuturePlacements = useMemo(() => {
+    const futureIds = new Set(futureListIds.map(String));
+    return Object.fromEntries(
+      demons
+        .filter(demon => !isInProgressDemon(demon) || futureIds.has(String(demon.id)))
+        .sort((a, b) => Number(b.tier || 0) - Number(a.tier || 0) || String(a.name || "").localeCompare(String(b.name || "")))
+        .map((demon, index) => [String(demon.id), index + 1])
+    );
+  }, [demons, futureListIds]);
+
   function handleOpenRequests() {
     if (requestView) {
       navigateTo(ROUTES.home);
@@ -833,7 +843,7 @@ export default function App() {
           onBackToTimeline={() => navigateTo(ROUTES.timeline)}
         />
       ) : progressView ? (
-        <ProgressTrackerPage demons={demons.filter(isInProgressDemon)} activeFilter={progressCategory} onFilterChange={setProgressCategory} onSelectDemon={setSelected} />
+        <ProgressTrackerPage demons={demons.filter(isInProgressDemon)} activeFilter={progressCategory} onFilterChange={setProgressCategory} onSelectDemon={setSelected} projectedPlacements={projectedFuturePlacements} />
       ) : demonListContent}
 
       {selected && (

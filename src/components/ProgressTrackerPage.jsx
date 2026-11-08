@@ -19,7 +19,7 @@ function categoryClass(category) {
   return category.toLowerCase().replaceAll(" ", "-");
 }
 
-export function ProgressTrackerPage({ demons, activeFilter, onFilterChange, onSelectDemon }) {
+export function ProgressTrackerPage({ demons, activeFilter, onFilterChange, onSelectDemon, projectedPlacements }) {
   const [showInfo, setShowInfo] = useState(false);
   const counts = useMemo(() => Object.fromEntries(FILTERS.slice(1).map(([value]) => [
     value,
@@ -62,7 +62,10 @@ export function ProgressTrackerPage({ demons, activeFilter, onFilterChange, onSe
               <img src={demon.thumbnail} alt="" loading="lazy" />
               <span className="progress-card-shade" />
               <span className="progress-card-content">
-                <span className={`progress-status-badge ${className}`}>{FILTERS.find(([value]) => value === category)?.[1]}</span>
+                <span className="progress-card-badges">
+                  <span className={`progress-status-badge ${className}`}>{FILTERS.find(([value]) => value === category)?.[1]}</span>
+                  {category === "PLAN TO BEAT" && projectedPlacements?.[String(demon.id)] && <span className="progress-projected-placement">Projected #{projectedPlacements[String(demon.id)]}</span>}
+                </span>
                 <strong>{demon.name}</strong>
                 <small>by {demon.creator}</small>
                 <span className={`progress-difficulty ${difficultyClass(demon.difficulty)}`}>{demon.difficulty}</span>

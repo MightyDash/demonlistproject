@@ -9095,6 +9095,8 @@ textarea:focus-visible {
 .progress-card-content > strong { display: block; margin-top: 8px; overflow: hidden; font-size: clamp(20px,1.6vw,27px); line-height: 1.08; text-overflow: ellipsis; white-space: nowrap; }
 .progress-card-content > small { margin-top: 4px; overflow: hidden; color: #bdc0cc; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
 .progress-status-badge, .progress-difficulty { align-self: flex-start; padding: 5px 8px; border: 1px solid currentColor; border-radius: 7px; background: #11131bd9; font-size: 10px; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; }
+.progress-card-badges { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; }
+.progress-projected-placement { padding: 5px 8px; border: 1px solid #4d91ff; border-radius: 7px; color: #c5dcff; background: rgba(18,43,83,.9); font-size: 10px; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; }
 .progress-status-badge.in-progress { color: #b895ff; }.progress-status-badge.plan-to-beat { color: #6ea8ff; }.progress-status-badge.on-hold { color: #ffc45a; }.progress-status-badge.dropped { color: #d87a83; }
 .progress-difficulty { position: absolute; top: 14px; right: 14px; color: #d0d2da; letter-spacing: 0; text-transform: none; }
 .progress-card-progress { display: block; margin-top: 14px; }
