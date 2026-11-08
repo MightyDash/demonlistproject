@@ -33,7 +33,13 @@ export function ProgressTrackerPage({ demons, activeFilter, onFilterChange, onSe
         <div className="progress-tracker-count">
           <strong>{demons.length}</strong> demons
           <button type="button" aria-label="About Progress Tracker" onClick={() => setShowInfo(value => !value)}><Info size={16} /></button>
-          {showInfo && <div className="progress-tracker-info">Demons I am playing, planning to beat, pausing or no longer playing.</div>}
+          {showInfo && <div className="progress-tracker-info" role="note">
+            <strong>Progress status guide</strong>
+            <p><b>In Progress</b><span>Not assigned to one of the three specific statuses yet.</span></p>
+            <p><b>Plan to Beat</b><span>The next demons I intend to complete.</span></p>
+            <p><b>On Hold</b><span>Demons I plan to continue playing at a later time.</span></p>
+            <p><b>Dropped</b><span>Levels I have stopped attempting or practising.</span></p>
+          </div>}
         </div>
         <nav className="progress-status-filters" aria-label="Filter progress status">
           {FILTERS.map(([value, label, Icon]) => (

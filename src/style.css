@@ -9072,6 +9072,10 @@ textarea:focus-visible {
 .progress-tracker-count strong { color: var(--text); font-size: 22px; }
 .progress-tracker-count button { display: grid; place-items: center; width: 30px; height: 30px; margin-left: 4px; padding: 0; border: 1px solid #8c6821; border-radius: 50%; color: #f8c64b; background: rgba(248,198,75,.08); cursor: pointer; }
 .progress-tracker-info { position: absolute; z-index: 20; top: 40px; left: 0; width: min(340px, 80vw); padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; color: var(--text); background: #151722; box-shadow: 0 18px 50px #000a; font-size: 13px; line-height: 1.5; white-space: normal; }
+.progress-tracker-info > strong { display: block; margin-bottom: 8px; color: white; font-size: 14px; }
+.progress-tracker-info p { display: grid; gap: 1px; margin: 0; padding: 7px 0; border-top: 1px solid rgba(255,255,255,.07); }
+.progress-tracker-info p b { color: #c7a5ff; font-size: 12px; }
+.progress-tracker-info p span { color: #b8bac5; }
 .progress-status-filters { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 7px; }
 .progress-status-filters button { display: flex; align-items: center; gap: 7px; min-height: 38px; padding: 7px 10px; border: 1px solid var(--border); border-radius: 10px; color: #a9acb9; background: #151720; cursor: pointer; font: inherit; font-size: 13px; font-weight: 800; transition: .2s ease; }
 .progress-status-filters button b { min-width: 22px; padding: 2px 6px; border-radius: 999px; color: #c9cbd4; background: #252733; font-size: 11px; }
