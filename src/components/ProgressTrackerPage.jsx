@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { CirclePause, CirclePlay, Flag, Info, XCircle } from "lucide-react";
+import { CirclePause, CirclePlay, Clock3, Flag, Info, XCircle } from "lucide-react";
 import { difficultyClass } from "../demonUtils.js";
 
 const FILTERS = [
@@ -64,7 +64,7 @@ export function ProgressTrackerPage({ demons, activeFilter, onFilterChange, onSe
               <span className="progress-card-content">
                 <span className="progress-card-badges">
                   <span className={`progress-status-badge ${className}`}>{FILTERS.find(([value]) => value === category)?.[1]}</span>
-                  {category === "PLAN TO BEAT" && projectedPlacements?.[String(demon.id)] && <span className="progress-projected-placement">Future #{projectedPlacements[String(demon.id)]}</span>}
+                  {category === "PLAN TO BEAT" && projectedPlacements?.[String(demon.id)] && <span className="progress-projected-placement" aria-label={`Future placement number ${projectedPlacements[String(demon.id)]}`}><Clock3 size={12} aria-hidden="true" />#{projectedPlacements[String(demon.id)]}</span>}
                 </span>
                 <strong>{demon.name}</strong>
                 <small>by {demon.creator}</small>
