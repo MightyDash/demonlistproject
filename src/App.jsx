@@ -702,14 +702,13 @@ export default function App() {
   }, [demons]);
 
   const projectedFuturePlacements = useMemo(() => {
-    const futureIds = new Set(futureListIds.map(String));
     return Object.fromEntries(
       demons
-        .filter(demon => !isInProgressDemon(demon) || futureIds.has(String(demon.id)))
+        .filter(demon => !isInProgressDemon(demon) || String(demon.progressCategory || "IN PROGRESS").toUpperCase() === "PLAN TO BEAT")
         .sort((a, b) => Number(b.tier || 0) - Number(a.tier || 0) || String(a.name || "").localeCompare(String(b.name || "")))
         .map((demon, index) => [String(demon.id), index + 1])
     );
-  }, [demons, futureListIds]);
+  }, [demons]);
 
   function handleOpenRequests() {
     if (requestView) {

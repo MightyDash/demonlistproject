@@ -64,7 +64,7 @@ export function ProgressTrackerPage({ demons, activeFilter, onFilterChange, onSe
               <span className="progress-card-content">
                 <span className="progress-card-badges">
                   <span className={`progress-status-badge ${className}`}>{FILTERS.find(([value]) => value === category)?.[1]}</span>
-                  {category === "PLAN TO BEAT" && projectedPlacements?.[String(demon.id)] && <span className="progress-projected-placement">Projected #{projectedPlacements[String(demon.id)]}</span>}
+                  {category === "PLAN TO BEAT" && projectedPlacements?.[String(demon.id)] && <span className="progress-projected-placement">Future #{projectedPlacements[String(demon.id)]}</span>}
                 </span>
                 <strong>{demon.name}</strong>
                 <small>by {demon.creator}</small>
