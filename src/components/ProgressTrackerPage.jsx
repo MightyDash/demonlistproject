@@ -55,7 +55,7 @@ export function ProgressTrackerPage({ demons, activeFilter, onFilterChange, onSe
         {shown.map(demon => {
           const category = categoryOf(demon);
           const className = categoryClass(category);
-          const showProgress = category === "IN PROGRESS" || category === "ON HOLD";
+          const showProgress = category === "IN PROGRESS" || category === "PLAN TO BEAT" || category === "ON HOLD";
           const progress = Math.max(0, Math.min(100, Number(demon.progressPercent || 0)));
           return (
             <button className={`progress-tracker-card ${className}`} key={demon.id || demon.name} type="button" onClick={() => onSelectDemon(demon)}>
