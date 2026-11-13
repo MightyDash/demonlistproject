@@ -120,6 +120,19 @@ export function AppHeader({
         <button className="observatory-nav-backdrop" onClick={() => setMobileNavOpen(false)} type="button" aria-label="Close navigation" />
       )}
 
+      {progressView && (
+        <button
+          className="progress-tracker-menu-button"
+          onClick={() => setMobileNavOpen(open => !open)}
+          type="button"
+          aria-label="Open navigation"
+          aria-expanded={mobileNavOpen}
+          aria-controls="site-navigation"
+        >
+          <Menu size={23} />
+        </button>
+      )}
+
       {!progressView && <header className="hero observatory-hero">
         <button
           className="observatory-menu-button"
