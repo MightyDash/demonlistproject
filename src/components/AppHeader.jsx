@@ -76,6 +76,7 @@ export function AppHeader({
       : source === "mock"
         ? "Mock Data"
         : "Loading";
+  const usesCompactPageHeader = progressView || timelineView;
 
   return (
     <>
@@ -120,9 +121,9 @@ export function AppHeader({
         <button className="observatory-nav-backdrop" onClick={() => setMobileNavOpen(false)} type="button" aria-label="Close navigation" />
       )}
 
-      {progressView && (
+      {usesCompactPageHeader && (
         <button
-          className="progress-tracker-menu-button"
+          className="compact-page-menu-button"
           onClick={() => setMobileNavOpen(open => !open)}
           type="button"
           aria-label="Open navigation"
@@ -133,7 +134,7 @@ export function AppHeader({
         </button>
       )}
 
-      {!progressView && <header className="hero observatory-hero">
+      {!usesCompactPageHeader && <header className="hero observatory-hero">
         <button
           className="observatory-menu-button"
           onClick={() => setMobileNavOpen(open => !open)}

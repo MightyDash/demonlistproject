@@ -11731,7 +11731,7 @@ body::before {
   display: none;
 }
 
-.progress-tracker-menu-button {
+.compact-page-menu-button {
   display: none;
 }
 
@@ -12309,7 +12309,7 @@ body::before {
     height: 38px;
   }
 
-  .progress-tracker-menu-button {
+  .compact-page-menu-button {
     position: fixed;
     z-index: 1180;
     top: max(16px, calc(env(safe-area-inset-top) + 10px));
