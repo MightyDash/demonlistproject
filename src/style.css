@@ -9288,6 +9288,160 @@ textarea:focus-visible {
   }
 }
 
+@media (min-width: 761px) {
+  .timeline-mobile-dashboard {
+    display: grid;
+    gap: 22px;
+    min-width: 0;
+  }
+
+  .timeline-mobile-year-bar {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr) 48px;
+    align-items: center;
+    gap: 12px;
+    min-height: 66px;
+    padding: 8px;
+    border: 1px solid rgba(159, 124, 255, .3);
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(30, 25, 46, .96), rgba(18, 19, 29, .96));
+    box-shadow: 0 16px 42px rgba(0, 0, 0, .28);
+  }
+
+  .timeline-mobile-year-bar button {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border: 1px solid var(--line);
+    border-radius: 11px;
+    background: rgba(255, 255, 255, .045);
+    color: var(--text);
+    cursor: pointer;
+  }
+
+  .timeline-mobile-year-bar button:hover:not(:disabled) {
+    border-color: #9f7cff;
+    color: #cdb8ff;
+    background: rgba(159, 124, 255, .13);
+  }
+
+  .timeline-mobile-year-bar button:disabled { opacity: .28; cursor: default; }
+  .timeline-mobile-year-bar > div { display: flex; align-items: center; justify-content: center; gap: 10px; min-width: 0; }
+  .timeline-mobile-year-bar svg { color: #b99bff; }
+  .timeline-mobile-year-bar strong { font-size: 1.28rem; }
+  .timeline-mobile-year-bar span { color: var(--muted); font-size: .84rem; font-weight: 800; }
+
+  .timeline-mobile-records {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .timeline-mobile-records article {
+    display: grid;
+    align-content: start;
+    gap: 5px;
+    min-width: 0;
+    min-height: 116px;
+    padding: 17px;
+    border: 1px solid var(--line);
+    border-radius: 13px;
+    background: linear-gradient(145deg, rgba(159, 124, 255, .1), rgba(255, 255, 255, .025));
+  }
+
+  .timeline-mobile-records span,
+  .timeline-mobile-section-heading span,
+  .timeline-mobile-month-heading > div span {
+    color: #b99bff;
+    font-size: .66rem;
+    font-weight: 950;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+  }
+
+  .timeline-mobile-records strong { overflow: hidden; margin-top: 5px; font-size: 1.08rem; text-overflow: ellipsis; white-space: nowrap; }
+  .timeline-mobile-records small { color: var(--muted); font-size: .76rem; font-weight: 800; }
+
+  .timeline-mobile-activity {
+    padding: 20px 20px 16px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: rgba(13, 14, 21, .68);
+  }
+
+  .timeline-mobile-section-heading,
+  .timeline-mobile-month-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .timeline-mobile-section-heading > div,
+  .timeline-mobile-month-heading > div { display: grid; gap: 4px; }
+  .timeline-mobile-section-heading > div > strong,
+  .timeline-mobile-month-heading > div > strong { font-size: 1.15rem; }
+  .timeline-mobile-section-heading > b { padding: 6px 10px; border-radius: 999px; background: rgba(159, 124, 255, .13); color: #d8c8ff; font-size: .76rem; }
+
+  .timeline-mobile-chart {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    align-items: end;
+    gap: 10px;
+    height: 230px;
+    margin-top: 18px;
+    padding: 14px 8px 0;
+    border-bottom: 1px solid var(--line);
+    background: repeating-linear-gradient(to bottom, rgba(255,255,255,.045) 0 1px, transparent 1px 56px);
+  }
+
+  .timeline-mobile-chart-column { display: grid; grid-template-rows: 1fr 26px; align-items: end; gap: 8px; height: 100%; min-width: 0; }
+  .timeline-mobile-chart-column > span { display: block; min-height: 3px; border-radius: 7px 7px 2px 2px; background: linear-gradient(180deg, #b493ff, #7142cc); box-shadow: 0 0 18px rgba(159,124,255,.18); }
+  .timeline-mobile-chart-column small { color: var(--muted); font-size: .7rem; font-weight: 850; text-align: center; }
+
+  .timeline-mobile-month-heading { align-items: end; margin-top: 2px; }
+  .timeline-mobile-month-heading label { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: .76rem; font-weight: 800; }
+  .timeline-mobile-month-heading input { width: 18px; height: 18px; margin: 0; accent-color: #9f7cff; }
+
+  .timeline-mobile-months {
+    display: grid;
+    grid-auto-columns: minmax(285px, calc((100% - 33px) / 4));
+    grid-auto-flow: column;
+    gap: 11px;
+    overflow-x: auto;
+    padding: 2px 2px 16px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(159,124,255,.65) transparent;
+  }
+
+  .timeline-mobile-months .timeline-month-card {
+    min-height: 176px;
+    scroll-snap-align: start;
+  }
+
+  .timeline-page:not(.timeline-month-page) > .timeline-years,
+  .timeline-page:not(.timeline-month-page) > .timeline-month-grid {
+    display: none !important;
+  }
+
+  .timeline-page:not(.timeline-month-page) > .timeline-detail-header > div:first-child {
+    display: none;
+  }
+
+  .timeline-page:not(.timeline-month-page) > .timeline-detail-header {
+    margin: 2px 0 0;
+  }
+
+  .timeline-page:not(.timeline-month-page) > .timeline-detail-header .timeline-detail-actions {
+    display: grid;
+    width: min(100%, 560px);
+    margin-left: auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .grid-card.placement-moved-up,
   .demon-row.placement-moved-up,
