@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { CirclePause, CirclePlay, Clock3, Flag, Info, XCircle } from "lucide-react";
-import { difficultyClass } from "../demonUtils.js";
+import { difficultyClass, formatNumber } from "../demonUtils.js";
 
 const FILTERS = [
   ["all", "All", null],
@@ -57,6 +57,8 @@ export function ProgressTrackerPage({ demons, activeFilter, onFilterChange, onSe
           const className = categoryClass(category);
           const showProgress = category === "IN PROGRESS" || category === "PLAN TO BEAT" || category === "ON HOLD";
           const progress = Math.max(0, Math.min(100, Number(demon.progressPercent || 0)));
+          const attempts = Math.max(0, Number(demon.attempts || 0));
+          const attemptsLabel = `${formatNumber(attempts)} ${attempts === 1 ? "attempt" : "attempts"}`;
           return (
             <button className={`progress-tracker-card ${className}`} key={demon.id || demon.name} type="button" onClick={() => onSelectDemon(demon)}>
               <img src={demon.thumbnail} alt="" loading="lazy" />
@@ -69,7 +71,7 @@ export function ProgressTrackerPage({ demons, activeFilter, onFilterChange, onSe
                 <strong>{demon.name}</strong>
                 <small>by {demon.creator}</small>
                 <span className={`progress-difficulty ${difficultyClass(demon.difficulty)}`}>{demon.difficulty}</span>
-                {showProgress && <span className="progress-card-progress"><span><b>{progress}%</b><i>{category === "ON HOLD" ? "saved progress" : "best run"}</i></span><em><i style={{ width: `${progress}%` }} /></em></span>}
+                {showProgress && <span className="progress-card-progress"><span><b>{progress}%</b><i>{attemptsLabel}</i></span><em><i style={{ width: `${progress}%` }} /></em></span>}
               </span>
             </button>
           );
