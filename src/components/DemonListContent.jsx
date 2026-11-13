@@ -38,7 +38,6 @@ export function DemonListContent({
   hasMoreDemons,
   onLoadMore,
   apiLatestDemon,
-  listUpdatedAt,
   onLatestDemonClick,
   demonListError,
   onRetryDemonList,
@@ -67,13 +66,6 @@ export function DemonListContent({
     yearView !== "all" && !progressTrackerView
   ].filter(Boolean).length;
   const progressInfoText = 'Demons I have progress on. This view will one day be made clearer with types of progresses like "Planned", "Dropped" & "On Hold"';
-  const formattedUpdatedAt = listUpdatedAt
-    ? new Intl.DateTimeFormat("en-GB", {
-        dateStyle: "long",
-        timeStyle: "short",
-        timeZone: "Europe/Amsterdam"
-      }).format(new Date(listUpdatedAt))
-    : "Unknown";
   const yearOptions = [
     ["all", "2026"],
     ["2025", "2025"],
@@ -680,11 +672,6 @@ export function DemonListContent({
                 </div>
               )}
             </main>
-            </div>
-            <div className="desktop-footer-status" aria-hidden="true">
-              <span>Tip: Click a demon card to view more details and stats.</span>
-              <span>Data powered by Google Sheets</span>
-              <span>Last updated: {formattedUpdatedAt}</span>
             </div>
           </>
   );

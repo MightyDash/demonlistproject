@@ -103,7 +103,6 @@ export default function App() {
   const [durationSort, setDurationSort] = useState("longest");
   const [levelIdSort, setLevelIdSort] = useState("newest");
   const [apiLatestDemon, setApiLatestDemon] = useState(() => initialDemonData?.apiLatestDemon || "");
-  const [listUpdatedAt, setListUpdatedAt] = useState(() => initialDemonData?.listUpdatedAt || "");
   const [siteVersion, setSiteVersion] = useState(() => initialDemonData?.siteVersion || DEFAULT_SITE_VERSION);
   const [siteChangelog, setSiteChangelog] = useState(() => initialDemonData?.siteChangelog || DEFAULT_SITE_CHANGELOG);
   const [futureListIds, setFutureListIds] = useState(() => initialDemonData?.futureListIds || []);
@@ -411,7 +410,6 @@ export default function App() {
       if (!nextData) throw new Error("Live demon list response was missing demon rows.");
 
       setApiLatestDemon(nextData.apiLatestDemon);
-      setListUpdatedAt(nextData.listUpdatedAt);
       setSiteVersion(nextData.siteVersion);
       setSiteChangelog(nextData.siteChangelog);
       setFutureListIds(nextData.futureListIds);
@@ -759,7 +757,6 @@ export default function App() {
       hasMoreDemons={hasMoreDemons}
       onLoadMore={() => setVisibleDemonCount(count => count + MOBILE_DEMON_BATCH_SIZE)}
       apiLatestDemon={apiLatestDemon}
-      listUpdatedAt={listUpdatedAt}
       onLatestDemonClick={handleLatestDemonClick}
       demonListError={demonListError}
       onRetryDemonList={() => loadDemonData()}
