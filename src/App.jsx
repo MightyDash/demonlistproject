@@ -464,14 +464,15 @@ export default function App() {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
+    const searchedYear = /^\d{4}$/.test(q) ? Number(q) : null;
     const futureIds = new Set(futureListIds.map(String));
 
     const matchesSearchAndDifficulty = demon => {
-      const matchesQuery =
-        !q ||
-        demon.name.toLowerCase().includes(q) ||
-        demon.creator.toLowerCase().includes(q) ||
-        demon.id.toLowerCase().includes(q);
+      const matchesQuery = !q || (searchedYear
+        ? !isInProgressDemon(demon) && Number(demon.dateYear || demon.year || 0) === searchedYear
+        : demon.name.toLowerCase().includes(q) ||
+          demon.creator.toLowerCase().includes(q) ||
+          demon.id.toLowerCase().includes(q));
 
       const matchesDifficulty =
         difficulty === "all" || demon.difficulty === difficulty;
