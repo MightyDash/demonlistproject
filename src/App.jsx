@@ -4,15 +4,13 @@ import { mockDemons } from "./mockData.js";
 import { AppHeader } from "./components/AppHeader.jsx";
 import { DemonListContent } from "./components/DemonListContent.jsx";
 import { DemonModal } from "./components/DemonModal.jsx";
-import { NewsPage } from "./components/NewsPage.jsx";
 import { RecentChanges } from "./components/RecentChanges.jsx";
 import { ProgressTrackerPage } from "./components/ProgressTrackerPage.jsx";
 import { ScrollToTopButton } from "./components/ScrollToTopButton.jsx";
 import { TimelinePage } from "./components/TimelineModal.jsx";
 import { buildHistoricalRanking, comparePlacements, demonDurationSortValue, isInProgressDemon, normalizeDemon, segmentForPlacement } from "./demonUtils.js";
 import { requestJson } from "./api.js";
-import { normalizeNewsArticle } from "./newsUtils.js";
-import { normalizeRoute, parseNewsRoute, parseTimelineRoute, ROUTES } from "./routeUtils.js";
+import { normalizeRoute, parseTimelineRoute, ROUTES } from "./routeUtils.js";
 
 const DEFAULT_SITE_VERSION = "v0.62";
 const DEFAULT_SITE_CHANGELOG = [
@@ -22,7 +20,6 @@ const DEFAULT_SITE_CHANGELOG = [
   "Improved the desktop demon list, request page and list changes layout."
 ];
 const DEMON_DATA_CACHE_KEY = "moiks_demon_list_data_v1";
-const NEWS_SEEN_KEY = "moiks_news_last_seen_v1";
 const MOBILE_MEDIA_QUERY = "(max-width: 640px)";
 const MOBILE_DEMON_BATCH_SIZE = 24;
 
@@ -51,8 +48,7 @@ function normalizeDemonPayload(payload) {
     manualPlacementIds: Array.isArray(payload?.manualPlacementIds) ? payload.manualPlacementIds.map(String) : [],
     timelineEntries: Array.isArray(payload?.timelineEntries) ? payload.timelineEntries : [],
     monthlyRecaps: Array.isArray(payload?.monthlyRecaps) ? payload.monthlyRecaps : [],
-    monthlyHighlightStyles: Array.isArray(payload?.monthlyHighlightStyles) ? payload.monthlyHighlightStyles : [],
-    newsMeta: payload?.newsMeta && typeof payload.newsMeta === "object" ? payload.newsMeta : { count: 0, latestPublishedAt: "" }
+    monthlyHighlightStyles: Array.isArray(payload?.monthlyHighlightStyles) ? payload.monthlyHighlightStyles : []
   };
 }
 
@@ -110,13 +106,6 @@ export default function App() {
   const [timelineEntries, setTimelineEntries] = useState(() => initialDemonData?.timelineEntries || []);
   const [monthlyRecaps, setMonthlyRecaps] = useState(() => initialDemonData?.monthlyRecaps || []);
   const [monthlyHighlightStyles, setMonthlyHighlightStyles] = useState(() => initialDemonData?.monthlyHighlightStyles || []);
-  const [newsMeta, setNewsMeta] = useState(() => initialDemonData?.newsMeta || { count: 0, latestPublishedAt: "" });
-  const [newsArticles, setNewsArticles] = useState([]);
-  const [newsLoading, setNewsLoading] = useState(false);
-  const [newsError, setNewsError] = useState("");
-  const [newsView, setNewsView] = useState(false);
-  const [newsArticleId, setNewsArticleId] = useState(null);
-  const [lastSeenNewsAt, setLastSeenNewsAt] = useState(() => localStorage.getItem(NEWS_SEEN_KEY) || "");
   const [isMobileView, setIsMobileView] = useState(getInitialMobileView);
   const [viewMode, setViewMode] = useState(() => getInitialMobileView() ? "grid" : "banner");
   const [requestView, setRequestView] = useState(false);
@@ -134,7 +123,6 @@ export default function App() {
   const [demonListError, setDemonListError] = useState("");
   const requestsLoadRef = useRef({ id: 0, controller: null });
   const historyLoadRef = useRef({ id: 0, controller: null });
-  const newsLoadRef = useRef({ id: 0, controller: null });
   const demonDataLoadRef = useRef({ id: 0, controller: null });
   const hasLoadedLiveDemonDataRef = useRef(Boolean(initialDemonData));
 
@@ -154,8 +142,6 @@ export default function App() {
       setSegment("all");
       setProgressCategory("all");
     }
-    setNewsView(route === ROUTES.news || route.startsWith(`${ROUTES.news}/`));
-    setNewsArticleId(parseNewsRoute(route));
     setHistoryView(route === ROUTES.history);
     setTimelineView(route === ROUTES.timeline || route.startsWith(`${ROUTES.timeline}/`));
     setTimelineRoute(parseTimelineRoute(route));
@@ -191,15 +177,6 @@ export default function App() {
       id: historyLoadRef.current.id + 1,
       controller: null
     };
-  }
-
-  function abortNewsLoad() {
-    newsLoadRef.current.controller?.abort();
-    newsLoadRef.current = {
-      id: newsLoadRef.current.id + 1,
-      controller: null
-    };
-    setNewsLoading(false);
   }
 
   function abortDemonDataLoad() {
@@ -284,40 +261,6 @@ export default function App() {
     }
   }
 
-  async function loadNews({ silent = false } = {}) {
-    if (!SHEET_API_URL) return;
-    if (silent && newsLoadRef.current.controller) return;
-
-    newsLoadRef.current.controller?.abort();
-    const controller = new AbortController();
-    const requestId = newsLoadRef.current.id + 1;
-    newsLoadRef.current = { id: requestId, controller };
-    if (!silent) {
-      setNewsLoading(true);
-      setNewsError("");
-    }
-
-    try {
-      const separator = SHEET_API_URL.includes("?") ? "&" : "?";
-      const data = await requestJson(`${SHEET_API_URL}${separator}view=news`, { signal: controller.signal });
-
-      if (data.aborted || newsLoadRef.current.id !== requestId) return;
-      if (data.success === false) throw new Error(data.message || "Could not load news.");
-      setNewsArticles((Array.isArray(data.articles) ? data.articles : []).map(normalizeNewsArticle));
-      if (data.newsMeta) setNewsMeta(data.newsMeta);
-      setNewsError("");
-    } catch (error) {
-      if (!silent && newsLoadRef.current.id === requestId) {
-        setNewsError(error?.message || "Could not load news.");
-      }
-    } finally {
-      if (newsLoadRef.current.id === requestId) {
-        newsLoadRef.current.controller = null;
-        if (!silent) setNewsLoading(false);
-      }
-    }
-  }
-
   useEffect(() => {
     applyRoute(window.location.pathname);
 
@@ -348,19 +291,6 @@ export default function App() {
     };
   }, [historyView]);
 
-  useEffect(() => {
-    if (!newsView) return;
-    loadNews();
-    return () => abortNewsLoad();
-  }, [newsView]);
-
-  useEffect(() => {
-    const latest = String(newsMeta?.latestPublishedAt || "");
-    if (!newsView || !latest) return;
-    localStorage.setItem(NEWS_SEEN_KEY, latest);
-    setLastSeenNewsAt(latest);
-  }, [newsView, newsMeta?.latestPublishedAt]);
-  
   useEffect(() => {
     const mediaQuery = window.matchMedia(MOBILE_MEDIA_QUERY);
     const updateMobileView = () => setIsMobileView(mediaQuery.matches);
@@ -417,7 +347,6 @@ export default function App() {
       setTimelineEntries(nextData.timelineEntries);
       setMonthlyRecaps(nextData.monthlyRecaps);
       setMonthlyHighlightStyles(nextData.monthlyHighlightStyles);
-      setNewsMeta(nextData.newsMeta);
       setDemons(nextData.demons);
       setDemonListError("");
       setSource("live");
@@ -723,10 +652,6 @@ export default function App() {
     navigateTo(ROUTES.requests);
   }
 
-  const hasUnreadNews = Boolean(
-    newsMeta?.latestPublishedAt && String(newsMeta.latestPublishedAt) > String(lastSeenNewsAt || "")
-  );
-
   const demonListContent = (
     <DemonListContent
       stats={stats}
@@ -773,12 +698,10 @@ export default function App() {
           source={source}
           historyView={historyView}
           progressView={progressView}
-          newsView={newsView}
           requestView={requestView}
           timelineView={timelineView}
           onOpenList={() => navigateTo(ROUTES.home)}
           onOpenProgress={() => navigateTo(progressView ? ROUTES.home : ROUTES.progress)}
-          onOpenNews={() => navigateTo(newsView ? ROUTES.home : ROUTES.news)}
           onOpenRequests={handleOpenRequests}
           onOpenHistory={() => {
             navigateTo(historyView ? ROUTES.home : ROUTES.history);
@@ -788,20 +711,9 @@ export default function App() {
           }}
           siteVersion={siteVersion}
           siteChangelog={siteChangelog}
-          hasUnreadNews={hasUnreadNews}
         />
 
-      {newsView ? (
-        <NewsPage
-          articles={newsArticles}
-          loading={newsLoading}
-          error={newsError}
-          selectedArticleId={newsArticleId}
-          onOpenArticle={id => navigateTo(`${ROUTES.news}/${id}`)}
-          onBackToNews={() => navigateTo(ROUTES.news)}
-          onReload={() => loadNews()}
-        />
-      ) : requestView ? (
+      {requestView ? (
         <>
           <div className="requests-under-construction-page" aria-hidden="true">
             {demonListContent}

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CalendarDays, FileClock, Home, Inbox, ListChecks, Menu, Radio, Rss, X } from "lucide-react";
+import { CalendarDays, FileClock, Home, Inbox, ListChecks, Menu, Radio, X } from "lucide-react";
 
 const DEFAULT_SITE_VERSION = "v0.62";
 const DEFAULT_VERSION_CHANGES = [
@@ -13,18 +13,15 @@ export function AppHeader({
   source,
   historyView,
   progressView,
-  newsView,
   requestView,
   timelineView,
   onOpenList,
   onOpenProgress,
-  onOpenNews,
   onOpenRequests,
   onOpenHistory,
   onOpenTimeline,
   siteVersion,
-  siteChangelog,
-  hasUnreadNews
+  siteChangelog
 }) {
   const [showVersionInfo, setShowVersionInfo] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -32,9 +29,7 @@ export function AppHeader({
   const resolvedChangelog = Array.isArray(siteChangelog) && siteChangelog.length > 0
     ? siteChangelog
     : DEFAULT_VERSION_CHANGES;
-  const pageTitle = newsView
-    ? "News"
-    : progressView
+  const pageTitle = progressView
       ? "Progress Tracker"
       : requestView
         ? "Demon Requests"
@@ -43,9 +38,7 @@ export function AppHeader({
           : timelineView
             ? "Timeline"
             : "Demon Archive";
-  const pageSubtitle = newsView
-    ? "Updates, uploads and announcements from across my social channels."
-    : progressView
+  const pageSubtitle = progressView
       ? "Track the demons I am currently working toward completing."
       : requestView
         ? "Community requests to add new demons to the list."
@@ -68,7 +61,7 @@ export function AppHeader({
     action?.();
   }
 
-  const listActive = !newsView && !progressView && !requestView && !historyView && !timelineView;
+  const listActive = !progressView && !requestView && !historyView && !timelineView;
   const sourceLabel = source === "live"
     ? "Live Sheet Data"
     : source === "cache"
@@ -92,9 +85,6 @@ export function AppHeader({
           </button>
           <button className={progressView ? "active" : ""} onClick={() => navigate(onOpenProgress)} type="button">
             <ListChecks size={21} /><span>Progress Tracker</span>
-          </button>
-          <button className={newsView ? "active" : ""} onClick={() => navigate(onOpenNews)} type="button">
-            <Rss size={21} /><span>News</span>{hasUnreadNews && <i className="observatory-news-dot" aria-label="New news" />}
           </button>
           <button className={historyView ? "active" : ""} onClick={() => navigate(onOpenHistory)} type="button">
             <FileClock size={21} /><span>Changes</span>
