@@ -693,7 +693,7 @@ export default function App() {
   );
 
   return (
-    <div className="app">
+    <div className={`app ${timelineView ? "timeline-app" : ""}`}>
       <AppHeader
           source={source}
           historyView={historyView}

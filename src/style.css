@@ -23,6 +23,72 @@
   --circuit-hue: 0deg;
 }
 
+/* Let the desktop Timeline become the workspace instead of a card inside it. */
+@media (min-width: 981px) {
+  .app.timeline-app {
+    min-height: 100vh;
+    padding: 0 0 0 var(--obs-sidebar-width) !important;
+    background: #17181d;
+  }
+
+  .timeline-app > .timeline-page {
+    width: 100%;
+    min-height: 100vh;
+    margin: 0 !important;
+    padding: clamp(18px, 1.45vw, 28px) clamp(20px, 1.8vw, 34px) !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #17181d !important;
+    box-shadow: none !important;
+  }
+
+  .timeline-app .timeline-page:not(.timeline-month-page) > .timeline-header {
+    margin-bottom: 14px !important;
+  }
+
+  .timeline-app .timeline-page:not(.timeline-month-page) .timeline-mobile-dashboard {
+    gap: clamp(12px, 1.2vh, 18px);
+  }
+
+  .timeline-app .timeline-page:not(.timeline-month-page) .timeline-mobile-year-bar {
+    min-height: 58px;
+    padding: 5px;
+    border-radius: 11px;
+  }
+
+  .timeline-app .timeline-page:not(.timeline-month-page) .timeline-mobile-year-bar button {
+    width: 46px;
+    height: 46px;
+  }
+
+  .timeline-app .timeline-page:not(.timeline-month-page) .timeline-mobile-records article {
+    min-height: 92px;
+    padding: 13px 16px;
+  }
+
+  .timeline-app .timeline-page:not(.timeline-month-page) .timeline-mobile-activity {
+    padding: 15px 18px 11px;
+  }
+
+  .timeline-app .timeline-page:not(.timeline-month-page) .timeline-mobile-chart {
+    height: clamp(165px, 20vh, 205px);
+    margin-top: 10px;
+    padding-top: 8px;
+  }
+
+  .timeline-app .timeline-page:not(.timeline-month-page) .timeline-mobile-months .timeline-month-card {
+    min-height: clamp(140px, 16vh, 166px);
+  }
+
+  .timeline-app .timeline-page:not(.timeline-month-page) > .timeline-detail-header {
+    margin-top: 0;
+  }
+
+  .timeline-app .timeline-page:not(.timeline-month-page) .timeline-year-overview-button {
+    min-height: 44px;
+  }
+}
+
 :root[data-theme="cyber-neon"] {
   --bg: #050817;
   --bg-soft: #080b20;
