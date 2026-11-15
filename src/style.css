@@ -28,7 +28,7 @@
   .app.timeline-app {
     min-height: 100vh;
     padding: 0 0 0 var(--obs-sidebar-width) !important;
-    background: #17181d;
+    background: #121722;
   }
 
   .timeline-app > .timeline-page {
@@ -38,7 +38,7 @@
     padding: clamp(18px, 1.45vw, 28px) clamp(20px, 1.8vw, 34px) !important;
     border: 0 !important;
     border-radius: 0 !important;
-    background: #17181d !important;
+    background: #121722 !important;
     box-shadow: none !important;
   }
 
