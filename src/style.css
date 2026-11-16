@@ -166,23 +166,6 @@
   font-size: clamp(1rem, 1.35vw, 1.25rem);
 }
 
-.demon-of-the-day-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 24px;
-}
-
-.demon-of-the-day-meta > * {
-  padding: 7px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  border-radius: 8px;
-  color: #d4d6df;
-  background: rgba(8, 10, 16, 0.68);
-  font-size: 0.76rem;
-  font-weight: 850;
-}
-
 .demon-of-the-day-content > button {
   display: inline-flex;
   align-items: center;

@@ -741,7 +741,7 @@ export default function App() {
           onBack={() => navigateTo(ROUTES.home)}
         />
       ) : collectionsView ? (
-        <CollectionsPage demons={demons} onSelectDemon={setSelected} />
+        <CollectionsPage demons={demons} />
       ) : timelineView ? (
         <TimelinePage
           demons={demons}

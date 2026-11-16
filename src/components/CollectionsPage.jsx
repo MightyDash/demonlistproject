@@ -1,5 +1,5 @@
-import React, { useMemo } from "react";
-import { ArrowRight, CalendarDays, Layers } from "lucide-react";
+import React, { useMemo, useState } from "react";
+import { CalendarDays, Check, Copy, Layers } from "lucide-react";
 import { isInProgressDemon } from "../demonUtils.js";
 
 function amsterdamDateKey() {
@@ -17,7 +17,8 @@ function hashDateKey(value) {
   return Array.from(value).reduce((hash, character) => ((hash * 31) + character.charCodeAt(0)) >>> 0, 0);
 }
 
-export function CollectionsPage({ demons, onSelectDemon }) {
+export function CollectionsPage({ demons }) {
+  const [copied, setCopied] = useState(false);
   const demonOfTheDay = useMemo(() => {
     const completed = demons
       .filter(demon => !isInProgressDemon(demon))
@@ -25,6 +26,13 @@ export function CollectionsPage({ demons, onSelectDemon }) {
     if (!completed.length) return null;
     return completed[hashDateKey(amsterdamDateKey()) % completed.length];
   }, [demons]);
+
+  async function copyLevelId() {
+    if (!demonOfTheDay?.id) return;
+    await navigator.clipboard.writeText(String(demonOfTheDay.id));
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1800);
+  }
 
   return (
     <main className="collections-page">
@@ -37,13 +45,9 @@ export function CollectionsPage({ demons, onSelectDemon }) {
             <>
               <h1 id="demon-of-the-day-title">{demonOfTheDay.name}</h1>
               <span>by {demonOfTheDay.creator || "Unknown"}</span>
-              <div className="demon-of-the-day-meta">
-                <b>{demonOfTheDay.difficulty || "Demon"}</b>
-                <span>{Number(demonOfTheDay.attempts || 0).toLocaleString("en-US")} attempts</span>
-                {demonOfTheDay.date && <span>Completed {demonOfTheDay.date}</span>}
-              </div>
-              <button type="button" onClick={() => onSelectDemon(demonOfTheDay)}>
-                View demon <ArrowRight size={18} />
+              <button type="button" onClick={copyLevelId} disabled={!demonOfTheDay.id}>
+                {copied ? <Check size={18} /> : <Copy size={18} />}
+                {copied ? "Copied!" : "Copy ID"}
               </button>
             </>
           ) : (
