@@ -147,7 +147,6 @@ export function AppHeader({
             </button>
             <div className="observatory-hero-copy">
               <div className="hero-title-row"><h1>Moik&apos;s Demon List</h1></div>
-              <p className="subtitle">A clean, searchable demon list powered by my Google Spreadsheet.</p>
             </div>
           </header>
           <section className="archive-stats-panel" aria-label="Demon list statistics">
