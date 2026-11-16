@@ -201,6 +201,91 @@
   }
 }
 
+/* Phone homepage: title and stats read as a single card, with gem on the left. */
+@media (max-width: 620px) {
+  .archive-overview {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 0 !important;
+    margin-bottom: 12px !important;
+    overflow: hidden;
+    border: 1px solid var(--obs-line);
+    border-radius: 22px;
+    background:
+      radial-gradient(circle at 8% 70%, rgba(138, 90, 240, 0.25), transparent 36%),
+      linear-gradient(135deg, #10111d, #19162e);
+    box-shadow: 0 20px 55px rgba(0, 0, 0, 0.32);
+  }
+
+  .archive-overview > .hero.observatory-hero.archive-title-panel {
+    min-height: 128px !important;
+    height: 128px !important;
+    padding: 12px 16px !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .archive-overview > .archive-title-panel .hero-title-row {
+    left: 50% !important;
+    top: 55% !important;
+    width: max-content;
+    max-width: calc(100% - 100px) !important;
+    transform: translate(-50%, -50%) !important;
+  }
+
+  .archive-overview > .archive-title-panel h1 {
+    font-size: clamp(1.55rem, 7vw, 2.05rem) !important;
+    line-height: 1.08 !important;
+    text-wrap: balance;
+  }
+
+  .archive-overview > .archive-stats-panel {
+    min-height: 205px !important;
+    padding: 4px 14px 16px 112px !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .archive-overview .archive-stats-list {
+    gap: 3px !important;
+    min-width: 0 !important;
+  }
+
+  .archive-overview .archive-stats-list .stat-card,
+  .archive-overview .archive-stats-list .stat-card:last-child {
+    display: block !important;
+    min-height: 57px !important;
+    padding: 3px 0 !important;
+  }
+
+  .archive-overview .archive-stats-list .stat-icon {
+    display: none !important;
+  }
+
+  .archive-overview .archive-stats-list .stat-card strong {
+    font-size: clamp(1.25rem, 5vw, 1.65rem) !important;
+  }
+
+  .archive-overview > .archive-stats-panel > .observatory-hero-art {
+    display: block !important;
+    top: 47% !important;
+    right: auto !important;
+    left: 2px !important;
+    width: 108px !important;
+    height: 120px !important;
+    opacity: 0.75 !important;
+    transform: translateY(-50%) scale(0.65) !important;
+    transform-origin: center left !important;
+    pointer-events: none;
+  }
+}
+
 /* Let the desktop Timeline become the workspace instead of a card inside it. */
 @media (min-width: 981px) {
   .app.timeline-app {
