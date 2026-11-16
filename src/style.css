@@ -12773,4 +12773,126 @@ body::before {
   }
 }
 
+/* Mobile polish: compact heading and a scrollable filter sheet with in-flow menus. */
+@media (max-width: 980px) {
+  .desktop-list-shell .controls,
+  .desktop-list-shell.progress-shell .controls {
+    top: auto !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: auto !important;
+    width: min(94vw, 420px) !important;
+    height: auto !important;
+    max-height: min(88dvh, 760px) !important;
+    padding: 16px !important;
+    gap: 11px !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    border-radius: 20px 0 0 0 !important;
+    align-items: stretch !important;
+  }
+
+  .desktop-list-shell .controls > .filter-title-row {
+    position: sticky !important;
+    top: -16px !important;
+    z-index: 5 !important;
+    flex: 0 0 auto !important;
+    margin: -16px -16px 4px !important;
+    padding: 16px !important;
+    background: #1b1a22 !important;
+  }
+
+  .desktop-list-shell .controls > .searchbox,
+  .desktop-list-shell .controls > .custom-select,
+  .desktop-list-shell .controls > .tabs,
+  .desktop-list-shell .controls > .more-filters-wrap {
+    position: relative !important;
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+  }
+
+  .desktop-list-shell .controls > .custom-select {
+    z-index: auto !important;
+  }
+
+  .desktop-list-shell .controls .custom-select-menu {
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    width: 100% !important;
+    max-height: 235px !important;
+    margin-top: 7px !important;
+    overflow-y: auto !important;
+    border-color: rgba(189, 154, 255, 0.3) !important;
+    border-radius: 11px !important;
+    background: #181525 !important;
+    box-shadow: none !important;
+  }
+
+  .desktop-list-shell .controls .custom-select-option {
+    min-height: 43px !important;
+  }
+
+  .desktop-list-shell .controls > .tabs:not(.year-tabs) {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .desktop-list-shell .controls > .tabs:not(.year-tabs) > button {
+    width: 100% !important;
+    min-height: 44px !important;
+  }
+
+  .desktop-list-shell .controls .more-filters-wrap {
+    z-index: auto !important;
+  }
+
+  .desktop-list-shell .controls .mobile-filter-apply {
+    position: sticky !important;
+    bottom: -16px !important;
+    z-index: 5 !important;
+    flex: 0 0 auto !important;
+    margin: 10px -16px -16px !important;
+    min-height: 56px !important;
+    border-radius: 0 !important;
+  }
+}
+
+@media (max-width: 620px) {
+  .archive-overview > .archive-title-panel {
+    min-height: 155px !important;
+  }
+
+  .archive-overview > .archive-title-panel .hero-title-row h1 {
+    font-size: clamp(1.65rem, 7.5vw, 2.6rem) !important;
+    line-height: 1.08 !important;
+  }
+
+  .archive-overview > .archive-title-panel .hero-title-row {
+    max-width: calc(100% - 92px) !important;
+  }
+
+  .archive-overview > .archive-title-panel .subtitle {
+    display: none !important;
+  }
+
+  .archive-stats-panel {
+    min-height: 190px !important;
+  }
+
+  .mobile-filter-bar {
+    padding: 5px !important;
+    min-height: 54px !important;
+  }
+
+  .mobile-filter-bar .mobile-filter-button {
+    min-height: 44px !important;
+    border-radius: 10px !important;
+  }
+}
+
 
