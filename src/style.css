@@ -23,6 +23,174 @@
   --circuit-hue: 0deg;
 }
 
+/* Archive overview: balanced title and combined statistics panels. */
+.archive-overview {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0 0 20px;
+}
+
+.archive-overview > .hero.observatory-hero,
+.archive-stats-panel {
+  min-height: 290px;
+  margin: 0 !important;
+  border: 1px solid var(--obs-line);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.3);
+}
+
+.archive-overview > .archive-title-panel {
+  background:
+    radial-gradient(circle at 92% 92%, rgba(132, 54, 255, 0.4), transparent 38%),
+    linear-gradient(135deg, #12131e, #17132a) !important;
+}
+
+.archive-overview > .archive-title-panel::after {
+  display: none;
+}
+
+.archive-overview > .archive-title-panel h1 {
+  font-size: clamp(2rem, 3vw, 3.35rem) !important;
+  letter-spacing: -0.04em !important;
+}
+
+.archive-overview > .archive-title-panel .subtitle {
+  max-width: 440px;
+  font-size: 1rem !important;
+  line-height: 1.45;
+}
+
+.archive-stats-panel {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  padding: 22px 38% 22px 28px;
+  background:
+    radial-gradient(circle at 86% 52%, rgba(157, 114, 255, 0.28), transparent 31%),
+    linear-gradient(135deg, #12131e, #171a30);
+}
+
+.archive-stats-list {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  width: 100%;
+  gap: 8px;
+}
+
+.archive-stats-list .stat-card {
+  grid-template-columns: 52px minmax(0, 1fr) !important;
+  min-height: 70px !important;
+  padding: 5px 0 !important;
+  overflow: visible;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+.archive-stats-list .stat-card::before {
+  display: none !important;
+}
+
+.archive-stats-list .stat-card strong {
+  display: block;
+  overflow: hidden;
+  font-size: clamp(1.35rem, 2vw, 2rem) !important;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.archive-stats-list .stat-card p {
+  margin-bottom: 4px !important;
+}
+
+.archive-stats-list .stat-card small {
+  margin-top: 4px !important;
+}
+
+.archive-stats-panel > .observatory-hero-art {
+  right: 4%;
+}
+
+@media (max-width: 980px) {
+  .archive-overview {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .archive-overview > .hero.observatory-hero,
+  .archive-stats-panel {
+    min-height: 210px;
+    border-radius: 19px;
+  }
+
+  .archive-overview > .archive-title-panel {
+    padding-left: 66px !important;
+  }
+
+  .archive-overview > .archive-title-panel .subtitle {
+    display: block;
+    max-width: 82%;
+  }
+
+  .archive-stats-panel {
+    padding: 15px 37% 15px 20px;
+  }
+
+  .archive-stats-list {
+    gap: 3px;
+  }
+
+  .archive-stats-list .stat-card,
+  .archive-stats-list .stat-card:last-child {
+    grid-column: auto !important;
+    grid-template-columns: 42px minmax(0, 1fr) !important;
+    min-height: 57px !important;
+    padding: 2px 0 !important;
+  }
+
+  .archive-stats-list .stat-card .stat-icon {
+    width: 38px !important;
+    height: 38px !important;
+  }
+}
+
+@media (max-width: 620px) {
+  .archive-overview > .archive-title-panel {
+    min-height: 178px;
+  }
+
+  .archive-overview > .archive-title-panel h1 {
+    font-size: clamp(1.75rem, 9vw, 2.45rem) !important;
+  }
+
+  .archive-overview > .archive-title-panel .subtitle {
+    display: block;
+    font-size: 0.78rem !important;
+    line-height: 1.4;
+  }
+
+  .archive-stats-panel {
+    min-height: 205px;
+    padding: 13px 28% 13px 15px;
+  }
+
+  .archive-stats-panel > .observatory-hero-art {
+    right: -52px;
+    opacity: 0.3;
+  }
+
+  .archive-stats-list .stat-card strong {
+    font-size: 1.2rem !important;
+  }
+}
+
 /* Let the desktop Timeline become the workspace instead of a card inside it. */
 @media (min-width: 981px) {
   .app.timeline-app {
@@ -12343,5 +12511,27 @@ body::before {
     text-align: center;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
+  }
+}
+
+/* Keep the Archive overview responsive after the global mobile hero rules. */
+@media (max-width: 980px) {
+  .archive-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .archive-overview > .archive-title-panel .subtitle {
+    display: block;
+  }
+
+  .archive-stats-list .stat-card,
+  .archive-stats-list .stat-card:last-child {
+    grid-column: auto !important;
+  }
+}
+
+@media (max-width: 620px) {
+  .archive-overview > .archive-title-panel .subtitle {
+    display: block;
   }
 }

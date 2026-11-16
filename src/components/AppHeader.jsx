@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import { CalendarDays, FileClock, Home, Inbox, Layers, ListChecks, Menu, Radio, X } from "lucide-react";
+import { BarChart3, CalendarDays, FileClock, Home, Inbox, Layers, ListChecks, Menu, Radio, Target, Trophy, X } from "lucide-react";
+import { formatNumber } from "../demonUtils.js";
+import { StatCard } from "./StatCard.jsx";
 
 const DEFAULT_SITE_VERSION = "v0.62";
 const DEFAULT_VERSION_CHANGES = [
@@ -14,6 +16,7 @@ export function AppHeader({
   historyView,
   progressView,
   collectionsView,
+  stats,
   requestView,
   timelineView,
   onOpenList,
@@ -129,30 +132,61 @@ export function AppHeader({
         </button>
       )}
 
-      {!usesCompactPageHeader && <header className="hero observatory-hero">
-        <button
-          className="observatory-menu-button"
-          onClick={() => setMobileNavOpen(open => !open)}
-          type="button"
-          aria-label="Open navigation"
-          aria-expanded={mobileNavOpen}
-          aria-controls="site-navigation"
-        >
-          <Menu size={23} />
-        </button>
-        <div className="observatory-hero-copy">
-          <p className="eyebrow hero-eyebrow">Moik's Geometry Dash archive</p>
-          <div className="hero-title-row">
-            <h1>{pageTitle}</h1>
+      {!usesCompactPageHeader && (listActive ? (
+        <section className="archive-overview">
+          <header className="hero observatory-hero archive-title-panel">
+            <button
+              className="observatory-menu-button"
+              onClick={() => setMobileNavOpen(open => !open)}
+              type="button"
+              aria-label="Open navigation"
+              aria-expanded={mobileNavOpen}
+              aria-controls="site-navigation"
+            >
+              <Menu size={23} />
+            </button>
+            <div className="observatory-hero-copy">
+              <div className="hero-title-row"><h1>Moik&apos;s Demon List</h1></div>
+              <p className="subtitle">A clean, searchable demon list powered by my Google Spreadsheet.</p>
+            </div>
+          </header>
+          <section className="archive-stats-panel" aria-label="Demon list statistics">
+            <div className="archive-stats-list">
+              <StatCard icon={<Trophy />} label="Total Demons" value={formatNumber(stats?.total)} />
+              <StatCard icon={<Target />} label="Total Attempts" value={formatNumber(stats?.attempts)} />
+              <StatCard icon={<BarChart3 />} label="Hardest Demon" value={stats?.hardest?.name || "Unknown"} detail={stats?.hardest?.difficulty || ""} highlight />
+            </div>
+            <div className="observatory-hero-art" aria-hidden="true">
+              <span className="orbit orbit-one" />
+              <span className="orbit orbit-two" />
+              <span className="observatory-gem" />
+            </div>
+          </section>
+        </section>
+      ) : (
+        <header className="hero observatory-hero">
+          <button
+            className="observatory-menu-button"
+            onClick={() => setMobileNavOpen(open => !open)}
+            type="button"
+            aria-label="Open navigation"
+            aria-expanded={mobileNavOpen}
+            aria-controls="site-navigation"
+          >
+            <Menu size={23} />
+          </button>
+          <div className="observatory-hero-copy">
+            <p className="eyebrow hero-eyebrow">Moik's Geometry Dash archive</p>
+            <div className="hero-title-row"><h1>{pageTitle}</h1></div>
+            <p className="subtitle">{pageSubtitle}</p>
           </div>
-          <p className="subtitle">{pageSubtitle}</p>
-        </div>
-        <div className="observatory-hero-art" aria-hidden="true">
-          <span className="orbit orbit-one" />
-          <span className="orbit orbit-two" />
-          <span className="observatory-gem" />
-        </div>
-      </header>}
+          <div className="observatory-hero-art" aria-hidden="true">
+            <span className="orbit orbit-one" />
+            <span className="orbit orbit-two" />
+            <span className="observatory-gem" />
+          </div>
+        </header>
+      ))}
 
       {showVersionInfo && (
         <div className="progress-info-backdrop" onClick={closeVersionInfo}>

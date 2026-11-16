@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { BarChart3, Check, Clock3, Info, Search, SlidersHorizontal, Target, Trophy, X } from "lucide-react";
-import { StatCard } from "./StatCard.jsx";
+import { Check, Clock3, Info, Search, SlidersHorizontal, X } from "lucide-react";
 import { DeviceLabel } from "./DeviceLabel.jsx";
 import { difficultyClass, formatDemonDuration, formatNumber, formatTier, isInProgressDemon } from "../demonUtils.js";
 import { DEVICE_OPTIONS } from "../deviceUtils.js";
@@ -10,7 +9,6 @@ function displayPlacement(value) {
   return String(value || "").trim() || "Unplaced";
 }
 export function DemonListContent({
-  stats,
   setSelected,
   query,
   setQuery,
@@ -167,12 +165,6 @@ export function DemonListContent({
 
   return (
           <>
-            {!progressTrackerView && <section className="stats-grid">
-              <StatCard icon={<Trophy />} label="Total Demons" value={formatNumber(stats.total)} />
-              <StatCard icon={<Target />} label="Total Attempts" value={formatNumber(stats.attempts)} />
-              <StatCard icon={<BarChart3 />} label="Hardest Demon" value={stats.hardest?.name || "Unknown"} detail={stats.hardest?.difficulty || ""} highlight />
-            </section>}
-    
             <div className={`desktop-list-shell ${isProgressView ? "progress-shell" : ""}`}>
             {!progressTrackerView && <>
             <div className="mobile-filter-bar">

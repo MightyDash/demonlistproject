@@ -657,7 +657,6 @@ export default function App() {
 
   const demonListContent = (
     <DemonListContent
-      stats={stats}
       setSelected={setSelected}
       query={query}
       setQuery={setQuery}
@@ -702,6 +701,7 @@ export default function App() {
           historyView={historyView}
           progressView={progressView}
           collectionsView={collectionsView}
+          stats={stats}
           requestView={requestView}
           timelineView={timelineView}
           onOpenList={() => navigateTo(ROUTES.home)}
