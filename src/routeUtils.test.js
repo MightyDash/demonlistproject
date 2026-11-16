@@ -5,6 +5,7 @@ describe("routeUtils", () => {
   it.each([
     ["/", ROUTES.home],
     ["/progress", ROUTES.progress],
+    ["/collections", ROUTES.collections],
     ["/demon-requests/", ROUTES.requests],
     ["/recent-changes", ROUTES.history],
     ["/timeline", ROUTES.timeline],

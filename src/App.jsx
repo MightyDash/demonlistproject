@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { ADMIN_API_URL, SHEET_API_URL } from "./config.js";
 import { mockDemons } from "./mockData.js";
 import { AppHeader } from "./components/AppHeader.jsx";
+import { CollectionsPage } from "./components/CollectionsPage.jsx";
 import { DemonListContent } from "./components/DemonListContent.jsx";
 import { DemonModal } from "./components/DemonModal.jsx";
 import { RecentChanges } from "./components/RecentChanges.jsx";
@@ -110,6 +111,7 @@ export default function App() {
   const [viewMode, setViewMode] = useState(() => getInitialMobileView() ? "grid" : "banner");
   const [requestView, setRequestView] = useState(false);
   const [progressView, setProgressView] = useState(false);
+  const [collectionsView, setCollectionsView] = useState(false);
   const [progressCategory, setProgressCategory] = useState("all");
   const [historyView, setHistoryView] = useState(false);
   const [timelineView, setTimelineView] = useState(false);
@@ -132,6 +134,7 @@ export default function App() {
 
     setRequestView(route === ROUTES.requests);
     setProgressView(isProgressRoute);
+    setCollectionsView(route === ROUTES.collections);
     setYearView(current => isProgressRoute ? "progress" : current === "progress" ? "all" : current);
     if (isProgressRoute) {
       setQuery("");
@@ -693,15 +696,17 @@ export default function App() {
   );
 
   return (
-    <div className={`app ${timelineView ? "timeline-app" : ""}`}>
+    <div className={`app ${timelineView ? "timeline-app" : ""} ${collectionsView ? "collections-app" : ""}`}>
       <AppHeader
           source={source}
           historyView={historyView}
           progressView={progressView}
+          collectionsView={collectionsView}
           requestView={requestView}
           timelineView={timelineView}
           onOpenList={() => navigateTo(ROUTES.home)}
           onOpenProgress={() => navigateTo(progressView ? ROUTES.home : ROUTES.progress)}
+          onOpenCollections={() => navigateTo(collectionsView ? ROUTES.home : ROUTES.collections)}
           onOpenRequests={handleOpenRequests}
           onOpenHistory={() => {
             navigateTo(historyView ? ROUTES.home : ROUTES.history);
@@ -735,6 +740,8 @@ export default function App() {
           error={historyError}
           onBack={() => navigateTo(ROUTES.home)}
         />
+      ) : collectionsView ? (
+        <CollectionsPage demons={demons} onSelectDemon={setSelected} />
       ) : timelineView ? (
         <TimelinePage
           demons={demons}

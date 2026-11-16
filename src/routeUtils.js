@@ -1,6 +1,7 @@
 export const ROUTES = {
   home: "/",
   progress: "/progress",
+  collections: "/collections",
   requests: "/demon-requests",
   history: "/recent-changes",
   timeline: "/timeline"

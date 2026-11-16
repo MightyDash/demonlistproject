@@ -89,6 +89,198 @@
   }
 }
 
+/* Collections starts as a full-screen pack workspace with a daily completed demon. */
+.collections-page {
+  display: grid;
+  align-content: start;
+  gap: 28px;
+  min-height: 100vh;
+  padding: clamp(22px, 2vw, 38px);
+  background: #121722;
+}
+
+.demon-of-the-day {
+  position: relative;
+  min-height: clamp(320px, 42vh, 460px);
+  overflow: hidden;
+  border: 1px solid rgba(184, 149, 255, 0.28);
+  border-radius: 18px;
+  background: #090b12;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.3);
+}
+
+.demon-of-the-day > img,
+.demon-of-the-day-shade {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.demon-of-the-day > img {
+  object-fit: cover;
+  transform: scale(1.025);
+}
+
+.demon-of-the-day-shade {
+  background:
+    linear-gradient(90deg, rgba(6, 8, 14, 0.98) 0%, rgba(8, 10, 18, 0.88) 36%, rgba(8, 10, 18, 0.22) 72%, rgba(8, 10, 18, 0.54) 100%),
+    linear-gradient(0deg, rgba(8, 10, 18, 0.72), transparent 58%);
+}
+
+.demon-of-the-day-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  justify-content: center;
+  width: min(680px, 68%);
+  min-height: inherit;
+  padding: clamp(28px, 4vw, 70px);
+}
+
+.demon-of-the-day-content > p,
+.packs-browser-heading p {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  color: #c4a8ff;
+  font-size: 0.76rem;
+  font-weight: 950;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.demon-of-the-day-content h1 {
+  margin: 0;
+  font-size: clamp(2.7rem, 5vw, 5.4rem);
+  line-height: 0.96;
+  letter-spacing: -0.045em;
+}
+
+.demon-of-the-day-content > span {
+  margin-top: 12px;
+  color: #c5c8d3;
+  font-size: clamp(1rem, 1.35vw, 1.25rem);
+}
+
+.demon-of-the-day-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.demon-of-the-day-meta > * {
+  padding: 7px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 8px;
+  color: #d4d6df;
+  background: rgba(8, 10, 16, 0.68);
+  font-size: 0.76rem;
+  font-weight: 850;
+}
+
+.demon-of-the-day-content > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  margin-top: 24px;
+  padding: 0 18px;
+  border: 1px solid rgba(196, 168, 255, 0.6);
+  border-radius: 10px;
+  color: #130d20;
+  background: linear-gradient(135deg, #b88cff, #8b5dea);
+  font: inherit;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.packs-browser {
+  display: grid;
+  gap: 16px;
+}
+
+.packs-browser-heading h2 {
+  margin: 0;
+  font-size: clamp(1.65rem, 2.4vw, 2.35rem);
+}
+
+.packs-browser-heading p {
+  margin-bottom: 5px;
+}
+
+.packs-empty-state {
+  display: grid;
+  min-height: 180px;
+  place-items: center;
+  align-content: center;
+  gap: 10px;
+  border: 1px dashed rgba(184, 149, 255, 0.24);
+  border-radius: 16px;
+  color: #777d8d;
+  background: rgba(8, 10, 16, 0.2);
+}
+
+.packs-empty-state p {
+  margin: 0;
+  font-weight: 750;
+}
+
+@media (min-width: 981px) {
+  .app.collections-app {
+    min-height: 100vh;
+    padding: 0 0 0 var(--obs-sidebar-width) !important;
+    background: #121722;
+  }
+}
+
+@media (max-width: 980px) {
+  .app.collections-app {
+    width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+    background: #121722;
+  }
+
+  .collections-page {
+    width: 100%;
+    min-width: 0;
+    gap: 20px;
+    padding: 12px 12px 56px;
+  }
+
+  .demon-of-the-day {
+    min-width: 0;
+    min-height: 440px;
+  }
+
+  .demon-of-the-day-content {
+    justify-content: flex-end;
+    width: 100%;
+    padding: 28px 22px;
+  }
+
+  .collections-app .compact-page-menu-button {
+    position: fixed;
+    z-index: 1300;
+    top: max(16px, calc(env(safe-area-inset-top) + 10px));
+    right: 16px;
+    display: grid;
+  }
+
+  .demon-of-the-day-shade {
+    background: linear-gradient(0deg, rgba(6, 8, 14, 0.99) 0%, rgba(7, 9, 16, 0.7) 58%, rgba(7, 9, 16, 0.15) 100%);
+  }
+
+  .demon-of-the-day-content h1 {
+    font-size: clamp(2.35rem, 12vw, 4rem);
+  }
+}
+
 :root[data-theme="cyber-neon"] {
   --bg: #050817;
   --bg-soft: #080b20;

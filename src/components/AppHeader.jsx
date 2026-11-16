@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CalendarDays, FileClock, Home, Inbox, ListChecks, Menu, Radio, X } from "lucide-react";
+import { CalendarDays, FileClock, Home, Inbox, Layers, ListChecks, Menu, Radio, X } from "lucide-react";
 
 const DEFAULT_SITE_VERSION = "v0.62";
 const DEFAULT_VERSION_CHANGES = [
@@ -13,10 +13,12 @@ export function AppHeader({
   source,
   historyView,
   progressView,
+  collectionsView,
   requestView,
   timelineView,
   onOpenList,
   onOpenProgress,
+  onOpenCollections,
   onOpenRequests,
   onOpenHistory,
   onOpenTimeline,
@@ -61,7 +63,7 @@ export function AppHeader({
     action?.();
   }
 
-  const listActive = !progressView && !requestView && !historyView && !timelineView;
+  const listActive = !progressView && !collectionsView && !requestView && !historyView && !timelineView;
   const sourceLabel = source === "live"
     ? "Live Sheet Data"
     : source === "cache"
@@ -69,7 +71,7 @@ export function AppHeader({
       : source === "mock"
         ? "Mock Data"
         : "Loading";
-  const usesCompactPageHeader = progressView || timelineView;
+  const usesCompactPageHeader = progressView || collectionsView || timelineView;
 
   return (
     <>
@@ -85,6 +87,9 @@ export function AppHeader({
           </button>
           <button className={progressView ? "active" : ""} onClick={() => navigate(onOpenProgress)} type="button">
             <ListChecks size={21} /><span>Progress Tracker</span>
+          </button>
+          <button className={collectionsView ? "active" : ""} onClick={() => navigate(onOpenCollections)} type="button">
+            <Layers size={21} /><span>Collections</span>
           </button>
           <button className={historyView ? "active" : ""} onClick={() => navigate(onOpenHistory)} type="button">
             <FileClock size={21} /><span>Changes</span>
