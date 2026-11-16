@@ -12607,21 +12607,59 @@ body::before {
 
 @media (min-width: 1600px) {
   .desktop-list-shell .controls:not(.mobile-open) {
-    grid-template-columns: 67px minmax(210px, 1fr) 140px 145px 165px minmax(250px, auto) 160px 70px !important;
+    grid-template-columns: minmax(320px, 1fr) 150px 160px 190px minmax(280px, auto) 170px !important;
+  }
+}
+
+/* Explicit grid placement prevents older CSS rules from squeezing and overlapping controls. */
+@media (min-width: 981px) {
+  .desktop-list-shell .controls:not(.mobile-open) > .filter-title-row {
+    display: flex !important;
+    grid-column: 1 / -1 !important;
+    grid-row: 1 !important;
+    justify-content: space-between !important;
+    width: 100% !important;
   }
 
-  .desktop-list-shell .controls .filter-title-row {
-    display: contents !important;
+  .desktop-list-shell .controls:not(.mobile-open) > .searchbox {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    min-width: 0 !important;
+    width: 100% !important;
   }
 
-  .desktop-list-shell .controls .filter-title-row > strong {
-    grid-column: 1;
+  .desktop-list-shell .controls:not(.mobile-open) > .year-filter-select {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
   }
 
-  .desktop-list-shell .controls .filter-title-actions {
-    grid-column: 8;
-    justify-self: end;
-    white-space: nowrap;
+  .desktop-list-shell .controls:not(.mobile-open) > .device-filter-select {
+    grid-column: 3 !important;
+    grid-row: 2 !important;
+  }
+
+  .desktop-list-shell .controls:not(.mobile-open) > .custom-select:not(.year-filter-select):not(.device-filter-select) {
+    grid-column: 4 !important;
+    grid-row: 2 !important;
+  }
+
+  .desktop-list-shell .controls:not(.mobile-open) > .tabs:not(.year-tabs) {
+    grid-column: 5 !important;
+    grid-row: 2 !important;
+    justify-content: center !important;
+  }
+
+  .desktop-list-shell .controls:not(.mobile-open) > .more-filters-wrap {
+    grid-column: 6 !important;
+    grid-row: 2 !important;
+  }
+
+  .desktop-list-shell .controls:not(.mobile-open) > .custom-select .custom-select-button,
+  .desktop-list-shell .controls:not(.mobile-open) > .more-filters-wrap .more-filters-button {
+    width: 100% !important;
+    min-width: 0 !important;
+    white-space: nowrap !important;
+    font-size: 0.82rem !important;
   }
 }
 
