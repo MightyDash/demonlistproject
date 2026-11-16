@@ -12545,3 +12545,26 @@ body::before {
     display: block;
   }
 }
+
+/* Keep only the Demon List heading at the exact center of its panel. */
+.archive-overview > .archive-title-panel {
+  position: relative;
+}
+
+.archive-overview > .archive-title-panel .hero-title-row {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max-content;
+  max-width: calc(100% - 28px);
+  margin: 0;
+  transform: translate(-50%, -50%);
+  justify-content: center;
+  text-align: center;
+}
+
+.archive-overview > .archive-title-panel .hero-title-row h1 {
+  text-align: center;
+}
+
+
