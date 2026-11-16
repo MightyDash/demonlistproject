@@ -50,6 +50,9 @@ export function DemonListContent({
   const progressInfoPopoverRef = useRef(null);
   const [progressInfoPosition, setProgressInfoPosition] = useState({ top: 0, left: 0 });
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
+  const [yearMenuOpen, setYearMenuOpen] = useState(false);
+  const [moreFiltersOpen, setMoreFiltersOpen] = useState(false);
+  const filterMenusRef = useRef(null);
   const isProgressView = progressTrackerView || yearView === "progress";
   const isFutureView = yearView === "future";
   const futureIds = new Set(futureListIds.map(id => String(id)));
@@ -78,6 +81,30 @@ export function DemonListContent({
     ["duration", "Length"],
     ["level-id", "Level ID"]
   ];
+  const mainYearOptions = yearOptions.slice(0, 9);
+  const extraFilterOptions = yearOptions.slice(9);
+
+  useEffect(() => {
+    if (!yearMenuOpen && !moreFiltersOpen) return;
+    function closeOnOutside(event) {
+      if (!filterMenusRef.current?.contains(event.target)) {
+        setYearMenuOpen(false);
+        setMoreFiltersOpen(false);
+      }
+    }
+    function closeOnEscape(event) {
+      if (event.key === "Escape") {
+        setYearMenuOpen(false);
+        setMoreFiltersOpen(false);
+      }
+    }
+    document.addEventListener("pointerdown", closeOnOutside);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutside);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [yearMenuOpen, moreFiltersOpen]);
 
   useEffect(() => {
     if (!filterDrawerOpen) return;
@@ -138,6 +165,8 @@ export function DemonListContent({
   }, [showProgressInfo]);
 
   function resetFilters() {
+    setYearMenuOpen(false);
+    setMoreFiltersOpen(false);
     setQuery("");
     setDevice("all");
     setDifficulty("all");
@@ -192,6 +221,7 @@ export function DemonListContent({
             )}
 
             <section
+              ref={filterMenusRef}
               id="demon-list-filters"
               className={`panel controls ${filterDrawerOpen ? "mobile-open" : ""}`}
             >
@@ -226,12 +256,37 @@ export function DemonListContent({
                 />
               </div>
 
+              <div className="custom-select year-filter-select">
+                <button
+                  className="custom-select-button"
+                  type="button"
+                  aria-expanded={yearMenuOpen}
+                  onClick={() => {
+                    setYearMenuOpen(open => !open);
+                    setMoreFiltersOpen(false);
+                    setDeviceOpen(false);
+                    setDifficultyOpen(false);
+                  }}
+                >
+                  <span>Year: {mainYearOptions.find(([value]) => value === yearView)?.[1] || "2026"}</span>
+                  <span className="custom-select-arrow">⌄</span>
+                </button>
+                {yearMenuOpen && <div className="custom-select-menu year-filter-menu">
+                  {mainYearOptions.map(([value, label]) => (
+                    <button key={value} type="button" className={`custom-select-option ${yearView === value ? "active" : ""}`}
+                      onClick={() => { setYearView(value); setYearMenuOpen(false); }}>{label}</button>
+                  ))}
+                </div>}
+              </div>
+
               <div className="custom-select device-filter-select">
                 <button
                   className="custom-select-button"
                   onClick={() => {
                     setDeviceOpen(open => !open);
                     setDifficultyOpen(false);
+                    setYearMenuOpen(false);
+                    setMoreFiltersOpen(false);
                   }}
                   type="button"
                 >
@@ -264,6 +319,8 @@ export function DemonListContent({
                   onClick={() => {
                     setDifficultyOpen(open => !open);
                     setDeviceOpen(false);
+                    setYearMenuOpen(false);
+                    setMoreFiltersOpen(false);
                   }}
                   type="button"
                 >
@@ -308,63 +365,37 @@ export function DemonListContent({
                 ))}
               </div>
     
-              <span className="filter-section-label">Year</span>
-              <div className="tabs year-tabs">
-                {yearOptions.map(([value, label]) => (
+              <div className="more-filters-wrap">
+                <button className={`more-filters-button ${moreFiltersOpen || extraFilterOptions.some(([value]) => yearView === value) ? "active" : ""}`}
+                  type="button" aria-expanded={moreFiltersOpen}
+                  onClick={() => { setMoreFiltersOpen(open => !open); setYearMenuOpen(false); setDeviceOpen(false); setDifficultyOpen(false); }}>
+                  <SlidersHorizontal size={17} /> More filters <span className="custom-select-arrow">⌄</span>
+                </button>
+                {moreFiltersOpen && <div className="more-filters-popover">
+                  <strong>Advanced filters</strong>
+                  {extraFilterOptions.map(([value, label]) => (
                   <button
                     key={value}
-                    className={yearView === value ? "active" : ""}
-                    onClick={() => setYearView(value)}
+                    className={`more-filter-option ${yearView === value ? "active" : ""}`}
+                    onClick={() => { setYearView(yearView === value ? "all" : value); if (value === "future") setMoreFiltersOpen(false); }}
                     type="button"
                   >
+                    <span className="more-filter-check">{yearView === value && <Check size={13} />}</span>
                     {label}
                   </button>
                 ))}
+                  {yearView === "duration" && <div className="advanced-sort-options">
+                    <span>Sort by length</span>
+                    <button type="button" className={durationSort === "longest" ? "active" : ""} onClick={() => setDurationSort("longest")}>Longest to shortest</button>
+                    <button type="button" className={durationSort === "shortest" ? "active" : ""} onClick={() => setDurationSort("shortest")}>Shortest to longest</button>
+                  </div>}
+                  {yearView === "level-id" && <div className="advanced-sort-options">
+                    <span>Sort by Level ID</span>
+                    <button type="button" className={levelIdSort === "newest" ? "active" : ""} onClick={() => setLevelIdSort("newest")}>Newest to oldest</button>
+                    <button type="button" className={levelIdSort === "oldest" ? "active" : ""} onClick={() => setLevelIdSort("oldest")}>Oldest to newest</button>
+                  </div>}
+                </div>}
               </div>
-
-              {yearView === "duration" && (
-                <div className="duration-sort-controls" role="group" aria-label="Sort demons by level duration">
-                  <span>Sort by length</span>
-                  <div className="duration-sort-options">
-                    <button
-                      className={durationSort === "longest" ? "active" : ""}
-                      onClick={() => setDurationSort("longest")}
-                      type="button"
-                    >
-                      Longest to shortest
-                    </button>
-                    <button
-                      className={durationSort === "shortest" ? "active" : ""}
-                      onClick={() => setDurationSort("shortest")}
-                      type="button"
-                    >
-                      Shortest to longest
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {yearView === "level-id" && (
-                <div className="duration-sort-controls" role="group" aria-label="Sort demons by level ID">
-                  <span>Sort by Level ID</span>
-                  <div className="duration-sort-options">
-                    <button
-                      className={levelIdSort === "newest" ? "active" : ""}
-                      onClick={() => setLevelIdSort("newest")}
-                      type="button"
-                    >
-                      Newest to oldest
-                    </button>
-                    <button
-                      className={levelIdSort === "oldest" ? "active" : ""}
-                      onClick={() => setLevelIdSort("oldest")}
-                      type="button"
-                    >
-                      Oldest to newest
-                    </button>
-                  </div>
-                </div>
-              )}
     
               <button
                 className="mobile-filter-apply"
