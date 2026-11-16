@@ -1,5 +1,19 @@
+
 import React, { useState } from "react";
-import { BarChart3, CalendarDays, FileClock, Home, Inbox, Layers, ListChecks, Menu, Radio, Target, Trophy, X } from "lucide-react";
+import {
+  BarChart3,
+  CalendarDays,
+  FileClock,
+  Home,
+  Inbox,
+  Layers,
+  ListChecks,
+  Menu,
+  Radio,
+  Target,
+  Trophy,
+  X
+} from "lucide-react";
 import { formatNumber } from "../demonUtils.js";
 import { StatCard } from "./StatCard.jsx";
 
@@ -30,28 +44,35 @@ export function AppHeader({
 }) {
   const [showVersionInfo, setShowVersionInfo] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const resolvedVersion = String(siteVersion || DEFAULT_SITE_VERSION).trim();
-  const resolvedChangelog = Array.isArray(siteChangelog) && siteChangelog.length > 0
-    ? siteChangelog
-    : DEFAULT_VERSION_CHANGES;
+
+  const resolvedVersion = String(
+    siteVersion || DEFAULT_SITE_VERSION
+  ).trim();
+
+  const resolvedChangelog =
+    Array.isArray(siteChangelog) && siteChangelog.length > 0
+      ? siteChangelog
+      : DEFAULT_VERSION_CHANGES;
+
   const pageTitle = progressView
-      ? "Progress Tracker"
-      : requestView
-        ? "Demon Requests"
-        : historyView
-          ? "List Changes"
-          : timelineView
-            ? "Timeline"
-            : "Demon Archive";
+    ? "Progress Tracker"
+    : requestView
+      ? "W.I.P"
+      : historyView
+        ? "List Changes"
+        : timelineView
+          ? "Timeline"
+          : "Demon List";
+
   const pageSubtitle = progressView
-      ? "Track the demons I am currently working toward completing."
-      : requestView
-        ? "Community requests to add new demons to the list."
-        : historyView
-          ? "Browse all changes made to the demon list."
-          : timelineView
-            ? "A year-by-year view of when demons were completed."
-            : "A clean, searchable demon list powered by my Google Spreadsheet.";
+    ? "Track the demons I am currently working toward completing."
+    : requestView
+      ? "Community requests to add new demons to the list."
+      : historyView
+        ? "Browse all changes made to the demon list."
+        : timelineView
+          ? "A year-by-year view of when demons were completed."
+          : "A clean, searchable demon list powered by my Google Spreadsheet.";
 
   function openVersionInfo() {
     setShowVersionInfo(true);
@@ -66,63 +87,140 @@ export function AppHeader({
     action?.();
   }
 
-  const listActive = !progressView && !collectionsView && !requestView && !historyView && !timelineView;
-  const sourceLabel = source === "live"
-    ? "Live Sheet Data"
-    : source === "cache"
-      ? "Cached Data"
-      : source === "mock"
-        ? "Mock Data"
-        : "Loading";
-  const usesCompactPageHeader = progressView || collectionsView || timelineView;
+  const listActive =
+    !progressView &&
+    !collectionsView &&
+    !requestView &&
+    !historyView &&
+    !timelineView;
+
+  const sourceLabel =
+    source === "live"
+      ? "Live Sheet Data"
+      : source === "cache"
+        ? "Cached Data"
+        : source === "mock"
+          ? "Mock Data"
+          : "Loading";
+
+  const usesCompactPageHeader =
+    progressView || collectionsView || timelineView;
 
   return (
     <>
-      <aside id="site-navigation" className={`observatory-sidebar ${mobileNavOpen ? "mobile-open" : ""}`}>
-        <button className="observatory-brand" onClick={() => navigate(onOpenList)} type="button" aria-label="Open demon archive">
+      <aside
+        id="site-navigation"
+        className={`observatory-sidebar ${
+          mobileNavOpen ? "mobile-open" : ""
+        }`}
+      >
+        <button
+          className="observatory-brand"
+          onClick={() => navigate(onOpenList)}
+          type="button"
+          aria-label="Open demon list"
+        >
           <span className="observatory-brand-mark">M</span>
-          <span>Moik's<br />Archive</span>
+          <span>
+            Moik's
+            <br />
+            Archive
+          </span>
         </button>
 
-        <nav className="observatory-nav" aria-label="Main navigation">
-          <button className={listActive ? "active" : ""} onClick={() => navigate(onOpenList)} type="button">
-            <Home size={21} /><span>Archive</span>
+        <nav
+          className="observatory-nav"
+          aria-label="Main navigation"
+        >
+          <button
+            className={listActive ? "active" : ""}
+            onClick={() => navigate(onOpenList)}
+            type="button"
+          >
+            <Home size={21} />
+            <span>Demon List</span>
           </button>
-          <button className={progressView ? "active" : ""} onClick={() => navigate(onOpenProgress)} type="button">
-            <ListChecks size={21} /><span>Progress Tracker</span>
+
+          <button
+            className={timelineView ? "active" : ""}
+            onClick={() => navigate(onOpenTimeline)}
+            type="button"
+          >
+            <CalendarDays size={21} />
+            <span>Timeline</span>
           </button>
-          <button className={collectionsView ? "active" : ""} onClick={() => navigate(onOpenCollections)} type="button">
-            <Layers size={21} /><span>Collections</span>
+
+          <button
+            className={progressView ? "active" : ""}
+            onClick={() => navigate(onOpenProgress)}
+            type="button"
+          >
+            <ListChecks size={21} />
+            <span>Progress Tracker</span>
           </button>
-          <button className={historyView ? "active" : ""} onClick={() => navigate(onOpenHistory)} type="button">
-            <FileClock size={21} /><span>Changes</span>
+
+          <button
+            className={historyView ? "active" : ""}
+            onClick={() => navigate(onOpenHistory)}
+            type="button"
+          >
+            <FileClock size={21} />
+            <span>Changes</span>
           </button>
-          <button className={timelineView ? "active" : ""} onClick={() => navigate(onOpenTimeline)} type="button">
-            <CalendarDays size={21} /><span>Timeline</span>
+
+          <button
+            className={collectionsView ? "active" : ""}
+            onClick={() => navigate(onOpenCollections)}
+            type="button"
+          >
+            <Layers size={21} />
+            <span>Collections</span>
           </button>
-          <button className={requestView ? "active" : ""} onClick={() => navigate(onOpenRequests)} type="button">
-            <Inbox size={21} /><span>Requests</span>
+
+          <button
+            className={requestView ? "active" : ""}
+            onClick={() => navigate(onOpenRequests)}
+            type="button"
+          >
+            <Inbox size={21} />
+            <span>W.I.P</span>
           </button>
         </nav>
 
         <div className="observatory-sidebar-footer">
-          <div className={`observatory-source ${source}`} title={sourceLabel}>
-            <Radio size={17} /><span>{sourceLabel}</span>
+          <div
+            className={`observatory-source ${source}`}
+            title={sourceLabel}
+          >
+            <Radio size={17} />
+            <span>{sourceLabel}</span>
           </div>
-          <button className="observatory-version" onClick={openVersionInfo} type="button">
+
+          <button
+            className="observatory-version"
+            onClick={openVersionInfo}
+            type="button"
+          >
             {resolvedVersion}
           </button>
         </div>
       </aside>
 
       {mobileNavOpen && (
-        <button className="observatory-nav-backdrop" onClick={() => setMobileNavOpen(false)} type="button" aria-label="Close navigation" />
+        <button
+          className="observatory-nav-backdrop"
+          onClick={() => setMobileNavOpen(false)}
+          type="button"
+          aria-label="Close navigation"
+        />
       )}
 
       {usesCompactPageHeader && (
         <button
           className="compact-page-menu-button"
-          onClick={() => setMobileNavOpen(open => !open)}
+          onClick={() =>
+            setMobileNavOpen(open => !open)
+          }
           type="button"
           aria-label="Open navigation"
           aria-expanded={mobileNavOpen}
@@ -132,12 +230,77 @@ export function AppHeader({
         </button>
       )}
 
-      {!usesCompactPageHeader && (listActive ? (
-        <section className="archive-overview">
-          <header className="hero observatory-hero archive-title-panel">
+      {!usesCompactPageHeader &&
+        (listActive ? (
+          <section className="archive-overview">
+            <header className="hero observatory-hero archive-title-panel">
+              <button
+                className="observatory-menu-button"
+                onClick={() =>
+                  setMobileNavOpen(open => !open)
+                }
+                type="button"
+                aria-label="Open navigation"
+                aria-expanded={mobileNavOpen}
+                aria-controls="site-navigation"
+              >
+                <Menu size={23} />
+              </button>
+
+              <div className="observatory-hero-copy">
+                <div className="hero-title-row">
+                  <h1>Moik&apos;s Demon List</h1>
+                </div>
+              </div>
+            </header>
+
+            <section
+              className="archive-stats-panel"
+              aria-label="Demon list statistics"
+            >
+              <div className="archive-stats-list">
+                <StatCard
+                  icon={<Trophy />}
+                  label="Total Demons"
+                  value={formatNumber(stats?.total)}
+                />
+
+                <StatCard
+                  icon={<Target />}
+                  label="Total Attempts"
+                  value={formatNumber(stats?.attempts)}
+                />
+
+                <StatCard
+                  icon={<BarChart3 />}
+                  label="Hardest Demon"
+                  value={
+                    stats?.hardest?.name || "Unknown"
+                  }
+                  detail={
+                    stats?.hardest?.difficulty || ""
+                  }
+                  highlight
+                />
+              </div>
+
+              <div
+                className="observatory-hero-art"
+                aria-hidden="true"
+              >
+                <span className="orbit orbit-one" />
+                <span className="orbit orbit-two" />
+                <span className="observatory-gem" />
+              </div>
+            </section>
+          </section>
+        ) : (
+          <header className="hero observatory-hero">
             <button
               className="observatory-menu-button"
-              onClick={() => setMobileNavOpen(open => !open)}
+              onClick={() =>
+                setMobileNavOpen(open => !open)
+              }
               type="button"
               aria-label="Open navigation"
               aria-expanded={mobileNavOpen}
@@ -145,60 +308,68 @@ export function AppHeader({
             >
               <Menu size={23} />
             </button>
+
             <div className="observatory-hero-copy">
-              <div className="hero-title-row"><h1>Moik&apos;s Demon List</h1></div>
+              <p className="eyebrow hero-eyebrow">
+                Moik's Geometry Dash archive
+              </p>
+
+              <div className="hero-title-row">
+                <h1>{pageTitle}</h1>
+              </div>
+
+              <p className="subtitle">
+                {pageSubtitle}
+              </p>
             </div>
-          </header>
-          <section className="archive-stats-panel" aria-label="Demon list statistics">
-            <div className="archive-stats-list">
-              <StatCard icon={<Trophy />} label="Total Demons" value={formatNumber(stats?.total)} />
-              <StatCard icon={<Target />} label="Total Attempts" value={formatNumber(stats?.attempts)} />
-              <StatCard icon={<BarChart3 />} label="Hardest Demon" value={stats?.hardest?.name || "Unknown"} detail={stats?.hardest?.difficulty || ""} highlight />
-            </div>
-            <div className="observatory-hero-art" aria-hidden="true">
+
+            <div
+              className="observatory-hero-art"
+              aria-hidden="true"
+            >
               <span className="orbit orbit-one" />
               <span className="orbit orbit-two" />
               <span className="observatory-gem" />
             </div>
-          </section>
-        </section>
-      ) : (
-        <header className="hero observatory-hero">
-          <button
-            className="observatory-menu-button"
-            onClick={() => setMobileNavOpen(open => !open)}
-            type="button"
-            aria-label="Open navigation"
-            aria-expanded={mobileNavOpen}
-            aria-controls="site-navigation"
-          >
-            <Menu size={23} />
-          </button>
-          <div className="observatory-hero-copy">
-            <p className="eyebrow hero-eyebrow">Moik's Geometry Dash archive</p>
-            <div className="hero-title-row"><h1>{pageTitle}</h1></div>
-            <p className="subtitle">{pageSubtitle}</p>
-          </div>
-          <div className="observatory-hero-art" aria-hidden="true">
-            <span className="orbit orbit-one" />
-            <span className="orbit orbit-two" />
-            <span className="observatory-gem" />
-          </div>
-        </header>
-      ))}
+          </header>
+        ))}
 
       {showVersionInfo && (
-        <div className="progress-info-backdrop" onClick={closeVersionInfo}>
-          <section className="progress-info-modal version-info-modal" onClick={event => event.stopPropagation()}>
-            <button className="progress-info-close" onClick={closeVersionInfo} type="button" aria-label="Close"><X size={20} /></button>
+        <div
+          className="progress-info-backdrop"
+          onClick={closeVersionInfo}
+        >
+          <section
+            className="progress-info-modal version-info-modal"
+            onClick={event =>
+              event.stopPropagation()
+            }
+          >
+            <button
+              className="progress-info-close"
+              onClick={closeVersionInfo}
+              type="button"
+              aria-label="Close"
+            >
+              <X size={20} />
+            </button>
+
             <div className="version-info-header">
-              <h2>Changes in {resolvedVersion}</h2>
+              <h2>
+                Changes in {resolvedVersion}
+              </h2>
             </div>
-            <ul>{resolvedChangelog.map(change => <li key={change}>{change}</li>)}</ul>
+
+            <ul>
+              {resolvedChangelog.map(change => (
+                <li key={change}>
+                  {change}
+                </li>
+              ))}
+            </ul>
           </section>
         </div>
       )}
     </>
   );
 }
-
