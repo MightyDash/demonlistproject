@@ -12567,4 +12567,172 @@ body::before {
   text-align: center;
 }
 
+/* Compact Archive filters: dropdowns float over the list without shifting it. */
+@media (min-width: 981px) {
+  .desktop-list-shell .controls:not(.mobile-open) {
+    position: relative !important;
+    z-index: 60 !important;
+    grid-template-columns: minmax(210px, 1.5fr) 140px 150px 170px minmax(250px, auto) 160px !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin-bottom: 12px !important;
+    padding: 12px 14px !important;
+    overflow: visible !important;
+  }
+
+  .desktop-list-shell .controls .filter-title-row {
+    grid-column: 1 / -1 !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+  }
+
+  .desktop-list-shell .controls .year-filter-select,
+  .desktop-list-shell .controls .device-filter-select,
+  .desktop-list-shell .controls .custom-select,
+  .desktop-list-shell .controls .more-filters-wrap {
+    min-width: 0 !important;
+  }
+
+  .desktop-list-shell .controls > .tabs {
+    flex-wrap: nowrap !important;
+    gap: 4px !important;
+  }
+
+  .desktop-list-shell .controls > .tabs button {
+    min-width: 0 !important;
+    padding-inline: 10px !important;
+  }
+}
+
+@media (min-width: 1600px) {
+  .desktop-list-shell .controls:not(.mobile-open) {
+    grid-template-columns: 67px minmax(210px, 1fr) 140px 145px 165px minmax(250px, auto) 160px 70px !important;
+  }
+
+  .desktop-list-shell .controls .filter-title-row {
+    display: contents !important;
+  }
+
+  .desktop-list-shell .controls .filter-title-row > strong {
+    grid-column: 1;
+  }
+
+  .desktop-list-shell .controls .filter-title-actions {
+    grid-column: 8;
+    justify-self: end;
+    white-space: nowrap;
+  }
+}
+
+.desktop-list-shell .controls .year-filter-menu {
+  max-height: 330px;
+  overflow-y: auto;
+}
+
+.more-filters-wrap {
+  position: relative;
+  z-index: 70;
+}
+
+.more-filters-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 46px;
+  padding: 0 12px;
+  border: 1px solid var(--obs-line-bright);
+  border-radius: 12px;
+  color: #f5f0ff;
+  background: rgba(20, 17, 32, 0.95);
+  font-weight: 750;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.more-filters-button:hover,
+.more-filters-button.active {
+  border-color: #ac82ff;
+  box-shadow: 0 0 0 2px rgba(157, 114, 255, 0.11);
+}
+
+.more-filters-popover {
+  position: absolute;
+  z-index: 1000;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(330px, 86vw);
+  padding: 14px;
+  border: 1px solid rgba(183, 141, 255, 0.7);
+  border-radius: 14px;
+  color: #f4f1ff;
+  background: #1d1a2c;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6);
+}
+
+.more-filters-popover > strong {
+  display: block;
+  margin-bottom: 12px;
+}
+
+.more-filter-option,
+.advanced-sort-options > button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 40px;
+  margin-top: 7px;
+  padding: 8px 10px;
+  border: 1px solid rgba(189, 154, 255, 0.15);
+  border-radius: 9px;
+  color: #f0ecf9;
+  background: rgba(255, 255, 255, 0.04);
+  text-align: left;
+  cursor: pointer;
+}
+
+.more-filter-option.active,
+.advanced-sort-options > button.active {
+  border-color: #9d72ff;
+  background: rgba(157, 114, 255, 0.2);
+}
+
+.more-filter-check {
+  display: grid;
+  flex: 0 0 18px;
+  height: 18px;
+  place-items: center;
+  border: 1px solid rgba(189, 154, 255, 0.5);
+  border-radius: 5px;
+}
+
+.advanced-sort-options {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(189, 154, 255, 0.2);
+}
+
+.advanced-sort-options > span {
+  color: #beb2d7;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 980px) {
+  .desktop-list-shell .controls .more-filters-wrap,
+  .desktop-list-shell .controls .year-filter-select {
+    width: 100%;
+    flex-shrink: 0;
+  }
+
+  .desktop-list-shell .controls .more-filters-popover {
+    position: static;
+    width: 100%;
+    margin-top: 8px;
+    box-shadow: none;
+  }
+}
+
 
