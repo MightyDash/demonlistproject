@@ -642,12 +642,16 @@ export default function App() {
   }, [demons]);
 
   const projectedFuturePlacements = useMemo(() => {
-    return Object.fromEntries(
-      demons
-        .filter(demon => !isInProgressDemon(demon) || String(demon.progressCategory || "IN PROGRESS").toUpperCase() === "PLAN TO BEAT")
-        .sort((a, b) => Number(b.tier || 0) - Number(a.tier || 0) || String(a.name || "").localeCompare(String(b.name || "")))
-        .map((demon, index) => [String(demon.id), index + 1])
-    );
+    const completedDemons = demons.filter(demon => !isInProgressDemon(demon));
+    const comparePlacement = (a, b) => Number(b.tier || 0) - Number(a.tier || 0)
+      || String(a.name || "").localeCompare(String(b.name || ""));
+
+    return Object.fromEntries(demons
+      .filter(demon => isInProgressDemon(demon) && String(demon.progressCategory || "IN PROGRESS").toUpperCase() === "PLAN TO BEAT")
+      .map(demon => [
+        String(demon.id),
+        completedDemons.filter(completed => comparePlacement(completed, demon) < 0).length + 1
+      ]));
   }, [demons]);
 
   function handleOpenRequests() {
