@@ -29,6 +29,8 @@ export function DemonListContent({
   setDurationSort,
   levelIdSort,
   setLevelIdSort,
+  tierFilter = "",
+  setTierFilter = () => {},
   viewMode,
   setViewMode,
   filtered,
@@ -79,7 +81,8 @@ export function DemonListContent({
     ["2018", "2018"],
     ["future", "Future List"],
     ["duration", "Length"],
-    ["level-id", "Level ID"]
+    ["level-id", "Level ID"],
+    ["tier", "Tier"]
   ];
   const mainYearOptions = yearOptions.slice(0, 9);
   const extraFilterOptions = yearOptions.slice(9);
@@ -174,6 +177,7 @@ export function DemonListContent({
     setYearView(progressTrackerView ? "progress" : "all");
     setDurationSort("longest");
     setLevelIdSort("newest");
+    setTierFilter("");
     setViewMode(isMobileView ? "grid" : "banner");
   }
 
@@ -369,7 +373,7 @@ export function DemonListContent({
                 <button className={`more-filters-button ${moreFiltersOpen || extraFilterOptions.some(([value]) => yearView === value) ? "active" : ""}`}
                   type="button" aria-expanded={moreFiltersOpen}
                   onClick={() => { setMoreFiltersOpen(open => !open); setYearMenuOpen(false); setDeviceOpen(false); setDifficultyOpen(false); }}>
-                  <SlidersHorizontal size={17} /> More filters <span className="custom-select-arrow">⌄</span>
+                  <SlidersHorizontal size={17} /> More filters
                 </button>
                 {moreFiltersOpen && <div className="more-filters-popover">
                   <strong>Advanced filters</strong>
@@ -393,6 +397,18 @@ export function DemonListContent({
                     <span>Sort by Level ID</span>
                     <button type="button" className={levelIdSort === "newest" ? "active" : ""} onClick={() => setLevelIdSort("newest")}>Newest to oldest</button>
                     <button type="button" className={levelIdSort === "oldest" ? "active" : ""} onClick={() => setLevelIdSort("oldest")}>Oldest to newest</button>
+                  </div>}
+                  {yearView === "tier" && <div className="advanced-sort-options tier-filter-options">
+                    <label htmlFor="tier-filter-input">Find a tier</label>
+                    <input
+                      id="tier-filter-input"
+                      type="text"
+                      value={tierFilter}
+                      onChange={event => setTierFilter(event.target.value)}
+                      placeholder="3,21  •  2 > 16  •  5"
+                      autoComplete="off"
+                    />
+                    <small>Use an exact tier, a range, or a whole tier.</small>
                   </div>}
                 </div>}
               </div>

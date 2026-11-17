@@ -12,6 +12,7 @@ import { TimelinePage } from "./components/TimelineModal.jsx";
 import { buildHistoricalRanking, comparePlacements, demonDurationSortValue, isInProgressDemon, normalizeDemon, segmentForPlacement } from "./demonUtils.js";
 import { requestJson } from "./api.js";
 import { normalizeRoute, parseTimelineRoute, ROUTES } from "./routeUtils.js";
+import { matchesTierFilter } from "./tierFilterUtils.js";
 
 const DEFAULT_SITE_VERSION = "v0.62";
 const DEFAULT_SITE_CHANGELOG = [
@@ -100,6 +101,7 @@ export default function App() {
   const [yearView, setYearView] = useState("all");
   const [durationSort, setDurationSort] = useState("longest");
   const [levelIdSort, setLevelIdSort] = useState("newest");
+  const [tierFilter, setTierFilter] = useState("");
   const [apiLatestDemon, setApiLatestDemon] = useState(() => initialDemonData?.apiLatestDemon || "");
   const [siteVersion, setSiteVersion] = useState(() => initialDemonData?.siteVersion || DEFAULT_SITE_VERSION);
   const [siteChangelog, setSiteChangelog] = useState(() => initialDemonData?.siteChangelog || DEFAULT_SITE_CHANGELOG);
@@ -315,7 +317,7 @@ export default function App() {
 
   useEffect(() => {
     setVisibleDemonCount(MOBILE_DEMON_BATCH_SIZE);
-  }, [query, difficulty, segment, yearView, viewMode, isMobileView]);
+  }, [query, difficulty, segment, yearView, tierFilter, viewMode, isMobileView]);
 
   useEffect(() => {
     const responsiveView = isMobileView ? "grid" : "banner";
@@ -400,6 +402,7 @@ export default function App() {
     const searchedYear = /^\d{4}$/.test(q) ? Number(q) : null;
     const songIdQuery = q.startsWith("song:") ? q.slice(5).trim() : null;
     const artistQuery = q.startsWith("artist:") ? q.slice(7).trim() : null;
+    const tierQuery = q.startsWith("tier:") ? q.slice(5).trim() : null;
     const futureIds = new Set(futureListIds.map(String));
 
     const matchesSearchAndDifficulty = demon => {
@@ -407,11 +410,13 @@ export default function App() {
         ? Boolean(songIdQuery) && String(demon.song?.id || "").toLowerCase() === songIdQuery
         : artistQuery !== null
           ? Boolean(artistQuery) && String(demon.song?.artist || "").toLowerCase().includes(artistQuery)
-          : searchedYear
-            ? !isInProgressDemon(demon) && Number(demon.dateYear || demon.year || 0) === searchedYear
-            : demon.name.toLowerCase().includes(q) ||
-              demon.creator.toLowerCase().includes(q) ||
-              demon.id.toLowerCase().includes(q));
+          : tierQuery !== null
+            ? Boolean(tierQuery) && matchesTierFilter(demon.tier, tierQuery)
+            : searchedYear
+              ? !isInProgressDemon(demon) && Number(demon.dateYear || demon.year || 0) === searchedYear
+              : demon.name.toLowerCase().includes(q) ||
+                demon.creator.toLowerCase().includes(q) ||
+                demon.id.toLowerCase().includes(q));
 
       const matchesDifficulty =
         difficulty === "all" || demon.difficulty === difficulty;
@@ -477,6 +482,18 @@ export default function App() {
         });
     }
 
+    if (yearView === "tier") {
+      return demons
+        .filter(demon => {
+          const matchesSegment = segment === "all" || segmentForPlacement(demon.placement) === segment;
+          return !isInProgressDemon(demon)
+            && matchesSearchAndDifficulty(demon)
+            && matchesSegment
+            && matchesTierFilter(demon.tier, tierFilter);
+        })
+        .sort((a, b) => Number(b.tier || 0) - Number(a.tier || 0) || String(a.name || "").localeCompare(String(b.name || "")));
+    }
+
     const historicalYearSelected = /^\d{4}$/.test(String(yearView));
     if (historicalYearSelected) {
       return buildHistoricalRanking(demons, yearView)
@@ -513,7 +530,7 @@ export default function App() {
 
         return comparePlacements(a.placement, b.placement);
       });
-  }, [demons, query, device, difficulty, segment, yearView, futureListIds, durationSort, levelIdSort, progressCategory]);
+  }, [demons, query, device, difficulty, segment, yearView, futureListIds, durationSort, levelIdSort, tierFilter, progressCategory]);
 
   const currentIndex = useMemo(() => {
     if (!selected) return -1;
@@ -690,6 +707,8 @@ export default function App() {
       setDurationSort={setDurationSort}
       levelIdSort={levelIdSort}
       setLevelIdSort={setLevelIdSort}
+      tierFilter={tierFilter}
+      setTierFilter={setTierFilter}
       viewMode={viewMode}
       setViewMode={setViewMode}
       filtered={displayedDemons}
