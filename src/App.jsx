@@ -398,14 +398,20 @@ export default function App() {
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     const searchedYear = /^\d{4}$/.test(q) ? Number(q) : null;
+    const songIdQuery = q.startsWith("song:") ? q.slice(5).trim() : null;
+    const artistQuery = q.startsWith("artist:") ? q.slice(7).trim() : null;
     const futureIds = new Set(futureListIds.map(String));
 
     const matchesSearchAndDifficulty = demon => {
-      const matchesQuery = !q || (searchedYear
-        ? !isInProgressDemon(demon) && Number(demon.dateYear || demon.year || 0) === searchedYear
-        : demon.name.toLowerCase().includes(q) ||
-          demon.creator.toLowerCase().includes(q) ||
-          demon.id.toLowerCase().includes(q));
+      const matchesQuery = !q || (songIdQuery !== null
+        ? Boolean(songIdQuery) && String(demon.song?.id || "").toLowerCase() === songIdQuery
+        : artistQuery !== null
+          ? Boolean(artistQuery) && String(demon.song?.artist || "").toLowerCase().includes(artistQuery)
+          : searchedYear
+            ? !isInProgressDemon(demon) && Number(demon.dateYear || demon.year || 0) === searchedYear
+            : demon.name.toLowerCase().includes(q) ||
+              demon.creator.toLowerCase().includes(q) ||
+              demon.id.toLowerCase().includes(q));
 
       const matchesDifficulty =
         difficulty === "all" || demon.difficulty === difficulty;
