@@ -476,6 +476,169 @@
   font-weight: 750;
 }
 
+.packs-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.pack-card {
+  position: relative;
+  min-height: 220px;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid rgba(184, 149, 255, 0.25);
+  border-radius: 17px;
+  color: #fff;
+  background: linear-gradient(145deg, #171b29, #0c0f18);
+  cursor: pointer;
+  text-align: left;
+}
+
+.pack-card > img,
+.pack-card-shade {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.pack-card > img {
+  object-fit: cover;
+  transition: transform 0.25s ease;
+}
+
+.pack-card:hover > img {
+  transform: scale(1.04);
+}
+
+.pack-card-shade {
+  background: linear-gradient(0deg, rgba(6, 8, 14, 0.98), rgba(7, 9, 16, 0.18) 76%);
+}
+
+.pack-card-content {
+  position: absolute;
+  z-index: 1;
+  right: 20px;
+  bottom: 20px;
+  left: 20px;
+  display: grid;
+  gap: 5px;
+}
+
+.pack-card-content svg {
+  color: #b892ff;
+}
+
+.pack-card-content strong {
+  font-size: 1.45rem;
+}
+
+.pack-card-content small {
+  color: #aaaebe;
+}
+
+.pack-detail-backdrop {
+  position: fixed;
+  z-index: 1400;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(3, 5, 10, 0.82);
+  backdrop-filter: blur(12px);
+}
+
+.pack-detail {
+  position: relative;
+  width: min(850px, 100%);
+  max-height: min(820px, calc(100vh - 48px));
+  overflow: auto;
+  padding: 30px;
+  border: 1px solid rgba(184, 149, 255, 0.3);
+  border-radius: 20px;
+  background: #121722;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
+}
+
+.pack-detail > p {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  color: #c4a8ff;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.pack-detail h2 {
+  margin: 0 48px 24px 0;
+  font-size: clamp(2rem, 4vw, 3.5rem);
+}
+
+.pack-detail-close {
+  position: absolute;
+  top: 22px;
+  right: 22px;
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid rgba(184, 149, 255, 0.28);
+  border-radius: 12px;
+  color: #fff;
+  background: #1b1f2d;
+  cursor: pointer;
+}
+
+.pack-level-list {
+  display: grid;
+  gap: 10px;
+}
+
+.pack-level-list article {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 15px;
+  min-height: 76px;
+  padding: 10px;
+  border: 1px solid rgba(184, 149, 255, 0.14);
+  border-radius: 12px;
+  background: rgba(8, 10, 16, 0.45);
+}
+
+.pack-level-list article > img {
+  width: 88px;
+  height: 56px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.pack-level-list article > span {
+  display: grid;
+  gap: 4px;
+}
+
+.pack-level-list article small {
+  color: #9298a9;
+}
+
+.pack-level-list article > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 0 13px;
+  border: 1px solid rgba(184, 149, 255, 0.42);
+  border-radius: 9px;
+  color: #fff;
+  background: rgba(139, 93, 234, 0.25);
+  cursor: pointer;
+}
+
 @media (min-width: 981px) {
   .app.collections-app {
     min-height: 100vh;
@@ -524,6 +687,28 @@
 
   .demon-of-the-day-content h1 {
     font-size: clamp(2.35rem, 12vw, 4rem);
+  }
+
+  .packs-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pack-detail {
+    padding: 24px 18px;
+  }
+
+  .pack-level-list article {
+    grid-template-columns: 64px minmax(0, 1fr);
+  }
+
+  .pack-level-list article > img {
+    width: 64px;
+    height: 48px;
+  }
+
+  .pack-level-list article > button {
+    grid-column: 1 / -1;
+    justify-content: center;
   }
 }
 

@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { CalendarDays, Check, Copy, Layers } from "lucide-react";
+import { CalendarDays, Check, Copy, Layers, X } from "lucide-react";
 import { isInProgressDemon } from "../demonUtils.js";
 
 function amsterdamDateKey() {
@@ -17,8 +17,11 @@ function hashDateKey(value) {
   return Array.from(value).reduce((hash, character) => ((hash * 31) + character.charCodeAt(0)) >>> 0, 0);
 }
 
-export function CollectionsPage({ demons }) {
+export function CollectionsPage({ demons, packs = [] }) {
   const [copied, setCopied] = useState(false);
+  const [selectedPack, setSelectedPack] = useState(null);
+  const [copiedPackLevelId, setCopiedPackLevelId] = useState("");
+  const demonsById = useMemo(() => new Map(demons.map(demon => [String(demon.id), demon])), [demons]);
   const demonOfTheDay = useMemo(() => {
     const completed = demons
       .filter(demon => !isInProgressDemon(demon))
@@ -32,6 +35,12 @@ export function CollectionsPage({ demons }) {
     await navigator.clipboard.writeText(String(demonOfTheDay.id));
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1800);
+  }
+
+  async function copyPackLevelId(levelId) {
+    await navigator.clipboard.writeText(String(levelId));
+    setCopiedPackLevelId(String(levelId));
+    window.setTimeout(() => setCopiedPackLevelId(""), 1800);
   }
 
   return (
@@ -60,11 +69,56 @@ export function CollectionsPage({ demons }) {
         <div className="packs-browser-heading">
           <h2 id="packs-browser-title">Browse Packs</h2>
         </div>
-        <div className="packs-empty-state">
-          <Layers size={28} />
-          <p>No packs have been added yet.</p>
-        </div>
+        {packs.length ? (
+          <div className="packs-grid">
+            {packs.map(pack => {
+              const packDemons = (pack.levelIds || []).map(id => demonsById.get(String(id))).filter(Boolean);
+              const cover = packDemons[0]?.thumbnail || "";
+              return (
+                <button className="pack-card" key={pack.id} onClick={() => setSelectedPack(pack)} type="button">
+                  {cover && <img src={cover} alt="" />}
+                  <span className="pack-card-shade" />
+                  <span className="pack-card-content">
+                    <Layers size={20} />
+                    <strong>{pack.name}</strong>
+                    <small>{packDemons.length} {packDemons.length === 1 ? "demon" : "demons"}</small>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="packs-empty-state">
+            <Layers size={28} />
+            <p>No packs have been added yet.</p>
+          </div>
+        )}
       </section>
+
+      {selectedPack && (() => {
+        const packDemons = (selectedPack.levelIds || []).map(id => demonsById.get(String(id))).filter(Boolean);
+        return (
+          <div className="pack-detail-backdrop" onClick={() => setSelectedPack(null)}>
+            <section className="pack-detail" role="dialog" aria-modal="true" aria-labelledby="pack-detail-title" onClick={event => event.stopPropagation()}>
+              <button className="pack-detail-close" onClick={() => setSelectedPack(null)} type="button" aria-label="Close pack"><X size={21} /></button>
+              <p><Layers size={17} /> Collection pack</p>
+              <h2 id="pack-detail-title">{selectedPack.name}</h2>
+              <div className="pack-level-list">
+                {packDemons.map(demon => (
+                  <article key={demon.id}>
+                    <img src={demon.thumbnail} alt="" />
+                    <span><strong>{demon.name}</strong><small>by {demon.creator || "Unknown"}</small></span>
+                    <button onClick={() => copyPackLevelId(demon.id)} type="button">
+                      {copiedPackLevelId === String(demon.id) ? <Check size={16} /> : <Copy size={16} />}
+                      {copiedPackLevelId === String(demon.id) ? "Copied!" : "Copy ID"}
+                    </button>
+                  </article>
+                ))}
+              </div>
+            </section>
+          </div>
+        );
+      })()}
     </main>
   );
 }

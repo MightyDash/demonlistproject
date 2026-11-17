@@ -49,7 +49,8 @@ function normalizeDemonPayload(payload) {
     manualPlacementIds: Array.isArray(payload?.manualPlacementIds) ? payload.manualPlacementIds.map(String) : [],
     timelineEntries: Array.isArray(payload?.timelineEntries) ? payload.timelineEntries : [],
     monthlyRecaps: Array.isArray(payload?.monthlyRecaps) ? payload.monthlyRecaps : [],
-    monthlyHighlightStyles: Array.isArray(payload?.monthlyHighlightStyles) ? payload.monthlyHighlightStyles : []
+    monthlyHighlightStyles: Array.isArray(payload?.monthlyHighlightStyles) ? payload.monthlyHighlightStyles : [],
+    packs: Array.isArray(payload?.packs) ? payload.packs : []
   };
 }
 
@@ -107,6 +108,7 @@ export default function App() {
   const [timelineEntries, setTimelineEntries] = useState(() => initialDemonData?.timelineEntries || []);
   const [monthlyRecaps, setMonthlyRecaps] = useState(() => initialDemonData?.monthlyRecaps || []);
   const [monthlyHighlightStyles, setMonthlyHighlightStyles] = useState(() => initialDemonData?.monthlyHighlightStyles || []);
+  const [packs, setPacks] = useState(() => initialDemonData?.packs || []);
   const [isMobileView, setIsMobileView] = useState(getInitialMobileView);
   const [viewMode, setViewMode] = useState(() => getInitialMobileView() ? "grid" : "banner");
   const [requestView, setRequestView] = useState(false);
@@ -350,6 +352,7 @@ export default function App() {
       setTimelineEntries(nextData.timelineEntries);
       setMonthlyRecaps(nextData.monthlyRecaps);
       setMonthlyHighlightStyles(nextData.monthlyHighlightStyles);
+      setPacks(nextData.packs);
       setDemons(nextData.demons);
       setDemonListError("");
       setSource("live");
@@ -741,7 +744,7 @@ export default function App() {
           onBack={() => navigateTo(ROUTES.home)}
         />
       ) : collectionsView ? (
-        <CollectionsPage demons={demons} />
+        <CollectionsPage demons={demons} packs={packs} />
       ) : timelineView ? (
         <TimelinePage
           demons={demons}
