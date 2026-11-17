@@ -364,7 +364,7 @@
 
 .demon-of-the-day {
   position: relative;
-  min-height: clamp(320px, 42vh, 460px);
+  min-height: clamp(240px, 30vh, 320px);
   overflow: hidden;
   border: 1px solid rgba(184, 149, 255, 0.28);
   border-radius: 18px;
@@ -418,7 +418,7 @@
 
 .demon-of-the-day-content h1 {
   margin: 0;
-  font-size: clamp(2.7rem, 5vw, 5.4rem);
+  font-size: clamp(2.25rem, 4vw, 4rem);
   line-height: 0.96;
   letter-spacing: -0.045em;
 }
@@ -664,13 +664,13 @@
 
   .demon-of-the-day {
     min-width: 0;
-    min-height: 440px;
+    min-height: 340px;
   }
 
   .demon-of-the-day-content {
     justify-content: flex-end;
     width: 100%;
-    padding: 28px 22px;
+    padding: 22px;
   }
 
   .collections-app .compact-page-menu-button {
@@ -686,7 +686,7 @@
   }
 
   .demon-of-the-day-content h1 {
-    font-size: clamp(2.35rem, 12vw, 4rem);
+    font-size: clamp(2rem, 10vw, 3.2rem);
   }
 
   .packs-grid {
