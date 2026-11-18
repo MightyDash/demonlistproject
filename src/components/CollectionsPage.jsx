@@ -73,7 +73,8 @@ export function CollectionsPage({ demons, packs = [] }) {
           <div className="packs-grid">
             {packs.map(pack => {
               const packDemons = (pack.levelIds || []).map(id => demonsById.get(String(id))).filter(Boolean);
-              const cover = packDemons[0]?.thumbnail || "";
+              const coverDemon = demonsById.get(String(pack.coverLevelId || "")) || packDemons[0];
+              const cover = coverDemon?.thumbnail || "";
               return (
                 <button className="pack-card" key={pack.id} onClick={() => setSelectedPack(pack)} type="button">
                   {cover && <img src={cover} alt="" />}
