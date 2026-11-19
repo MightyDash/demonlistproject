@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { CalendarDays, Check, Copy, Layers, X } from "lucide-react";
-import { isInProgressDemon } from "../demonUtils.js";
+import { difficultyClass, isInProgressDemon } from "../demonUtils.js";
 
 function amsterdamDateKey() {
   const parts = new Intl.DateTimeFormat("en-GB", {
@@ -106,7 +106,7 @@ export function CollectionsPage({ demons, packs = [] }) {
               <h2 id="pack-detail-title">{selectedPack.name}</h2>
               <div className="pack-level-list">
                 {packDemons.map(demon => (
-                  <article key={demon.id}>
+                  <article className={`pack-level-${difficultyClass(demon.difficulty)}`} key={demon.id}>
                     <img src={demon.thumbnail} alt="" />
                     <span><strong>{demon.name}</strong><small>by {demon.creator || "Unknown"}</small></span>
                     <button onClick={() => copyPackLevelId(demon.id)} type="button">

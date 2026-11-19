@@ -599,15 +599,37 @@
 }
 
 .pack-level-list article {
+  --pack-difficulty-color: 139, 146, 166;
   display: grid;
   grid-template-columns: 88px minmax(0, 1fr) auto;
   align-items: center;
   gap: 15px;
   min-height: 76px;
   padding: 10px;
-  border: 1px solid rgba(184, 149, 255, 0.14);
+  border: 1px solid rgba(var(--pack-difficulty-color), 0.72);
   border-radius: 12px;
-  background: rgba(8, 10, 16, 0.45);
+  background: linear-gradient(100deg, rgba(var(--pack-difficulty-color), 0.62), rgba(var(--pack-difficulty-color), 0.2) 58%, rgba(8, 10, 16, 0.72));
+  box-shadow: inset 5px 0 0 rgb(var(--pack-difficulty-color));
+}
+
+.pack-level-list article.pack-level-easy {
+  --pack-difficulty-color: 139, 92, 246;
+}
+
+.pack-level-list article.pack-level-medium {
+  --pack-difficulty-color: 217, 70, 239;
+}
+
+.pack-level-list article.pack-level-hard {
+  --pack-difficulty-color: 255, 63, 76;
+}
+
+.pack-level-list article.pack-level-insane {
+  --pack-difficulty-color: 211, 36, 48;
+}
+
+.pack-level-list article.pack-level-extreme {
+  --pack-difficulty-color: 112, 24, 35;
 }
 
 .pack-level-list article > img {
