@@ -4,6 +4,7 @@ import { normalizeRoute, parseTimelineRoute, ROUTES } from "./routeUtils.js";
 describe("routeUtils", () => {
   it.each([
     ["/", ROUTES.home],
+    ["/statistics", ROUTES.statistics],
     ["/progress", ROUTES.progress],
     ["/collections", ROUTES.collections],
     ["/demon-requests/", ROUTES.requests],

@@ -8,6 +8,7 @@ import { DemonModal } from "./components/DemonModal.jsx";
 import { RecentChanges } from "./components/RecentChanges.jsx";
 import { ProgressTrackerPage } from "./components/ProgressTrackerPage.jsx";
 import { ScrollToTopButton } from "./components/ScrollToTopButton.jsx";
+import { StatisticsPage } from "./components/StatisticsPage.jsx";
 import { TimelinePage } from "./components/TimelineModal.jsx";
 import { buildHistoricalRanking, comparePlacements, demonDurationSortValue, isInProgressDemon, normalizeDemon, segmentForPlacement } from "./demonUtils.js";
 import { requestJson } from "./api.js";
@@ -118,6 +119,7 @@ export default function App() {
   const [collectionsView, setCollectionsView] = useState(false);
   const [progressCategory, setProgressCategory] = useState("all");
   const [historyView, setHistoryView] = useState(false);
+  const [statisticsView, setStatisticsView] = useState(false);
   const [timelineView, setTimelineView] = useState(false);
   const [timelineRoute, setTimelineRoute] = useState({ year: null, month: null, overview: false, compare: false });
   const [requests, setRequests] = useState([]);
@@ -150,6 +152,7 @@ export default function App() {
       setProgressCategory("all");
     }
     setHistoryView(route === ROUTES.history);
+    setStatisticsView(route === ROUTES.statistics);
     setTimelineView(route === ROUTES.timeline || route.startsWith(`${ROUTES.timeline}/`));
     setTimelineRoute(parseTimelineRoute(route));
   }
@@ -646,18 +649,6 @@ export default function App() {
     return () => window.removeEventListener("keydown", handleKey);
   }, [selected, currentIndex, filtered]);
 
-  const stats = useMemo(() => {
-    const completed = demons.filter(d => !isInProgressDemon(d));
-    const totalAttempts = completed.reduce((sum, d) => sum + Number(d.attempts || 0), 0);
-    const hardest = completed.slice().sort((a, b) => Number(b.tier) - Number(a.tier))[0];
-
-    return {
-      total: completed.length,
-      attempts: totalAttempts,
-      hardest
-    };
-  }, [demons]);
-
   const projectedFuturePlacements = useMemo(() => {
     const completedDemons = demons.filter(demon => !isInProgressDemon(demon));
     const comparePlacement = (a, b) => Number(b.tier || 0) - Number(a.tier || 0)
@@ -727,18 +718,19 @@ export default function App() {
   );
 
   return (
-    <div className={`app ${timelineView ? "timeline-app" : ""} ${collectionsView ? "collections-app" : ""}`}>
+    <div className={`app ${timelineView ? "timeline-app" : ""} ${collectionsView ? "collections-app" : ""} ${statisticsView ? "statistics-app" : ""}`}>
       <AppHeader
           source={source}
           historyView={historyView}
           progressView={progressView}
           collectionsView={collectionsView}
-          stats={stats}
+          statisticsView={statisticsView}
           requestView={requestView}
           timelineView={timelineView}
           onOpenList={() => navigateTo(ROUTES.home)}
           onOpenProgress={() => navigateTo(progressView ? ROUTES.home : ROUTES.progress)}
           onOpenCollections={() => navigateTo(collectionsView ? ROUTES.home : ROUTES.collections)}
+          onOpenStatistics={() => navigateTo(statisticsView ? ROUTES.home : ROUTES.statistics)}
           onOpenRequests={handleOpenRequests}
           onOpenHistory={() => {
             navigateTo(historyView ? ROUTES.home : ROUTES.history);
@@ -774,6 +766,8 @@ export default function App() {
         />
       ) : collectionsView ? (
         <CollectionsPage demons={demons} packs={packs} />
+      ) : statisticsView ? (
+        <StatisticsPage demons={demons} onSelectDemon={setSelected} />
       ) : timelineView ? (
         <TimelinePage
           demons={demons}

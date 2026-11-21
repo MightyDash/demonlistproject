@@ -10,12 +10,8 @@ import {
   ListChecks,
   Menu,
   Radio,
-  Target,
-  Trophy,
   X
 } from "lucide-react";
-import { formatNumber } from "../demonUtils.js";
-import { StatCard } from "./StatCard.jsx";
 
 const DEFAULT_SITE_VERSION = "v0.62";
 const DEFAULT_VERSION_CHANGES = [
@@ -30,12 +26,13 @@ export function AppHeader({
   historyView,
   progressView,
   collectionsView,
-  stats,
+  statisticsView,
   requestView,
   timelineView,
   onOpenList,
   onOpenProgress,
   onOpenCollections,
+  onOpenStatistics,
   onOpenRequests,
   onOpenHistory,
   onOpenTimeline,
@@ -90,6 +87,7 @@ export function AppHeader({
   const listActive =
     !progressView &&
     !collectionsView &&
+    !statisticsView &&
     !requestView &&
     !historyView &&
     !timelineView;
@@ -104,7 +102,7 @@ export function AppHeader({
           : "Loading";
 
   const usesCompactPageHeader =
-    progressView || collectionsView || timelineView;
+    progressView || collectionsView || statisticsView || timelineView;
 
   return (
     <>
@@ -139,6 +137,15 @@ export function AppHeader({
           >
             <Home size={21} />
             <span>Demon List</span>
+          </button>
+
+          <button
+            className={statisticsView ? "active" : ""}
+            onClick={() => navigate(onOpenStatistics)}
+            type="button"
+          >
+            <BarChart3 size={21} />
+            <span>Statistics</span>
           </button>
 
           <button
@@ -253,46 +260,6 @@ export function AppHeader({
                 </div>
               </div>
             </header>
-
-            <section
-              className="archive-stats-panel"
-              aria-label="Demon list statistics"
-            >
-              <div className="archive-stats-list">
-                <StatCard
-                  icon={<Trophy />}
-                  label="Total Demons"
-                  value={formatNumber(stats?.total)}
-                />
-
-                <StatCard
-                  icon={<Target />}
-                  label="Total Attempts"
-                  value={formatNumber(stats?.attempts)}
-                />
-
-                <StatCard
-                  icon={<BarChart3 />}
-                  label="Hardest Demon"
-                  value={
-                    stats?.hardest?.name || "Unknown"
-                  }
-                  detail={
-                    stats?.hardest?.difficulty || ""
-                  }
-                  highlight
-                />
-              </div>
-
-              <div
-                className="observatory-hero-art"
-                aria-hidden="true"
-              >
-                <span className="orbit orbit-one" />
-                <span className="orbit orbit-two" />
-                <span className="observatory-gem" />
-              </div>
-            </section>
           </section>
         ) : (
           <header className="hero observatory-hero">
