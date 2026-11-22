@@ -13,6 +13,7 @@ import { TimelinePage } from "./components/TimelineModal.jsx";
 import { buildHistoricalRanking, comparePlacements, demonDurationSortValue, isInProgressDemon, normalizeDemon, segmentForPlacement } from "./demonUtils.js";
 import { requestJson } from "./api.js";
 import { normalizeRoute, parseTimelineRoute, ROUTES } from "./routeUtils.js";
+import { matchesAttemptsFilter, pickRandomResult } from "./searchUtils.js";
 import { matchesTierFilter } from "./tierFilterUtils.js";
 
 const DEFAULT_SITE_VERSION = "v0.62";
@@ -406,7 +407,10 @@ export default function App() {
     const songIdQuery = q.startsWith("song:") ? q.slice(5).trim() : null;
     const artistQuery = q.startsWith("artist:") ? q.slice(7).trim() : null;
     const tierQuery = q.startsWith("tier:") ? q.slice(5).trim() : null;
+    const attemptsQuery = q.startsWith("attempts:") ? q.slice(9).trim() : null;
+    const randomQuery = q === "random";
     const futureIds = new Set(futureListIds.map(String));
+    const finalizeResults = results => randomQuery ? pickRandomResult(results) : results;
 
     const matchesSearchAndDifficulty = demon => {
       const matchesQuery = !q || (songIdQuery !== null
@@ -415,11 +419,15 @@ export default function App() {
           ? Boolean(artistQuery) && String(demon.song?.artist || "").toLowerCase().includes(artistQuery)
           : tierQuery !== null
             ? Boolean(tierQuery) && matchesTierFilter(demon.tier, tierQuery)
-            : searchedYear
-              ? !isInProgressDemon(demon) && Number(demon.dateYear || demon.year || 0) === searchedYear
-              : demon.name.toLowerCase().includes(q) ||
-                demon.creator.toLowerCase().includes(q) ||
-                demon.id.toLowerCase().includes(q));
+            : attemptsQuery !== null
+              ? Boolean(attemptsQuery) && matchesAttemptsFilter(demon.attempts, attemptsQuery)
+              : randomQuery
+                ? true
+                : searchedYear
+                  ? !isInProgressDemon(demon) && Number(demon.dateYear || demon.year || 0) === searchedYear
+                  : demon.name.toLowerCase().includes(q) ||
+                    demon.creator.toLowerCase().includes(q) ||
+                    demon.id.toLowerCase().includes(q));
 
       const matchesDifficulty =
         difficulty === "all" || demon.difficulty === difficulty;
@@ -431,7 +439,7 @@ export default function App() {
     };
 
     if (yearView === "future") {
-      return demons
+      return finalizeResults(demons
         .filter(demon => !isInProgressDemon(demon) || futureIds.has(String(demon.id)))
         .sort((a, b) => {
           const tierDifference = Number(b.tier || 0) - Number(a.tier || 0);
@@ -449,12 +457,12 @@ export default function App() {
             segment === "all" || segmentForPlacement(demon.futurePlacement) === segment;
 
           return matchesSearchAndDifficulty(demon) && matchesSegment;
-        });
+        }));
     }
 
     if (yearView === "duration") {
       const direction = durationSort === "shortest" ? 1 : -1;
-      return demons
+      return finalizeResults(demons
         .filter(demon => {
           const matchesSegment = segment === "all" || segmentForPlacement(demon.placement) === segment;
           return !isInProgressDemon(demon) && matchesSearchAndDifficulty(demon) && matchesSegment;
@@ -463,12 +471,12 @@ export default function App() {
           const durationDifference = demonDurationSortValue(a) - demonDurationSortValue(b);
           if (durationDifference !== 0) return durationDifference * direction;
           return String(a.name || "").localeCompare(String(b.name || ""));
-        });
+        }));
     }
 
     if (yearView === "level-id") {
       const direction = levelIdSort === "oldest" ? 1 : -1;
-      return demons
+      return finalizeResults(demons
         .filter(demon => {
           const matchesSegment = segment === "all" || segmentForPlacement(demon.placement) === segment;
           return !isInProgressDemon(demon) && matchesSearchAndDifficulty(demon) && matchesSegment;
@@ -482,11 +490,11 @@ export default function App() {
           if (firstHasId !== secondHasId) return firstHasId ? -1 : 1;
           if (firstHasId && firstId !== secondId) return (firstId - secondId) * direction;
           return String(a.name || "").localeCompare(String(b.name || ""));
-        });
+        }));
     }
 
     if (yearView === "tier") {
-      return demons
+      return finalizeResults(demons
         .filter(demon => {
           const matchesSegment = segment === "all" || segmentForPlacement(demon.placement) === segment;
           return !isInProgressDemon(demon)
@@ -494,21 +502,21 @@ export default function App() {
             && matchesSegment
             && matchesTierFilter(demon.tier, tierFilter);
         })
-        .sort((a, b) => Number(b.tier || 0) - Number(a.tier || 0) || String(a.name || "").localeCompare(String(b.name || "")));
+        .sort((a, b) => Number(b.tier || 0) - Number(a.tier || 0) || String(a.name || "").localeCompare(String(b.name || ""))));
     }
 
     const historicalYearSelected = /^\d{4}$/.test(String(yearView));
     if (historicalYearSelected) {
-      return buildHistoricalRanking(demons, yearView)
+      return finalizeResults(buildHistoricalRanking(demons, yearView)
         .filter(demon => {
           const matchesSegment =
             segment === "all" || segmentForPlacement(demon.historicalPlacement) === segment;
 
           return matchesSearchAndDifficulty(demon) && matchesSegment;
-        });
+        }));
     }
 
-    return demons
+    return finalizeResults(demons
       .filter(demon => {
         const isInProgress = isInProgressDemon(demon);
         const showingInProgress = yearView === "progress";
@@ -532,7 +540,7 @@ export default function App() {
         }
 
         return comparePlacements(a.placement, b.placement);
-      });
+      }));
   }, [demons, query, device, difficulty, segment, yearView, futureListIds, durationSort, levelIdSort, tierFilter, progressCategory]);
 
   const currentIndex = useMemo(() => {
