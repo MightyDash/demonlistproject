@@ -5,6 +5,7 @@ import { AppHeader } from "./components/AppHeader.jsx";
 import { CollectionsPage } from "./components/CollectionsPage.jsx";
 import { DemonListContent } from "./components/DemonListContent.jsx";
 import { DemonModal } from "./components/DemonModal.jsx";
+import { OfflineScreen } from "./components/OfflineScreen.jsx";
 import { RecentChanges } from "./components/RecentChanges.jsx";
 import { ProgressTrackerPage } from "./components/ProgressTrackerPage.jsx";
 import { ScrollToTopButton } from "./components/ScrollToTopButton.jsx";
@@ -26,6 +27,12 @@ const DEFAULT_SITE_CHANGELOG = [
 const DEMON_DATA_CACHE_KEY = "moiks_demon_list_data_v1";
 const MOBILE_MEDIA_QUERY = "(max-width: 640px)";
 const MOBILE_DEMON_BATCH_SIZE = 24;
+
+function initialConnectionIssue() {
+  return typeof navigator !== "undefined" && navigator.onLine === false
+    ? "Your device appears to be offline. Reconnect to load the latest demon list."
+    : "";
+}
 
 function getInitialMobileView() {
   return typeof window !== "undefined" && window.matchMedia(MOBILE_MEDIA_QUERY).matches;
@@ -130,10 +137,13 @@ export default function App() {
   const [historyError, setHistoryError] = useState("");
   const [visibleDemonCount, setVisibleDemonCount] = useState(MOBILE_DEMON_BATCH_SIZE);
   const [demonListError, setDemonListError] = useState("");
+  const [connectionIssue, setConnectionIssue] = useState(initialConnectionIssue);
+  const [reconnecting, setReconnecting] = useState(false);
   const requestsLoadRef = useRef({ id: 0, controller: null });
   const historyLoadRef = useRef({ id: 0, controller: null });
   const demonDataLoadRef = useRef({ id: 0, controller: null });
   const hasLoadedLiveDemonDataRef = useRef(Boolean(initialDemonData));
+  const hasReachedLiveDemonDataRef = useRef(false);
 
   function applyRoute(pathname) {
     const route = normalizeRoute(pathname);
@@ -313,6 +323,15 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    function handleOffline() {
+      setConnectionIssue("Your device appears to be offline. Reconnect to load the latest demon list.");
+    }
+
+    window.addEventListener("offline", handleOffline);
+    return () => window.removeEventListener("offline", handleOffline);
+  }, []);
+
+  useEffect(() => {
     if (!requestView || !isMobileView) return;
 
     window.alert("This page is currently unavailable.");
@@ -333,7 +352,8 @@ export default function App() {
       setDemons(mockDemons.map(normalizeDemon));
       setSource("mock");
       setDemonListError("");
-      return;
+      setConnectionIssue("");
+      return true;
     }
 
     demonDataLoadRef.current.controller?.abort();
@@ -341,12 +361,16 @@ export default function App() {
     const requestId = demonDataLoadRef.current.id + 1;
     demonDataLoadRef.current = { id: requestId, controller };
 
-    if (!silent) setSource("loading");
+    if (!silent && !hasLoadedLiveDemonDataRef.current) setSource("loading");
 
     try {
       const json = await requestJson(SHEET_API_URL, { signal: controller.signal });
       if (json.aborted || demonDataLoadRef.current.id !== requestId) return;
-      if (json.success === false) throw new Error(json.message || "Could not load live sheet data.");
+      if (json.success === false) {
+        const loadError = new Error(json.message || "Could not load live sheet data.");
+        loadError.networkError = Boolean(json.networkError);
+        throw loadError;
+      }
       const nextData = normalizeDemonPayload(json);
       if (!nextData) throw new Error("Live demon list response was missing demon rows.");
 
@@ -361,12 +385,22 @@ export default function App() {
       setPacks(nextData.packs);
       setDemons(nextData.demons);
       setDemonListError("");
+      setConnectionIssue("");
       setSource("live");
       writeCachedDemonData(nextData);
       hasLoadedLiveDemonDataRef.current = true;
+      hasReachedLiveDemonDataRef.current = true;
+      return true;
     } catch (error) {
       if (demonDataLoadRef.current.id !== requestId) return;
       console.warn("Could not load live sheet data.", error);
+
+      const offline = error?.networkError || (typeof navigator !== "undefined" && navigator.onLine === false);
+      if (offline || !hasLoadedLiveDemonDataRef.current) {
+        setConnectionIssue(offline
+          ? "The live demon list could not be reached. Check your internet connection and try again."
+          : "The live data service is temporarily unavailable. Try reconnecting in a moment.");
+      }
 
       if (!hasLoadedLiveDemonDataRef.current) {
         setDemons([]);
@@ -374,12 +408,29 @@ export default function App() {
         setDemonListError("Live demon list could not be loaded. This might be temporary, so try again or check back later.");
       } else if (!silent) {
         setDemonListError("Live demon list could not be refreshed. The current list is still shown.");
-        setSource("live");
+        setSource(hasReachedLiveDemonDataRef.current ? "live" : "cache");
       }
+      return false;
     } finally {
       if (demonDataLoadRef.current.id === requestId) {
         demonDataLoadRef.current.controller = null;
       }
+    }
+  }
+
+  async function handleReconnect() {
+    setReconnecting(true);
+    setDemonListError("");
+
+    try {
+      const connected = await loadDemonData();
+      if (connected) {
+        setConnectionIssue("");
+        loadRequests({ silent: true });
+        if (historyView) loadHistoryChanges({ silent: true });
+      }
+    } finally {
+      setReconnecting(false);
     }
   }
 
@@ -809,6 +860,16 @@ export default function App() {
       )}
 
       <ScrollToTopButton />
+
+      {connectionIssue && (
+        <OfflineScreen
+          message={connectionIssue}
+          reconnecting={reconnecting}
+          hasCachedData={hasLoadedLiveDemonDataRef.current && demons.length > 0}
+          onReconnect={handleReconnect}
+          onContinue={() => setConnectionIssue("")}
+        />
+      )}
 
     </div>
   );
