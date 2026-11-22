@@ -9876,6 +9876,7 @@ textarea:focus-visible {
 
   .timeline-mobile-chart-column { display: grid; grid-template-rows: 1fr 22px; align-items: end; gap: 6px; height: 100%; min-width: 0; }
   .timeline-mobile-chart-column > span { display: block; min-height: 2px; border-radius: 5px 5px 2px 2px; background: linear-gradient(180deg, #aa83ff, #7142cc); box-shadow: 0 0 14px rgba(159,124,255,.16); }
+  .timeline-year-hardest-crown { display: none; }
   .timeline-mobile-chart-column small { overflow: hidden; color: var(--muted); font-size: .55rem; font-weight: 800; text-align: center; text-overflow: clip; }
 
   .timeline-mobile-month-heading { align-items: end; margin-top: 2px; }
@@ -10029,6 +10030,18 @@ textarea:focus-visible {
 
   .timeline-mobile-chart-column { display: grid; grid-template-rows: 1fr 26px; align-items: end; gap: 8px; height: 100%; min-width: 0; }
   .timeline-mobile-chart-column > span { display: block; min-height: 3px; border-radius: 7px 7px 2px 2px; background: linear-gradient(180deg, #b493ff, #7142cc); box-shadow: 0 0 18px rgba(159,124,255,.18); }
+  .timeline-mobile-chart-bar { position: relative; }
+  .timeline-year-hardest-crown {
+    position: absolute;
+    top: -32px;
+    left: 50%;
+    display: block;
+    width: 25px;
+    height: 25px;
+    color: #ffd05a;
+    filter: drop-shadow(0 0 8px rgba(255, 208, 90, .42));
+    transform: translateX(-50%);
+  }
   .timeline-mobile-chart-column small { color: var(--muted); font-size: .7rem; font-weight: 850; text-align: center; }
 
   .timeline-mobile-month-heading { align-items: end; margin-top: 2px; }

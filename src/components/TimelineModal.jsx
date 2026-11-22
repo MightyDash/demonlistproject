@@ -497,6 +497,14 @@ export function TimelinePage({
   const activeMonths = selectedYearData?.months.filter(month => month.demons.length > 0) || [];
   const busiestMonth = activeMonths.reduce((best, month) => !best || month.demons.length > best.demons.length ? month : best, null);
   const hardestYearDemon = getHardestMonthlyDemon((selectedYearData?.demons || []).map(item => item.demon));
+  const hardestYearMonthSlug = hardestYearDemon && (selectedYearData?.months || []).find(month =>
+    month.demons.some(({ demon }) =>
+      demon === hardestYearDemon || (
+        String(demon.id || "") === String(hardestYearDemon?.id || "") &&
+        String(demon.name || "") === String(hardestYearDemon?.name || "")
+      )
+    )
+  )?.slug;
   const longestActiveStreak = (selectedYearData?.months || []).reduce((result, month) => {
     const current = month.demons.length > 0 ? result.current + 1 : 0;
     return { current, longest: Math.max(result.longest, current) };
@@ -700,7 +708,11 @@ export function TimelinePage({
           <div className="timeline-mobile-chart">
             {selectedYearData.months.map(month => (
               <div className="timeline-mobile-chart-column" key={month.slug} title={`${month.name}: ${pluralizeDemons(month.demons.length)}`}>
-                <span style={{ height: `${Math.max(month.demons.length ? 8 : 2, (month.demons.length / maxMonthlyCount) * 100)}%` }} />
+                <span className="timeline-mobile-chart-bar" style={{ height: `${Math.max(month.demons.length ? 8 : 2, (month.demons.length / maxMonthlyCount) * 100)}%` }}>
+                  {month.slug === hardestYearMonthSlug && (
+                    <Crown className="timeline-year-hardest-crown" aria-hidden="true" />
+                  )}
+                </span>
                 <small>{month.name.slice(0, 3)}</small>
               </div>
             ))}
