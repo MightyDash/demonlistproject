@@ -6,6 +6,7 @@ import { CollectionsPage } from "./components/CollectionsPage.jsx";
 import { DemonListContent } from "./components/DemonListContent.jsx";
 import { DemonModal } from "./components/DemonModal.jsx";
 import { OfflineScreen } from "./components/OfflineScreen.jsx";
+import { ProgressDemonDetail } from "./components/ProgressDemonDetail.jsx";
 import { RecentChanges } from "./components/RecentChanges.jsx";
 import { ProgressTrackerPage } from "./components/ProgressTrackerPage.jsx";
 import { ScrollToTopButton } from "./components/ScrollToTopButton.jsx";
@@ -847,7 +848,9 @@ export default function App() {
         <ProgressTrackerPage demons={demons.filter(isInProgressDemon)} activeFilter={progressCategory} onFilterChange={setProgressCategory} onSelectDemon={setSelected} projectedPlacements={projectedFuturePlacements} />
       ) : demonListContent}
 
-      {selected && (
+      {selected && progressView && isInProgressDemon(selected) ? (
+        <ProgressDemonDetail demon={selected} onClose={() => setSelected(null)} />
+      ) : selected && (
         <DemonModal
           demon={selected}
           onClose={() => setSelected(null)}
