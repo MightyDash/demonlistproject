@@ -460,6 +460,7 @@ export function TimelinePage({
   routeCompare = false,
   onSelectDemon,
   onOpenMonth,
+  onSelectYear,
   onOpenYearOverview,
   onOpenYearComparison,
   onBackToTimeline
@@ -472,7 +473,9 @@ export function TimelinePage({
   const [selectedYear, setSelectedYear] = useState(defaultYear);
   const [showEmptyMonths, setShowEmptyMonths] = useState(false);
   const activeYear = routeYear || selectedYear || defaultYear;
-  const selectedYearData = timeline.find(item => item.year === activeYear) || timeline[timeline.length - 1] || null;
+  const selectedYearData = routeYear
+    ? timeline.find(item => item.year === activeYear) || null
+    : timeline.find(item => item.year === activeYear) || timeline[timeline.length - 1] || null;
   const selectedMonthData = selectedYearData?.months.find(month => month.slug === routeMonth) || null;
   const isMonthPage = Boolean(routeYear && routeMonth && selectedMonthData);
   const isYearOverviewPage = Boolean(routeYear && routeOverview && selectedYearData);
@@ -552,6 +555,7 @@ export function TimelinePage({
 
   function handleSelectYear(year) {
     setSelectedYear(year);
+    onSelectYear?.(year);
   }
 
   if (!selectedYearData) {

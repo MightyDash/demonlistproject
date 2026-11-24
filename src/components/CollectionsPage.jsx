@@ -1,6 +1,7 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { CalendarDays, Check, Copy, Layers, X } from "lucide-react";
 import { difficultyClass, isInProgressDemon } from "../demonUtils.js";
+import { packSlug } from "../routeUtils.js";
 
 function amsterdamDateKey() {
   const parts = new Intl.DateTimeFormat("en-GB", {
@@ -17,11 +18,13 @@ function hashDateKey(value) {
   return Array.from(value).reduce((hash, character) => ((hash * 31) + character.charCodeAt(0)) >>> 0, 0);
 }
 
-export function CollectionsPage({ demons, packs = [] }) {
+export function CollectionsPage({ demons, packs = [], selectedPackSlug = "", dataReady = true, onOpenPack, onClosePack }) {
   const [copied, setCopied] = useState(false);
-  const [selectedPack, setSelectedPack] = useState(null);
   const [copiedPackLevelId, setCopiedPackLevelId] = useState("");
   const demonsById = useMemo(() => new Map(demons.map(demon => [String(demon.id), demon])), [demons]);
+  const selectedPack = useMemo(() => packs.find(pack => (
+    packSlug(pack) === selectedPackSlug || String(pack.id || "").toLowerCase() === selectedPackSlug
+  )) || null, [packs, selectedPackSlug]);
   const demonOfTheDay = useMemo(() => {
     const completed = demons
       .filter(demon => !isInProgressDemon(demon))
@@ -29,6 +32,15 @@ export function CollectionsPage({ demons, packs = [] }) {
     if (!completed.length) return null;
     return completed[hashDateKey(amsterdamDateKey()) % completed.length];
   }, [demons]);
+
+  useEffect(() => {
+    if (!selectedPackSlug) return undefined;
+    const closeOnEscape = event => {
+      if (event.key === "Escape") onClosePack?.();
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [onClosePack, selectedPackSlug]);
 
   async function copyLevelId() {
     if (!demonOfTheDay?.id) return;
@@ -76,7 +88,7 @@ export function CollectionsPage({ demons, packs = [] }) {
               const coverDemon = demonsById.get(String(pack.coverLevelId || "")) || packDemons[0];
               const cover = coverDemon?.thumbnail || "";
               return (
-                <button className="pack-card" key={pack.id} onClick={() => setSelectedPack(pack)} type="button">
+                <button className="pack-card" key={pack.id} onClick={() => onOpenPack?.(pack)} type="button">
                   {cover && <img src={cover} alt="" />}
                   <span className="pack-card-shade" />
                   <span className="pack-card-content">
@@ -99,9 +111,9 @@ export function CollectionsPage({ demons, packs = [] }) {
       {selectedPack && (() => {
         const packDemons = (selectedPack.levelIds || []).map(id => demonsById.get(String(id))).filter(Boolean);
         return (
-          <div className="pack-detail-backdrop" onClick={() => setSelectedPack(null)}>
+          <div className="pack-detail-backdrop" onClick={() => onClosePack?.()}>
             <section className="pack-detail" role="dialog" aria-modal="true" aria-labelledby="pack-detail-title" onClick={event => event.stopPropagation()}>
-              <button className="pack-detail-close" onClick={() => setSelectedPack(null)} type="button" aria-label="Close pack"><X size={21} /></button>
+              <button className="pack-detail-close" onClick={() => onClosePack?.()} type="button" aria-label="Close pack"><X size={21} /></button>
               <p><Layers size={17} /> Collection pack</p>
               <h2 id="pack-detail-title">{selectedPack.name}</h2>
               <div className="pack-level-list">
@@ -120,6 +132,17 @@ export function CollectionsPage({ demons, packs = [] }) {
           </div>
         );
       })()}
+
+      {dataReady && selectedPackSlug && !selectedPack && (
+        <div className="pack-detail-backdrop" onClick={() => onClosePack?.()}>
+          <section className="pack-detail" role="dialog" aria-modal="true" aria-labelledby="pack-not-found-title" onClick={event => event.stopPropagation()}>
+            <button className="pack-detail-close" onClick={() => onClosePack?.()} type="button" aria-label="Close pack"><X size={21} /></button>
+            <p><Layers size={17} /> Collection pack</p>
+            <h2 id="pack-not-found-title">Pack not found</h2>
+            <p>This pack may have been renamed, unpublished or removed.</p>
+          </section>
+        </div>
+      )}
     </main>
   );
 }

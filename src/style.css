@@ -286,6 +286,14 @@
   .offline-actions .is-spinning { animation: none; }
 }
 
+.route-not-found { display: grid; min-height: calc(100vh - 40px); place-items: center; padding: 32px; }
+.route-not-found > section { display: grid; justify-items: center; width: min(560px, 100%); padding: 54px 34px; border: 1px solid var(--line); border-radius: 24px; background: radial-gradient(circle at 75% 15%, rgba(129, 78, 220, .22), transparent 42%), #101522; text-align: center; box-shadow: 0 24px 65px rgba(0, 0, 0, .32); }
+.route-not-found svg { width: 42px; height: 42px; color: #bd8cff; }
+.route-not-found p { margin: 18px 0 7px; color: #bd8cff; font-size: .78rem; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
+.route-not-found h1 { margin: 0; font-size: clamp(2.2rem, 7vw, 4.2rem); line-height: 1; }
+.route-not-found span { max-width: 430px; margin-top: 18px; color: var(--muted); line-height: 1.6; }
+.route-not-found button { margin-top: 26px; padding: 13px 18px; border: 1px solid #b98aff; border-radius: 10px; background: linear-gradient(135deg, #8b5cf6, #b794f4); color: #100b19; font: inherit; font-weight: 900; cursor: pointer; }
+
 .progress-detail-overlay {
   position: fixed;
   inset: 0;

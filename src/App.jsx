@@ -8,14 +8,16 @@ import { DemonModal } from "./components/DemonModal.jsx";
 import { OfflineScreen } from "./components/OfflineScreen.jsx";
 import { ProgressDemonDetail } from "./components/ProgressDemonDetail.jsx";
 import { RecentChanges } from "./components/RecentChanges.jsx";
+import { RouteNotFound } from "./components/RouteNotFound.jsx";
 import { ProgressTrackerPage } from "./components/ProgressTrackerPage.jsx";
 import { ScrollToTopButton } from "./components/ScrollToTopButton.jsx";
 import { StatisticsPage } from "./components/StatisticsPage.jsx";
 import { TimelinePage } from "./components/TimelineModal.jsx";
 import { buildHistoricalRanking, comparePlacements, demonDurationSortValue, isInProgressDemon, normalizeDemon, segmentForPlacement } from "./demonUtils.js";
 import { requestJson } from "./api.js";
-import { normalizeRoute, parseTimelineRoute, ROUTES } from "./routeUtils.js";
+import { normalizeRoute, packSlug, parseDetailRoute, parseTimelineRoute, ROUTES } from "./routeUtils.js";
 import { matchesAttemptsFilter, pickRandomResult } from "./searchUtils.js";
+import { buildSharedFilterSearch, parseSharedFilters } from "./sharedUrlUtils.js";
 import { matchesTierFilter } from "./tierFilterUtils.js";
 
 const DEFAULT_SITE_VERSION = "v0.62";
@@ -131,8 +133,11 @@ export default function App() {
   const [statisticsView, setStatisticsView] = useState(false);
   const [timelineView, setTimelineView] = useState(false);
   const [timelineRoute, setTimelineRoute] = useState({ year: null, month: null, overview: false, compare: false });
+  const [routeDetail, setRouteDetail] = useState(null);
+  const [routeNotFound, setRouteNotFound] = useState(false);
   const [requests, setRequests] = useState([]);
   const [requestsLoading, setRequestsLoading] = useState(false);
+  const [, setRequestError] = useState("");
   const [historyChanges, setHistoryChanges] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState("");
@@ -143,45 +148,57 @@ export default function App() {
   const requestsLoadRef = useRef({ id: 0, controller: null });
   const historyLoadRef = useRef({ id: 0, controller: null });
   const demonDataLoadRef = useRef({ id: 0, controller: null });
+  const hasStartedUrlSyncRef = useRef(false);
   const hasLoadedLiveDemonDataRef = useRef(Boolean(initialDemonData));
   const hasReachedLiveDemonDataRef = useRef(false);
 
-  function applyRoute(pathname) {
+  function applyRoute(pathname, search = "") {
     const route = normalizeRoute(pathname);
-    const isProgressRoute = route === ROUTES.progress;
+    const detail = parseDetailRoute(route);
+    const isProgressRoute = route === ROUTES.progress || detail?.type === "progress";
+    const isCollectionsRoute = route === ROUTES.collections || detail?.type === "collection";
+    const isListRoute = route === ROUTES.home || route === ROUTES.list || detail?.type === "demon";
+    const isTimelineRoute = route === ROUTES.timeline || route.startsWith(`${ROUTES.timeline}/`);
 
     setRequestView(route === ROUTES.requests);
     setProgressView(isProgressRoute);
-    setCollectionsView(route === ROUTES.collections);
-    setYearView(current => isProgressRoute ? "progress" : current === "progress" ? "all" : current);
-    if (isProgressRoute) {
-      setQuery("");
-      setDevice("all");
+    setCollectionsView(isCollectionsRoute);
+    setRouteDetail(detail);
+    setRouteNotFound(route === ROUTES.notFound);
+
+    if (isListRoute || isProgressRoute) {
+      const filters = parseSharedFilters(search, { progress: isProgressRoute });
+      setQuery(filters.query);
+      setDevice(filters.device);
       setDeviceOpen(false);
-      setDifficulty("all");
+      setDifficulty(filters.difficulty);
       setDifficultyOpen(false);
-      setSegment("all");
-      setProgressCategory("all");
+      setSegment(filters.segment);
+      setYearView(filters.yearView);
+      setDurationSort(filters.durationSort);
+      setLevelIdSort(filters.levelIdSort);
+      setTierFilter(filters.tierFilter);
+      setProgressCategory(filters.progressCategory);
     }
     setHistoryView(route === ROUTES.history);
     setStatisticsView(route === ROUTES.statistics);
-    setTimelineView(route === ROUTES.timeline || route.startsWith(`${ROUTES.timeline}/`));
+    setTimelineView(isTimelineRoute);
     setTimelineRoute(parseTimelineRoute(route));
   }
 
-  function navigateTo(pathname, { replace = false } = {}) {
+  function navigateTo(pathname, { replace = false, state = {}, search = "" } = {}) {
     const route = normalizeRoute(pathname);
-    const nextUrl = `${route}${window.location.search}${window.location.hash}`;
+    const nextUrl = `${route}${search}`;
 
-    if (window.location.pathname !== route) {
+    if (`${window.location.pathname}${window.location.search}` !== nextUrl) {
       if (replace) {
-        window.history.replaceState({}, "", nextUrl);
+        window.history.replaceState(state, "", nextUrl);
       } else {
-        window.history.pushState({}, "", nextUrl);
+        window.history.pushState(state, "", nextUrl);
       }
     }
 
-    applyRoute(route);
+    applyRoute(route, search);
   }
 
   function abortRequestsLoad() {
@@ -284,15 +301,42 @@ export default function App() {
   }
 
   useEffect(() => {
-    applyRoute(window.location.pathname);
+    applyRoute(window.location.pathname, window.location.search);
 
     function handlePopState() {
-      applyRoute(window.location.pathname);
+      applyRoute(window.location.pathname, window.location.search);
     }
 
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
+
+  useEffect(() => {
+    if (!hasStartedUrlSyncRef.current) {
+      hasStartedUrlSyncRef.current = true;
+      return;
+    }
+    const route = normalizeRoute(window.location.pathname);
+    const isProgressRoute = route === ROUTES.progress;
+    const isListRoute = route === ROUTES.home || route === ROUTES.list;
+    if (!isProgressRoute && !isListRoute) return;
+
+    const search = buildSharedFilterSearch({
+      query,
+      device,
+      difficulty,
+      segment,
+      yearView,
+      durationSort,
+      levelIdSort,
+      tierFilter,
+      progressCategory
+    }, { progress: isProgressRoute });
+    const nextUrl = `${route}${search}`;
+    if (`${window.location.pathname}${window.location.search}` !== nextUrl) {
+      window.history.replaceState(window.history.state || {}, "", nextUrl);
+    }
+  }, [query, device, difficulty, segment, yearView, durationSort, levelIdSort, tierFilter, progressCategory]);
 
   useEffect(() => {
     loadRequests({ silent: true });
@@ -602,6 +646,24 @@ export default function App() {
     );
   }, [selected, filtered]);
 
+  const routeDemonTarget = useMemo(() => {
+    if (!routeDetail || routeDetail.type === "collection") return null;
+    const matchingDemon = demons.find(demon => String(demon.id || "") === String(routeDetail.id || ""));
+    if (routeDetail.type === "progress" && matchingDemon && !isInProgressDemon(matchingDemon)) return null;
+    return matchingDemon || null;
+  }, [demons, routeDetail]);
+
+  useEffect(() => {
+    setSelected(routeDemonTarget);
+  }, [routeDemonTarget]);
+
+  const detailRouteMissing = Boolean(
+    routeDetail &&
+    routeDetail.type !== "collection" &&
+    ["live", "mock", "error"].includes(source) &&
+    !routeDemonTarget
+  );
+
   const displayedDemons = useMemo(() => {
     if (!isMobileView) return filtered;
     if (viewMode === "banner" || viewMode === "grid") return filtered.slice(0, visibleDemonCount);
@@ -656,15 +718,49 @@ export default function App() {
     }, 80);
   }
 
+  function openDemonDetail(demon) {
+    if (!demon?.id) return;
+    const returnTo = `${window.location.pathname}${window.location.search}`;
+    navigateTo(`/demon/${encodeURIComponent(demon.id)}`, { state: { returnTo } });
+  }
+
+  function openProgressDetail(demon) {
+    if (!demon?.id) return;
+    const returnTo = `${window.location.pathname}${window.location.search}`;
+    navigateTo(`${ROUTES.progress}/${encodeURIComponent(demon.id)}`, { state: { returnTo } });
+  }
+
+  function openPackDetail(pack) {
+    const returnTo = `${window.location.pathname}${window.location.search}`;
+    navigateTo(`${ROUTES.collections}/${encodeURIComponent(packSlug(pack))}`, { state: { returnTo } });
+  }
+
+  function closeRouteDetail(fallbackRoute) {
+    const returnTo = window.history.state?.returnTo;
+    if (returnTo) {
+      window.history.back();
+      return;
+    }
+    navigateTo(fallbackRoute, { replace: true });
+  }
+
+  function replaceDemonDetail(demon) {
+    if (!demon?.id) return;
+    navigateTo(`/demon/${encodeURIComponent(demon.id)}`, {
+      replace: true,
+      state: window.history.state || {}
+    });
+  }
+
   function goToPrev() {
     if (currentIndex > 0) {
-      setSelected(filtered[currentIndex - 1]);
+      replaceDemonDetail(filtered[currentIndex - 1]);
     }
   }
 
   function goToNext() {
     if (currentIndex >= 0 && currentIndex < filtered.length - 1) {
-      setSelected(filtered[currentIndex + 1]);
+      replaceDemonDetail(filtered[currentIndex + 1]);
     }
   }
 
@@ -700,14 +796,14 @@ export default function App() {
   useEffect(() => {
     function handleKey(e) {
       if (!selected) return;
-      if (e.key === "ArrowLeft") goToPrev();
-      if (e.key === "ArrowRight") goToNext();
-      if (e.key === "Escape") setSelected(null);
+      if (routeDetail?.type !== "progress" && e.key === "ArrowLeft") goToPrev();
+      if (routeDetail?.type !== "progress" && e.key === "ArrowRight") goToNext();
+      if (routeDetail?.type !== "progress" && e.key === "Escape") closeRouteDetail(ROUTES.home);
     }
 
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [selected, currentIndex, filtered]);
+  }, [selected, currentIndex, filtered, routeDetail]);
 
   const projectedFuturePlacements = useMemo(() => {
     const completedDemons = demons.filter(demon => !isInProgressDemon(demon));
@@ -738,7 +834,7 @@ export default function App() {
 
   const demonListContent = (
     <DemonListContent
-      setSelected={setSelected}
+      setSelected={openDemonDetail}
       query={query}
       setQuery={setQuery}
       device={device}
@@ -802,7 +898,15 @@ export default function App() {
           siteChangelog={siteChangelog}
         />
 
-      {requestView ? (
+      {routeNotFound || detailRouteMissing ? (
+        <RouteNotFound
+          title={detailRouteMissing ? "Demon not found" : "Page not found"}
+          message={detailRouteMissing
+            ? "This demon may have been removed, or this shared link contains an invalid level ID."
+            : "This shared link is invalid or the page is no longer available."}
+          onBack={() => navigateTo(ROUTES.home, { replace: true })}
+        />
+      ) : requestView ? (
         <>
           <div className="requests-under-construction-page" aria-hidden="true">
             {demonListContent}
@@ -825,9 +929,16 @@ export default function App() {
           onBack={() => navigateTo(ROUTES.home)}
         />
       ) : collectionsView ? (
-        <CollectionsPage demons={demons} packs={packs} />
+        <CollectionsPage
+          demons={demons}
+          packs={packs}
+          selectedPackSlug={routeDetail?.type === "collection" ? routeDetail.slug : ""}
+          dataReady={["live", "mock", "error"].includes(source)}
+          onOpenPack={openPackDetail}
+          onClosePack={() => closeRouteDetail(ROUTES.collections)}
+        />
       ) : statisticsView ? (
-        <StatisticsPage demons={demons} onSelectDemon={setSelected} />
+        <StatisticsPage demons={demons} onSelectDemon={openDemonDetail} />
       ) : timelineView ? (
         <TimelinePage
           demons={demons}
@@ -838,22 +949,23 @@ export default function App() {
           routeMonth={timelineRoute.month}
           routeOverview={timelineRoute.overview}
           routeCompare={timelineRoute.compare}
-          onSelectDemon={setSelected}
+          onSelectDemon={openDemonDetail}
           onOpenMonth={(year, month) => navigateTo(`${ROUTES.timeline}/${year}/${month}`)}
+          onSelectYear={year => navigateTo(`${ROUTES.timeline}/${year}`)}
           onOpenYearOverview={year => navigateTo(`${ROUTES.timeline}/${year}/overview`)}
           onOpenYearComparison={() => navigateTo(`${ROUTES.timeline}/compare`)}
-          onBackToTimeline={() => navigateTo(ROUTES.timeline)}
+          onBackToTimeline={() => navigateTo(timelineRoute.year ? `${ROUTES.timeline}/${timelineRoute.year}` : ROUTES.timeline)}
         />
       ) : progressView ? (
-        <ProgressTrackerPage demons={demons.filter(isInProgressDemon)} activeFilter={progressCategory} onFilterChange={setProgressCategory} onSelectDemon={setSelected} projectedPlacements={projectedFuturePlacements} />
+        <ProgressTrackerPage demons={demons.filter(isInProgressDemon)} activeFilter={progressCategory} onFilterChange={setProgressCategory} onSelectDemon={openProgressDetail} projectedPlacements={projectedFuturePlacements} />
       ) : demonListContent}
 
       {selected && progressView && isInProgressDemon(selected) ? (
-        <ProgressDemonDetail demon={selected} onClose={() => setSelected(null)} />
+        <ProgressDemonDetail demon={selected} onClose={() => closeRouteDetail(ROUTES.progress)} />
       ) : selected && (
         <DemonModal
           demon={selected}
-          onClose={() => setSelected(null)}
+          onClose={() => closeRouteDetail(ROUTES.home)}
           onPrev={goToPrev}
           onNext={goToNext}
           hasPrev={currentIndex > 0}
