@@ -8,7 +8,7 @@ import {
   Search,
   X
 } from "lucide-react";
-import { formatNumber, formatTier } from "../demonUtils.js";
+import { formatNumber, formatTier, getDemonYouTubeSearchUrl } from "../demonUtils.js";
 import { SHEET_API_URL } from "../config.js";
 import { requestJson } from "../api.js";
 import { DeviceLabel } from "./DeviceLabel.jsx";
@@ -43,7 +43,7 @@ export function DemonModal({
   const thumbnailSrc = demon.id
     ? `https://levelthumbs.prevter.me/thumbnail/${demon.id}`
     : "";
-  const youtubeSearchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(`${demon.name || ""} ${demon.creator || ""} Geometry Dash`)}`;
+  const youtubeSearchUrl = getDemonYouTubeSearchUrl(demon);
   const cleanPlacement = String(demon.placement || "").trim() || "Unplaced";
   const cleanDifficulty = demon.difficulty || "Unknown";
   const titleLength = String(demon.name || "").length;

@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
 import { Check, Copy, Database, Dices, Music2, RefreshCw, Search, SlidersHorizontal, Sparkles } from "lucide-react";
+import { getDemonYouTubeSearchUrl } from "../demonUtils.js";
 import { loadGddlDemons, pickRandomGddlDemon } from "../gddlFinderUtils.js";
 
 const TIER_OPTIONS = Array.from({ length: 39 }, (_, index) => index + 1);
@@ -143,6 +144,9 @@ export function DemonFinderPage() {
                 <div className="demon-finder-result-actions">
                   <button type="button" onClick={copyId}>{copied ? <Check size={18} /> : <Copy size={18} />}{copied ? "Copied!" : "Copy ID"}</button>
                   <button type="button" onClick={findDemon}><Dices size={18} /> Try another</button>
+                  <a href={getDemonYouTubeSearchUrl(result)} target="_blank" rel="noreferrer">
+                    <Search size={18} /> Search up on YouTube
+                  </a>
                 </div>
                 <small className="demon-finder-match-count">Chosen from {matchingCount.toLocaleString("nl-NL")} matching {matchingCount === 1 ? "demon" : "demons"}.</small>
               </div>

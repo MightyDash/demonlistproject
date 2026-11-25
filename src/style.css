@@ -428,7 +428,7 @@
 }
 
 .demon-finder-submit,
-.demon-finder-result-actions button {
+.demon-finder-result-actions :is(button, a) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -570,17 +570,22 @@
   gap: 9px;
 }
 
-.demon-finder-result-actions button {
+.demon-finder-result-actions :is(button, a) {
   min-width: 128px;
   min-height: 45px;
   padding: 0 15px;
 }
 
-.demon-finder-result-actions button + button {
+.demon-finder-result-actions button + button,
+.demon-finder-result-actions a {
   border: 1px solid rgba(208, 183, 255, 0.34);
   color: #f4efff;
   background: rgba(15, 13, 24, 0.72);
   box-shadow: none;
+}
+
+.demon-finder-result-actions a {
+  text-decoration: none;
 }
 
 .demon-finder-match-count {
@@ -714,10 +719,14 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .demon-finder-result-actions button {
+  .demon-finder-result-actions :is(button, a) {
     min-width: 0;
     padding: 0 8px;
     font-size: 0.82rem;
+  }
+
+  .demon-finder-result-actions a {
+    grid-column: 1 / -1;
   }
 }
 

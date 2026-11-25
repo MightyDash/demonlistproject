@@ -1,5 +1,10 @@
 import { normalizeDevice } from "./deviceUtils.js";
 
+export function getDemonYouTubeSearchUrl({ name = "", creator = "" }) {
+  const query = `${name || ""} ${creator || ""} Geometry Dash`;
+  return `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
+}
+
 export function normalizeDemon(row) {
   const id = String(row.id ?? row.ID ?? "");
   const name = row.name ?? row.demon ?? row.Demon ?? "";
