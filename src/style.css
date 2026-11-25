@@ -760,8 +760,14 @@
     height: auto;
   }
 
+  .demon-finder-result > article > img {
+    position: static;
+    display: block;
+    height: clamp(96px, 19svh, 156px);
+  }
+
   .demon-finder-result-shade {
-    background: linear-gradient(0deg, rgba(5, 7, 13, 0.96), rgba(5, 7, 13, 0.66));
+    display: none;
   }
 
   .demon-finder-result-content {
