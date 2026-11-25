@@ -1,9 +1,10 @@
 import React, { useRef, useState } from "react";
 import { Check, Copy, Database, Dices, Music2, RefreshCw, Search, SlidersHorizontal, Sparkles } from "lucide-react";
 import { getDemonYouTubeSearchUrl } from "../demonUtils.js";
-import { loadGddlDemons, pickRandomGddlDemon } from "../gddlFinderUtils.js";
+import { getFinderTierBounds, loadGddlDemons, MAX_FINDER_TIER, pickRandomGddlDemon } from "../gddlFinderUtils.js";
 
-const TIER_OPTIONS = Array.from({ length: 39 }, (_, index) => index + 1);
+const TIER_OPTIONS = Array.from({ length: MAX_FINDER_TIER }, (_, index) => index + 1);
+const tierRangeFormat = new Intl.NumberFormat("nl-NL", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 function formatScore(value) {
   if (!Number.isFinite(value)) return "Unrated";
@@ -24,6 +25,8 @@ export function DemonFinderPage() {
   const resultCache = useRef({ key: "", levels: [] });
 
   const canSearch = useTier || useEnjoyment;
+  const tierBounds = getFinderTierBounds(tier);
+  const displayedTierMax = tierBounds.includesMax ? tierBounds.max : tierBounds.max - 0.01;
 
   async function findDemon() {
     if (!canSearch || loading) return;
@@ -92,7 +95,7 @@ export function DemonFinderPage() {
                 {TIER_OPTIONS.map(value => <option value={value} key={value}>Tier {value}</option>)}
               </select>
             </label>
-            <small>Includes every GDDL rating from {tier},00 through {tier},99.</small>
+            <small>GDDL rating range: {tierRangeFormat.format(tierBounds.min)} – {tierRangeFormat.format(displayedTierMax)}.</small>
           </fieldset>
 
           <fieldset className={useEnjoyment ? "active" : ""}>

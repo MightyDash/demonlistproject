@@ -1,4 +1,5 @@
 export const GDDL_SHEET_ID = "1qKlWKpDkOpU1ZF6V6xGfutDY2NvcA8MNPnsv6GBkKPQ";
+export const MAX_FINDER_TIER = 39;
 
 function clampNumber(value, minimum, maximum, fallback) {
   const parsed = Number(value);
@@ -10,8 +11,17 @@ function queryNumber(value) {
   return Number(value).toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1");
 }
 
+export function getFinderTierBounds(tier) {
+  const includesMax = tier === MAX_FINDER_TIER;
+  return {
+    min: Math.max(1, tier - 0.5),
+    max: includesMax ? MAX_FINDER_TIER : tier + 0.5,
+    includesMax
+  };
+}
+
 export function normalizeFinderFilters(filters) {
-  const tier = Math.round(clampNumber(filters.tier, 1, 39, 1));
+  const tier = Math.round(clampNumber(filters.tier, 1, MAX_FINDER_TIER, 1));
   const enjoymentMin = clampNumber(filters.enjoymentMin, 0, 10, 0);
   const enjoymentMax = clampNumber(filters.enjoymentMax, 0, 10, 10);
 
@@ -29,9 +39,10 @@ export function buildGddlFinderQuery(filters) {
   const clauses = [];
 
   if (normalized.useTier) {
+    const { min, max, includesMax } = getFinderTierBounds(normalized.tier);
     clauses.push("F is not null");
-    clauses.push(`F >= ${normalized.tier}`);
-    clauses.push(`F < ${normalized.tier + 1}`);
+    clauses.push(`F >= ${min}`);
+    clauses.push(`F ${includesMax ? "<=" : "<"} ${max}`);
   }
 
   if (normalized.useEnjoyment) {

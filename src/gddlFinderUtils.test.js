@@ -3,8 +3,18 @@ import { buildGddlFinderQuery, pickRandomGddlDemon, rowsFromGddlResponse } from 
 
 describe("GDDL finder utilities", () => {
   it("builds independent tier and enjoyment filters", () => {
-    expect(buildGddlFinderQuery({ useTier: true, tier: 7 })).toContain("F >= 7 and F < 8");
+    expect(buildGddlFinderQuery({ useTier: true, tier: 7 })).toContain("F >= 6.5 and F < 7.5");
     expect(buildGddlFinderQuery({ useEnjoyment: true, enjoymentMin: 7.5, enjoymentMax: 9 })).toContain("G >= 7.5 and G <= 9");
+  });
+
+  it.each([
+    [1, "F >= 1 and F < 1.5"],
+    [2, "F >= 1.5 and F < 2.5"],
+    [3, "F >= 2.5 and F < 3.5"],
+    [38, "F >= 37.5 and F < 38.5"],
+    [39, "F >= 38.5 and F <= 39"]
+  ])("uses the correct boundaries for tier %i", (tier, expected) => {
+    expect(buildGddlFinderQuery({ useTier: true, tier })).toContain(expected);
   });
 
   it("combines both filters and normalizes reversed enjoyment values", () => {
@@ -15,7 +25,7 @@ describe("GDDL finder utilities", () => {
       enjoymentMin: 9,
       enjoymentMax: 6
     });
-    expect(query).toContain("F >= 12 and F < 13");
+    expect(query).toContain("F >= 11.5 and F < 12.5");
     expect(query).toContain("G >= 6 and G <= 9");
   });
 
