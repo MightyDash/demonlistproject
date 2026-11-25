@@ -83,7 +83,7 @@ export function DemonFinderPage() {
             <div><h2>Search filters</h2><p>At least one filter must be active.</p></div>
           </div>
 
-          <fieldset className={useTier ? "active" : ""}>
+          <fieldset className={`finder-tier-filter ${useTier ? "active" : ""}`}>
             <label className="finder-filter-toggle">
               <input type="checkbox" checked={useTier} onChange={event => setUseTier(event.target.checked)} />
               <span aria-hidden="true" />
@@ -91,14 +91,14 @@ export function DemonFinderPage() {
             </label>
             <label className="finder-field">
               <span>Exact tier</span>
-              <select disabled={!useTier} value={tier} onChange={event => setTier(Number(event.target.value))}>
+              <select aria-label="Exact tier" disabled={!useTier} value={tier} onChange={event => setTier(Number(event.target.value))}>
                 {TIER_OPTIONS.map(value => <option value={value} key={value}>Tier {value}</option>)}
               </select>
             </label>
             <small>GDDL rating range: {tierRangeFormat.format(tierBounds.min)} – {tierRangeFormat.format(displayedTierMax)}.</small>
           </fieldset>
 
-          <fieldset className={useEnjoyment ? "active" : ""}>
+          <fieldset className={`finder-enjoyment-filter ${useEnjoyment ? "active" : ""}`}>
             <label className="finder-filter-toggle">
               <input type="checkbox" checked={useEnjoyment} onChange={event => setUseEnjoyment(event.target.checked)} />
               <span aria-hidden="true" />
@@ -146,7 +146,7 @@ export function DemonFinderPage() {
                 <p className="demon-finder-song"><Music2 size={16} /> {result.song}</p>
                 <div className="demon-finder-result-actions">
                   <button type="button" onClick={copyId}>{copied ? <Check size={18} /> : <Copy size={18} />}{copied ? "Copied!" : "Copy ID"}</button>
-                  <button type="button" onClick={findDemon}><Dices size={18} /> Try another</button>
+                  <button className="demon-finder-reroll" type="button" onClick={findDemon}><Dices size={18} /> Try another</button>
                   <a href={getDemonYouTubeSearchUrl(result)} target="_blank" rel="noreferrer">
                     <Search size={18} /> Search up on YouTube
                   </a>

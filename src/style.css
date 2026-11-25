@@ -650,83 +650,201 @@
 }
 
 @media (max-width: 620px) {
+  .app.finder-app {
+    padding: 8px 8px max(8px, env(safe-area-inset-bottom)) !important;
+  }
+
   .demon-finder-page {
-    min-height: calc(100dvh - 16px);
-    padding: 66px 10px 14px;
+    min-height: calc(100dvh - 8px - max(8px, env(safe-area-inset-bottom)));
+    padding: 8px;
     border-radius: 16px;
   }
 
   .demon-finder-heading {
-    align-items: flex-start;
-    gap: 11px;
-    margin-bottom: 15px;
+    min-height: 44px;
+    gap: 8px;
+    margin-bottom: 8px;
+    padding-right: 50px;
   }
 
   .demon-finder-heading > span {
-    width: 43px;
-    height: 43px;
-    border-radius: 12px;
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+  }
+
+  .demon-finder-heading > span svg {
+    width: 18px;
   }
 
   .demon-finder-heading h1 {
-    font-size: clamp(1.5rem, 7vw, 2rem);
+    font-size: clamp(1.05rem, 4.8vw, 1.45rem);
   }
 
-  .demon-finder-heading small {
-    font-size: 0.79rem;
+  .demon-finder-heading p,
+  .demon-finder-heading small,
+  .demon-finder-controls-title,
+  .demon-finder-source,
+  .demon-finder-controls fieldset:not(.active) > :not(.finder-filter-toggle),
+  .finder-tier-filter .finder-field > span,
+  .finder-enjoyment-filter > small,
+  .demon-finder-result-content > p:first-child,
+  .demon-finder-result-actions .demon-finder-reroll {
+    display: none;
+  }
+
+  .demon-finder-workspace {
+    gap: 8px;
   }
 
   .demon-finder-controls {
-    padding: 13px;
+    gap: 6px;
+    padding: 8px;
     border-radius: 16px;
   }
 
   .demon-finder-controls fieldset {
-    padding: 13px;
+    gap: 0 8px;
+    padding: 0 8px;
+    border-radius: 11px;
+  }
+
+  .demon-finder-controls .finder-tier-filter.active {
+    grid-template-columns: minmax(0, 1fr) minmax(96px, 42%);
+    align-items: center;
+  }
+
+  .finder-tier-filter > small {
+    grid-column: 1 / -1;
+    padding-bottom: 6px;
+    font-size: 0.72rem;
+  }
+
+  .finder-filter-toggle {
+    gap: 7px;
+    min-height: 44px;
+    font-size: 0.85rem;
+  }
+
+  .finder-filter-toggle > span {
+    flex: 0 0 38px;
+  }
+
+  .finder-field {
+    gap: 3px;
+  }
+
+  .finder-field input,
+  .finder-field select {
+    min-height: 44px;
+    padding: 0 8px;
+    font-size: 16px;
+  }
+
+  .finder-enjoyment-fields {
+    padding-bottom: 7px;
+  }
+
+  .demon-finder-submit {
+    min-height: 44px;
   }
 
   .demon-finder-result {
-    min-height: 480px;
+    min-height: 0;
     border-radius: 16px;
   }
 
+  .demon-finder-result > article {
+    position: relative;
+    inset: auto;
+    height: auto;
+  }
+
   .demon-finder-result-shade {
-    background: linear-gradient(0deg, rgba(5, 7, 13, 0.98) 0%, rgba(5, 7, 13, 0.78) 58%, rgba(5, 7, 13, 0.33) 100%);
+    background: linear-gradient(0deg, rgba(5, 7, 13, 0.96), rgba(5, 7, 13, 0.66));
   }
 
   .demon-finder-result-content {
-    justify-content: flex-end;
     width: 100%;
-    padding: 24px 18px;
+    height: auto;
+    padding: 10px;
   }
 
   .demon-finder-result-content h2 {
-    font-size: clamp(2.15rem, 13vw, 3.6rem);
+    margin: 0 0 3px;
+    font-size: clamp(1.25rem, 5.5vw, 1.85rem);
+    line-height: 1.1;
   }
 
   .demon-finder-creator {
-    margin-bottom: 15px;
+    margin-bottom: 7px;
+    overflow-wrap: anywhere;
+    font-size: 0.85rem;
+  }
+
+  .demon-finder-result-stats {
+    gap: 5px;
   }
 
   .demon-finder-result-stats > span {
     min-width: 0;
     flex: 1 1 28%;
-    padding: 8px;
+    padding: 4px 6px;
+    border-radius: 8px;
+  }
+
+  .demon-finder-song {
+    margin: 6px 0;
+    overflow-wrap: anywhere;
+    font-size: 0.78rem;
+  }
+
+  .demon-finder-song svg {
+    flex-shrink: 0;
   }
 
   .demon-finder-result-actions {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    gap: 6px;
   }
 
   .demon-finder-result-actions :is(button, a) {
     min-width: 0;
-    padding: 0 8px;
+    min-height: 44px;
+    gap: 5px;
+    padding: 4px 6px;
+    font-size: 0.77rem;
+    text-align: center;
+  }
+
+  .demon-finder-result-actions svg {
+    flex-shrink: 0;
+    width: 15px;
+  }
+
+  .demon-finder-match-count {
+    margin-top: 6px;
+    color: #b7bfd2;
+  }
+
+  .demon-finder-empty,
+  .demon-finder-loading {
+    gap: 4px;
+    padding: 12px;
     font-size: 0.82rem;
   }
 
-  .demon-finder-result-actions a {
-    grid-column: 1 / -1;
+  .demon-finder-empty > svg,
+  .demon-finder-loading > svg {
+    width: 24px;
+    height: 24px;
+    margin-bottom: 0;
+  }
+
+  .demon-finder-empty strong,
+  .demon-finder-loading strong {
+    font-size: 0.95rem;
   }
 }
 
