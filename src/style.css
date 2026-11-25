@@ -201,6 +201,526 @@
   }
 }
 
+/* Random GDDL demon finder */
+.finder-app {
+  background: #101522 !important;
+}
+
+.demon-finder-page {
+  min-height: calc(100vh - 48px);
+  padding: clamp(22px, 2.8vw, 42px);
+  border: 1px solid rgba(164, 177, 210, 0.14);
+  border-radius: 22px;
+  color: #f5f2ff;
+  background:
+    radial-gradient(circle at 88% 4%, rgba(121, 78, 217, 0.18), transparent 28rem),
+    linear-gradient(145deg, #121827, #0e1320 62%, #101625);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.24);
+}
+
+.demon-finder-heading {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  max-width: 1380px;
+  margin: 0 auto 26px;
+}
+
+.demon-finder-heading > span,
+.demon-finder-controls-title > span {
+  display: grid;
+  flex: 0 0 auto;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  border: 1px solid rgba(190, 155, 255, 0.32);
+  border-radius: 15px;
+  color: #c7a6ff;
+  background: rgba(126, 76, 213, 0.17);
+}
+
+.demon-finder-heading p,
+.demon-finder-result-content > p:first-child {
+  margin: 0 0 4px;
+  color: #c39bff;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.demon-finder-heading h1 {
+  margin: 0;
+  font-size: clamp(1.65rem, 2.2vw, 2.35rem);
+  line-height: 1.05;
+}
+
+.demon-finder-heading small {
+  display: block;
+  margin-top: 6px;
+  color: #aeb5c8;
+  font-size: 0.93rem;
+}
+
+.demon-finder-workspace {
+  display: grid;
+  grid-template-columns: minmax(310px, 0.78fr) minmax(420px, 1.22fr);
+  gap: 18px;
+  max-width: 1380px;
+  margin: 0 auto;
+}
+
+.demon-finder-controls,
+.demon-finder-result {
+  min-width: 0;
+  border: 1px solid rgba(164, 177, 210, 0.16);
+  border-radius: 20px;
+  background: rgba(9, 12, 21, 0.69);
+}
+
+.demon-finder-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  padding: 20px;
+}
+
+.demon-finder-controls-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 2px;
+}
+
+.demon-finder-controls-title > span {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+}
+
+.demon-finder-controls-title h2,
+.demon-finder-controls-title p {
+  margin: 0;
+}
+
+.demon-finder-controls-title h2 {
+  font-size: 1.05rem;
+}
+
+.demon-finder-controls-title p,
+.demon-finder-controls fieldset > small,
+.demon-finder-source,
+.demon-finder-match-count {
+  color: #959db2;
+  font-size: 0.78rem;
+}
+
+.demon-finder-controls fieldset {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid rgba(164, 177, 210, 0.14);
+  border-radius: 15px;
+  opacity: 0.7;
+  background: rgba(25, 28, 43, 0.68);
+  transition: border-color 160ms ease, opacity 160ms ease, background 160ms ease;
+}
+
+.demon-finder-controls fieldset.active {
+  border-color: rgba(184, 139, 255, 0.42);
+  opacity: 1;
+  background: rgba(56, 37, 87, 0.38);
+}
+
+.finder-filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 28px;
+  cursor: pointer;
+}
+
+.finder-filter-toggle input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.finder-filter-toggle > span {
+  position: relative;
+  width: 38px;
+  height: 22px;
+  border: 1px solid rgba(171, 179, 203, 0.36);
+  border-radius: 999px;
+  background: #242938;
+  transition: background 160ms ease;
+}
+
+.finder-filter-toggle > span::after {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  content: "";
+  background: #aab1c2;
+  transition: transform 160ms ease, background 160ms ease;
+}
+
+.finder-filter-toggle input:checked + span {
+  border-color: #9e6cf3;
+  background: #7540d1;
+}
+
+.finder-filter-toggle input:checked + span::after {
+  background: #fff;
+  transform: translateX(16px);
+}
+
+.finder-filter-toggle input:focus-visible + span {
+  outline: 2px solid #c9aaff;
+  outline-offset: 3px;
+}
+
+.finder-field {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  color: #b9c0d0;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.finder-field input,
+.finder-field select {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 12px;
+  border: 1px solid rgba(171, 179, 203, 0.25);
+  border-radius: 11px;
+  outline: none;
+  color: #f7f4ff;
+  font: inherit;
+  font-size: 0.95rem;
+  background: #0e121c;
+}
+
+.finder-field input:focus,
+.finder-field select:focus {
+  border-color: #a977ff;
+  box-shadow: 0 0 0 3px rgba(159, 105, 255, 0.12);
+}
+
+.finder-field input:disabled,
+.finder-field select:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.finder-enjoyment-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.demon-finder-submit,
+.demon-finder-result-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 50px;
+  border: 0;
+  border-radius: 12px;
+  color: #100a1d;
+  font-size: 0.94rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #c5a3ff, #8d56ec);
+  cursor: pointer;
+  box-shadow: 0 12px 28px rgba(105, 58, 189, 0.25);
+}
+
+.demon-finder-submit:disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.45);
+  opacity: 0.52;
+}
+
+.demon-finder-hint {
+  margin: -3px 0 0;
+  color: #ff9eac;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.demon-finder-source {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 0;
+  text-align: center;
+}
+
+.demon-finder-result {
+  position: relative;
+  display: grid;
+  min-height: 570px;
+  overflow: hidden;
+  place-items: center;
+}
+
+.demon-finder-result > article,
+.demon-finder-result > article > img,
+.demon-finder-result-shade {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.demon-finder-result > article > img {
+  object-fit: cover;
+}
+
+.demon-finder-result-shade {
+  background:
+    linear-gradient(90deg, rgba(5, 7, 13, 0.97) 0%, rgba(6, 8, 14, 0.86) 42%, rgba(6, 8, 14, 0.3) 100%),
+    linear-gradient(0deg, rgba(6, 8, 14, 0.82), transparent 52%);
+}
+
+.demon-finder-result-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: min(72%, 620px);
+  height: 100%;
+  padding: clamp(28px, 4vw, 54px);
+}
+
+.demon-finder-result-content > p:first-child {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.demon-finder-result-content h2 {
+  max-width: 100%;
+  margin: 9px 0 4px;
+  overflow-wrap: anywhere;
+  font-size: clamp(2.4rem, 5vw, 5.4rem);
+  line-height: 0.93;
+  text-shadow: 0 4px 22px rgba(0, 0, 0, 0.5);
+}
+
+.demon-finder-creator {
+  margin-bottom: 24px;
+  color: #c6cad7;
+  font-size: clamp(1rem, 1.5vw, 1.35rem);
+}
+
+.demon-finder-result-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.demon-finder-result-stats > span {
+  display: grid;
+  min-width: 92px;
+  gap: 2px;
+  padding: 9px 11px;
+  border: 1px solid rgba(217, 201, 255, 0.2);
+  border-radius: 10px;
+  background: rgba(8, 10, 17, 0.68);
+  backdrop-filter: blur(8px);
+}
+
+.demon-finder-result-stats small {
+  color: #9ea6bb;
+  font-size: 0.67rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.demon-finder-result-stats strong {
+  overflow-wrap: anywhere;
+  font-size: 0.9rem;
+}
+
+.demon-finder-song {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 16px 0;
+  color: #c6cad7;
+  font-size: 0.88rem;
+}
+
+.demon-finder-result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.demon-finder-result-actions button {
+  min-width: 128px;
+  min-height: 45px;
+  padding: 0 15px;
+}
+
+.demon-finder-result-actions button + button {
+  border: 1px solid rgba(208, 183, 255, 0.34);
+  color: #f4efff;
+  background: rgba(15, 13, 24, 0.72);
+  box-shadow: none;
+}
+
+.demon-finder-match-count {
+  margin-top: 13px;
+}
+
+.demon-finder-empty,
+.demon-finder-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 340px;
+  gap: 9px;
+  padding: 28px;
+  color: #aeb5c8;
+  text-align: center;
+}
+
+.demon-finder-empty > svg,
+.demon-finder-loading > svg {
+  width: 50px;
+  height: 50px;
+  margin-bottom: 5px;
+  color: #b98cff;
+}
+
+.demon-finder-empty strong,
+.demon-finder-loading strong {
+  color: #f4efff;
+  font-size: 1.18rem;
+}
+
+.demon-finder-empty.error > svg {
+  color: #ff8ca0;
+}
+
+.finder-spin {
+  animation: finder-spin 900ms linear infinite;
+}
+
+@keyframes finder-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 980px) {
+  .demon-finder-page {
+    min-height: calc(100dvh - 24px);
+    padding: 18px;
+  }
+
+  .demon-finder-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .demon-finder-result {
+    min-height: 500px;
+  }
+
+  .finder-app .compact-page-menu-button {
+    display: grid;
+  }
+}
+
+@media (max-width: 620px) {
+  .demon-finder-page {
+    min-height: calc(100dvh - 16px);
+    padding: 66px 10px 14px;
+    border-radius: 16px;
+  }
+
+  .demon-finder-heading {
+    align-items: flex-start;
+    gap: 11px;
+    margin-bottom: 15px;
+  }
+
+  .demon-finder-heading > span {
+    width: 43px;
+    height: 43px;
+    border-radius: 12px;
+  }
+
+  .demon-finder-heading h1 {
+    font-size: clamp(1.5rem, 7vw, 2rem);
+  }
+
+  .demon-finder-heading small {
+    font-size: 0.79rem;
+  }
+
+  .demon-finder-controls {
+    padding: 13px;
+    border-radius: 16px;
+  }
+
+  .demon-finder-controls fieldset {
+    padding: 13px;
+  }
+
+  .demon-finder-result {
+    min-height: 480px;
+    border-radius: 16px;
+  }
+
+  .demon-finder-result-shade {
+    background: linear-gradient(0deg, rgba(5, 7, 13, 0.98) 0%, rgba(5, 7, 13, 0.78) 58%, rgba(5, 7, 13, 0.33) 100%);
+  }
+
+  .demon-finder-result-content {
+    justify-content: flex-end;
+    width: 100%;
+    padding: 24px 18px;
+  }
+
+  .demon-finder-result-content h2 {
+    font-size: clamp(2.15rem, 13vw, 3.6rem);
+  }
+
+  .demon-finder-creator {
+    margin-bottom: 15px;
+  }
+
+  .demon-finder-result-stats > span {
+    min-width: 0;
+    flex: 1 1 28%;
+    padding: 8px;
+  }
+
+  .demon-finder-result-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .demon-finder-result-actions button {
+    min-width: 0;
+    padding: 0 8px;
+    font-size: 0.82rem;
+  }
+}
+
 .offline-screen {
   position: fixed;
   inset: 0;

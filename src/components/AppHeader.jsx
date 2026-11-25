@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import {
   BarChart3,
   CalendarDays,
+  Dices,
   FileClock,
   Home,
   Inbox,
@@ -27,12 +28,14 @@ export function AppHeader({
   progressView,
   collectionsView,
   statisticsView,
+  finderView,
   requestView,
   timelineView,
   onOpenList,
   onOpenProgress,
   onOpenCollections,
   onOpenStatistics,
+  onOpenFinder,
   onOpenRequests,
   onOpenHistory,
   onOpenTimeline,
@@ -59,7 +62,9 @@ export function AppHeader({
         ? "List Changes"
         : timelineView
           ? "Timeline"
-          : "Demon List";
+          : finderView
+            ? "Demon Finder"
+            : "Demon List";
 
   const pageSubtitle = progressView
     ? "Track the demons I am currently working toward completing."
@@ -69,7 +74,9 @@ export function AppHeader({
         ? "Browse all changes made to the demon list."
         : timelineView
           ? "A year-by-year view of when demons were completed."
-          : "A clean, searchable demon list powered by my Google Spreadsheet.";
+          : finderView
+            ? "Find a random GDDL demon by tier and enjoyment."
+            : "A clean, searchable demon list powered by my Google Spreadsheet.";
 
   function openVersionInfo() {
     setShowVersionInfo(true);
@@ -88,6 +95,7 @@ export function AppHeader({
     !progressView &&
     !collectionsView &&
     !statisticsView &&
+    !finderView &&
     !requestView &&
     !historyView &&
     !timelineView;
@@ -102,7 +110,7 @@ export function AppHeader({
           : "Loading";
 
   const usesCompactPageHeader =
-    progressView || collectionsView || statisticsView || timelineView;
+    progressView || collectionsView || statisticsView || finderView || timelineView;
 
   return (
     <>
@@ -164,6 +172,15 @@ export function AppHeader({
           >
             <ListChecks size={21} />
             <span>Progress Tracker</span>
+          </button>
+
+          <button
+            className={finderView ? "active" : ""}
+            onClick={() => navigate(onOpenFinder)}
+            type="button"
+          >
+            <Dices size={21} />
+            <span>Demon Finder</span>
           </button>
 
           <button

@@ -6,6 +6,7 @@ describe("routeUtils", () => {
     ["/", ROUTES.home],
     ["/demon-list", ROUTES.list],
     ["/statistics", ROUTES.statistics],
+    ["/demon-finder", ROUTES.finder],
     ["/progress", ROUTES.progress],
     ["/collections", ROUTES.collections],
     ["/demon-requests/", ROUTES.requests],

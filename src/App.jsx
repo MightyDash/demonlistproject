@@ -5,6 +5,7 @@ import { AppHeader } from "./components/AppHeader.jsx";
 import { CollectionsPage } from "./components/CollectionsPage.jsx";
 import { DemonListContent } from "./components/DemonListContent.jsx";
 import { DemonModal } from "./components/DemonModal.jsx";
+import { DemonFinderPage } from "./components/DemonFinderPage.jsx";
 import { OfflineScreen } from "./components/OfflineScreen.jsx";
 import { ProgressDemonDetail } from "./components/ProgressDemonDetail.jsx";
 import { RecentChanges } from "./components/RecentChanges.jsx";
@@ -131,6 +132,7 @@ export default function App() {
   const [progressCategory, setProgressCategory] = useState("all");
   const [historyView, setHistoryView] = useState(false);
   const [statisticsView, setStatisticsView] = useState(false);
+  const [finderView, setFinderView] = useState(false);
   const [timelineView, setTimelineView] = useState(false);
   const [timelineRoute, setTimelineRoute] = useState({ year: null, month: null, overview: false, compare: false });
   const [routeDetail, setRouteDetail] = useState(null);
@@ -182,6 +184,7 @@ export default function App() {
     }
     setHistoryView(route === ROUTES.history);
     setStatisticsView(route === ROUTES.statistics);
+    setFinderView(route === ROUTES.finder);
     setTimelineView(isTimelineRoute);
     setTimelineRoute(parseTimelineRoute(route));
   }
@@ -874,19 +877,21 @@ export default function App() {
   );
 
   return (
-    <div className={`app ${timelineView ? "timeline-app" : ""} ${collectionsView ? "collections-app" : ""} ${statisticsView ? "statistics-app" : ""}`}>
+    <div className={`app ${timelineView ? "timeline-app" : ""} ${collectionsView ? "collections-app" : ""} ${statisticsView ? "statistics-app" : ""} ${finderView ? "finder-app" : ""}`}>
       <AppHeader
           source={source}
           historyView={historyView}
           progressView={progressView}
           collectionsView={collectionsView}
           statisticsView={statisticsView}
+          finderView={finderView}
           requestView={requestView}
           timelineView={timelineView}
           onOpenList={() => navigateTo(ROUTES.home)}
           onOpenProgress={() => navigateTo(progressView ? ROUTES.home : ROUTES.progress)}
           onOpenCollections={() => navigateTo(collectionsView ? ROUTES.home : ROUTES.collections)}
           onOpenStatistics={() => navigateTo(statisticsView ? ROUTES.home : ROUTES.statistics)}
+          onOpenFinder={() => navigateTo(finderView ? ROUTES.home : ROUTES.finder)}
           onOpenRequests={handleOpenRequests}
           onOpenHistory={() => {
             navigateTo(historyView ? ROUTES.home : ROUTES.history);
@@ -939,6 +944,8 @@ export default function App() {
         />
       ) : statisticsView ? (
         <StatisticsPage demons={demons} onSelectDemon={openDemonDetail} />
+      ) : finderView ? (
+        <DemonFinderPage />
       ) : timelineView ? (
         <TimelinePage
           demons={demons}

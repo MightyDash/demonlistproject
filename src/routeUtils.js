@@ -2,6 +2,7 @@ export const ROUTES = {
   home: "/",
   list: "/demon-list",
   statistics: "/statistics",
+  finder: "/demon-finder",
   progress: "/progress",
   collections: "/collections",
   requests: "/demon-requests",
