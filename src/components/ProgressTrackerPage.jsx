@@ -1,18 +1,20 @@
 import React, { useMemo, useState } from "react";
-import { CirclePause, CirclePlay, Clock3, Flag, Info, XCircle } from "lucide-react";
-import { difficultyClass, formatNumber } from "../demonUtils.js";
+import { CircleCheck, CirclePause, CirclePlay, Clock3, Flag, Info, XCircle } from "lucide-react";
+import { difficultyClass, formatNumber, isInProgressDemon } from "../demonUtils.js";
 
 const FILTERS = [
   ["all", "All", null],
   ["IN PROGRESS", "In Progress", CirclePlay],
   ["PLAN TO BEAT", "Plan to Beat", Flag],
   ["ON HOLD", "On Hold", CirclePause],
-  ["DROPPED", "Dropped", XCircle]
+  ["DROPPED", "Dropped", XCircle],
+  ["COMPLETED", "Completed", CircleCheck]
 ];
 
 function categoryOf(demon) {
+  if (!isInProgressDemon(demon)) return "COMPLETED";
   const category = String(demon.progressCategory || "IN PROGRESS").toUpperCase();
-  return FILTERS.some(([value]) => value === category) ? category : "IN PROGRESS";
+  return ["PLAN TO BEAT", "ON HOLD", "DROPPED"].includes(category) ? category : "IN PROGRESS";
 }
 
 function categoryClass(category) {
@@ -21,17 +23,21 @@ function categoryClass(category) {
 
 export function ProgressTrackerPage({ demons, activeFilter, onFilterChange, onSelectDemon, projectedPlacements }) {
   const [showInfo, setShowInfo] = useState(false);
+  const trackerDemons = useMemo(() => [
+    ...demons.filter(isInProgressDemon),
+    ...demons.filter(demon => demon.wasTracked && String(demon.status).trim().toUpperCase() === "COMPLETED")
+  ], [demons]);
   const counts = useMemo(() => Object.fromEntries(FILTERS.slice(1).map(([value]) => [
     value,
-    demons.filter(demon => categoryOf(demon) === value).length
-  ])), [demons]);
-  const shown = activeFilter === "all" ? demons : demons.filter(demon => categoryOf(demon) === activeFilter);
+    trackerDemons.filter(demon => categoryOf(demon) === value).length
+  ])), [trackerDemons]);
+  const shown = activeFilter === "all" ? trackerDemons : trackerDemons.filter(demon => categoryOf(demon) === activeFilter);
 
   return (
     <main className="progress-tracker-page">
       <header className="progress-tracker-toolbar">
         <div className="progress-tracker-count">
-          <strong>{demons.length}</strong> demons
+          <strong>{trackerDemons.length}</strong> demons
           <button type="button" aria-label="About Progress Tracker" onClick={() => setShowInfo(value => !value)}><Info size={16} /></button>
           {showInfo && <div className="progress-tracker-info" role="note">
             <strong>Progress status guide</strong>
@@ -39,13 +45,14 @@ export function ProgressTrackerPage({ demons, activeFilter, onFilterChange, onSe
             <p><b>Plan to Beat</b><span>The next demons I intend to complete.</span></p>
             <p><b>On Hold</b><span>Demons I plan to continue playing at a later time.</span></p>
             <p><b>Dropped</b><span>Levels I have stopped attempting or practising.</span></p>
+            <p><b>Completed</b><span>Demons I completed after tracking them here.</span></p>
           </div>}
         </div>
         <nav className="progress-status-filters" aria-label="Filter progress status">
           {FILTERS.map(([value, label, Icon]) => (
-            <button key={value} type="button" className={`${categoryClass(value)} ${activeFilter === value ? "active" : ""}`} onClick={() => onFilterChange(value)}>
+            <button key={value} type="button" aria-pressed={activeFilter === value} className={`${categoryClass(value)} ${activeFilter === value ? "active" : ""}`} onClick={() => onFilterChange(value)}>
               {Icon && <Icon size={17} />}<span>{label}</span>
-              <b>{value === "all" ? demons.length : counts[value]}</b>
+              <b>{value === "all" ? trackerDemons.length : counts[value]}</b>
             </button>
           ))}
         </nav>

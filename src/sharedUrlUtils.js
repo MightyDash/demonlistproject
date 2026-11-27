@@ -1,5 +1,5 @@
 const SEGMENTS = new Set(["all", "main", "extended", "legacy"]);
-const PROGRESS_CATEGORIES = new Set(["all", "IN PROGRESS", "PLAN TO BEAT", "ON HOLD", "DROPPED"]);
+const PROGRESS_CATEGORIES = new Set(["all", "IN PROGRESS", "PLAN TO BEAT", "ON HOLD", "DROPPED", "COMPLETED"]);
 const SPECIAL_VIEWS = new Set(["future", "duration", "level-id", "tier"]);
 
 export function parseSharedFilters(search, { progress = false } = {}) {

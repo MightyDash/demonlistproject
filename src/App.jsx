@@ -729,6 +729,10 @@ export default function App() {
 
   function openProgressDetail(demon) {
     if (!demon?.id) return;
+    if (!isInProgressDemon(demon)) {
+      openDemonDetail(demon);
+      return;
+    }
     const returnTo = `${window.location.pathname}${window.location.search}`;
     navigateTo(`${ROUTES.progress}/${encodeURIComponent(demon.id)}`, { state: { returnTo } });
   }
@@ -964,7 +968,7 @@ export default function App() {
           onBackToTimeline={() => navigateTo(timelineRoute.year ? `${ROUTES.timeline}/${timelineRoute.year}` : ROUTES.timeline)}
         />
       ) : progressView ? (
-        <ProgressTrackerPage demons={demons.filter(isInProgressDemon)} activeFilter={progressCategory} onFilterChange={setProgressCategory} onSelectDemon={openProgressDetail} projectedPlacements={projectedFuturePlacements} />
+        <ProgressTrackerPage demons={demons} activeFilter={progressCategory} onFilterChange={setProgressCategory} onSelectDemon={openProgressDetail} projectedPlacements={projectedFuturePlacements} />
       ) : demonListContent}
 
       {selected && progressView && isInProgressDemon(selected) ? (
