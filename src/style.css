@@ -3953,6 +3953,48 @@ h1 {
   color: var(--text);
 }
 
+.modal-tracker-history {
+  max-height: 340px;
+  margin: 0;
+  padding: 4px 20px 10px;
+  overflow: auto;
+  list-style: none;
+}
+
+.modal-tracker-history li {
+  display: grid;
+  gap: 5px;
+  padding: 12px 0;
+}
+
+.modal-tracker-history li + li {
+  border-top: 1px solid var(--line);
+}
+
+.modal-tracker-history li > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 4px 12px;
+}
+
+.modal-tracker-history time,
+.modal-tracker-history li span,
+.modal-tracker-history li small,
+.modal-tracker-history-state {
+  color: var(--muted);
+}
+
+.modal-tracker-history-state {
+  margin: 0;
+  padding: 14px 20px 18px;
+}
+
+.modal-tracker-history-state p {
+  margin: 0 0 10px;
+}
+
 .admin-button {
   margin-top: 10px;
   padding: 10px 16px;

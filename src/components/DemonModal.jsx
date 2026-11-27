@@ -5,12 +5,15 @@ import {
   ChevronRight,
   Clock3,
   FileText,
+  RefreshCw,
   Search,
   X
 } from "lucide-react";
 import { formatNumber, formatTier, getDemonYouTubeSearchUrl } from "../demonUtils.js";
 import { SHEET_API_URL } from "../config.js";
 import { requestJson } from "../api.js";
+import { buildProgressTimeline, formatProgressHistoryDate, progressCategoryLabel } from "../progressHistoryUtils.js";
+import { useProgressHistory } from "../useProgressHistory.js";
 import { DeviceLabel } from "./DeviceLabel.jsx";
 
 const SKILLSET_COLORS = [
@@ -27,6 +30,44 @@ const SKILLSET_COLORS = [
   "#8ea7ff",
   "#f5d76e"
 ];
+
+function TrackedLevelHistory({ levelId }) {
+  const { entries, loading, error, retry } = useProgressHistory(levelId);
+  const timeline = useMemo(() => buildProgressTimeline(entries), [entries]);
+
+  if (loading) return <p className="modal-tracker-history-state" role="status">Loading progress history…</p>;
+  if (error) return (
+    <div className="modal-tracker-history-state">
+      <p role="alert">{error}</p>
+      <button className="close-button" type="button" onClick={retry}><RefreshCw size={15} /> Try again</button>
+    </div>
+  );
+  if (!timeline.length) return <p className="modal-tracker-history-state">No progress updates recorded.</p>;
+
+  return (
+    <ol className="modal-tracker-history" tabIndex={0} aria-label="Recorded Progress Tracker updates">
+      {timeline.map((entry, index) => {
+        const progress = entry.progressDelta
+          ? `${entry.previousProgressPercent}% → ${entry.progressPercent}%`
+          : `${entry.progressPercent}%`;
+        const status = entry.previousProgressCategory && entry.previousProgressCategory !== entry.progressCategory
+          ? `${progressCategoryLabel(entry.previousProgressCategory)} → ${entry.categoryLabel}`
+          : entry.categoryLabel;
+        const attemptChange = entry.attemptDelta
+          ? ` (${entry.attemptDelta > 0 ? "+" : ""}${formatNumber(entry.attemptDelta)})`
+          : "";
+
+        return (
+          <li key={`${entry.recordedAt}-${entry.event}-${index}`}>
+            <div><time dateTime={entry.recordedAt || undefined}>{formatProgressHistoryDate(entry.recordedAt)}</time><strong>{entry.label}</strong></div>
+            <div><b>{progress}</b><span>{formatNumber(entry.attempts)} attempts{attemptChange}</span></div>
+            {entry.event !== "COMPLETED" || status !== "Completed" ? <small>{status}</small> : null}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
 
 export function DemonModal({
   demon,
@@ -244,11 +285,15 @@ export function DemonModal({
 
               <section className="modal-info-card history-card">
                 <h3><Clock3 size={22} /> Level history</h3>
-                <div className="history-mini-list">
-                  <span><b>Latest</b> Stats updated</span>
-                  <span><b>{demon.date || demon.year || "Unknown"}</b> Added to list</span>
-                  <span><b>{formatTier(demon.tier)}</b> Current tier</span>
-                </div>
+                {demon.wasTracked && demon.id ? (
+                  <TrackedLevelHistory key={demon.id} levelId={demon.id} />
+                ) : (
+                  <div className="history-mini-list">
+                    <span><b>Latest</b> Stats updated</span>
+                    <span><b>{demon.date || demon.year || "Unknown"}</b> Added to list</span>
+                    <span><b>{formatTier(demon.tier)}</b> Current tier</span>
+                  </div>
+                )}
               </section>
             </aside>
 

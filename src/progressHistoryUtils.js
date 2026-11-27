@@ -1,8 +1,12 @@
 const EVENT_LABELS = {
+  ADDED: "Tracking started",
+  ATTEMPTS: "Attempts updated",
   BASELINE: "Tracking started",
+  CATEGORY: "Status changed",
   CURRENT: "Current snapshot",
   COMPLETED: "Completed",
   PROGRESS: "New best",
+  REMOVED: "Removed from Tracker",
   UPDATE: "Progress updated",
   STATUS: "Status changed"
 };
@@ -23,6 +27,7 @@ export function progressCategoryLabel(value) {
   if (category === "PLAN TO BEAT") return "Plan to Beat";
   if (category === "ON HOLD") return "On Hold";
   if (category === "DROPPED") return "Dropped";
+  if (category === "COMPLETED") return "Completed";
   return "In Progress";
 }
 
@@ -33,24 +38,25 @@ export function buildProgressTimeline(entries, demon) {
       recordedAt: String(entry.recordedAt || entry.updatedAt || ""),
       progressPercent: numberOrZero(entry.progressPercent),
       attempts: numberOrZero(entry.attempts),
-      progressCategory: String(entry.progressCategory || "IN PROGRESS").toUpperCase(),
+      progressCategory: entry.status === "COMPLETED" || entry.event === "COMPLETED"
+        ? "COMPLETED"
+        : String(entry.progressCategory || "IN PROGRESS").toUpperCase(),
       event: String(entry.event || "UPDATE").toUpperCase()
     }))
     .sort((a, b) => new Date(a.recordedAt || 0) - new Date(b.recordedAt || 0));
 
-  const currentSnapshot = {
-    recordedAt: "",
-    levelId: String(demon?.id || ""),
-    name: String(demon?.name || ""),
-    progressPercent: numberOrZero(demon?.progressPercent),
-    attempts: numberOrZero(demon?.attempts),
-    progressCategory: String(demon?.progressCategory || "IN PROGRESS").toUpperCase(),
-    status: String(demon?.status || "IN PROGRESS").toUpperCase(),
-    event: "CURRENT"
-  };
-
-  if (normalized.length === 0 || !sameSnapshot(normalized[normalized.length - 1], currentSnapshot)) {
-    normalized.push(currentSnapshot);
+  if (demon) {
+    const currentSnapshot = {
+      recordedAt: "",
+      levelId: String(demon.id || ""),
+      name: String(demon.name || ""),
+      progressPercent: numberOrZero(demon.progressPercent),
+      attempts: numberOrZero(demon.attempts),
+      progressCategory: String(demon.progressCategory || "IN PROGRESS").toUpperCase(),
+      status: String(demon.status || "IN PROGRESS").toUpperCase(),
+      event: "CURRENT"
+    };
+    if (!sameSnapshot(normalized.at(-1), currentSnapshot)) normalized.push(currentSnapshot);
   }
 
   return normalized.map((entry, index) => {
@@ -68,7 +74,7 @@ export function buildProgressTimeline(entries, demon) {
       previousProgressCategory: previous?.progressCategory ?? null,
       progressDelta,
       attemptDelta,
-      label: EVENT_LABELS[entry.event] || "Progress updated",
+      label: EVENT_LABELS[entry.event] || EVENT_LABELS[entry.event.split("+")[0]] || "Progress updated",
       categoryLabel: progressCategoryLabel(entry.progressCategory)
     };
   }).reverse();

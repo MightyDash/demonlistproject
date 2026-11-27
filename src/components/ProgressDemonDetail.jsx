@@ -1,66 +1,18 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo } from "react";
 import { CalendarDays, Clock3, Gamepad2, History, RefreshCw, X } from "lucide-react";
-import { requestJson } from "../api.js";
-import { SHEET_API_URL } from "../config.js";
 import { formatNumber } from "../demonUtils.js";
 import { buildProgressTimeline, formatProgressHistoryDate, progressCategoryLabel } from "../progressHistoryUtils.js";
+import { useProgressHistory } from "../useProgressHistory.js";
 
 function categoryClass(value) {
   return String(value || "IN PROGRESS").toLowerCase().replaceAll(" ", "-");
 }
 
 export function ProgressDemonDetail({ demon, onClose }) {
-  const [entries, setEntries] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const { entries, loading, error, retry } = useProgressHistory(demon.id);
   const category = String(demon.progressCategory || "IN PROGRESS").toUpperCase();
   const showProgress = category !== "DROPPED";
   const progress = Math.max(0, Math.min(100, Number(demon.progressPercent || 0)));
-
-  async function loadProgressHistory() {
-    setLoading(true);
-    setError("");
-
-    try {
-      const separator = SHEET_API_URL.includes("?") ? "&" : "?";
-      const data = await requestJson(`${SHEET_API_URL}${separator}view=progress-history&levelId=${encodeURIComponent(demon.id || "")}`);
-      if (data.success === false) throw new Error(data.message || "Could not load progress history.");
-      setEntries(Array.isArray(data.entries) ? data.entries : []);
-    } catch {
-      setError("Progress history could not be loaded.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    let active = true;
-    const controller = new AbortController();
-
-    async function load() {
-      setLoading(true);
-      setError("");
-      try {
-        const separator = SHEET_API_URL.includes("?") ? "&" : "?";
-        const data = await requestJson(`${SHEET_API_URL}${separator}view=progress-history&levelId=${encodeURIComponent(demon.id || "")}`, {
-          signal: controller.signal
-        });
-        if (!active || data.aborted) return;
-        if (data.success === false) throw new Error(data.message || "Could not load progress history.");
-        setEntries(Array.isArray(data.entries) ? data.entries : []);
-      } catch {
-        if (active) setError("Progress history could not be loaded.");
-      } finally {
-        if (active) setLoading(false);
-      }
-    }
-
-    load();
-    return () => {
-      active = false;
-      controller.abort();
-    };
-  }, [demon.id]);
 
   useEffect(() => {
     function handleKeyDown(event) {
@@ -118,7 +70,7 @@ export function ProgressDemonDetail({ demon, onClose }) {
           {loading ? (
             <div className="progress-detail-loading"><span />Loading progress history…</div>
           ) : error ? (
-            <div className="progress-detail-error"><p>{error}</p><button onClick={loadProgressHistory} type="button"><RefreshCw size={17} />Try again</button></div>
+            <div className="progress-detail-error"><p>{error}</p><button onClick={retry} type="button"><RefreshCw size={17} />Try again</button></div>
           ) : (
             <div className="progress-history-timeline">
               {timeline.map((entry, index) => {
